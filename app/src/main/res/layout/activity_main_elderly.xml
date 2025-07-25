@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background"
+    tools:context=".MainActivity">
+
+    <!-- Заголовок -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🏥 МОИ ЛЕКАРСТВА"
+        android:textSize="@dimen/text_size_extra_large"
+        android:textStyle="bold"
+        android:textColor="@color/primary_text"
+        android:gravity="center"
+        android:padding="@dimen/padding_large" />
+
+    <!-- Лекарства на сегодня -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📋 ЛЕКАРСТВА НА СЕГОДНЯ"
+        android:textSize="@dimen/text_size_large"
+        android:textStyle="bold"
+        android:textColor="@color/primary_text"
+        android:padding="@dimen/padding_medium"
+        android:layout_marginStart="@dimen/margin_medium" />
+
+    <!-- Список лекарств -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewTodayMedicines"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="@dimen/padding_small" />
+
+    <!-- Кнопки внизу -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_large">
+
+        <!-- Кнопка управления лекарствами -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonManageMedicines"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_large"
+            android:text="💊 УПРАВЛЕНИЕ ЛЕКАРСТВАМИ"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold"
+            android:backgroundTint="@color/button_primary"
+            android:textColor="@color/white"
+            android:layout_marginBottom="@dimen/margin_medium"
+            app:cornerRadius="8dp" />
+
+        <!-- Кнопка смены лейаута -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonToggleLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:text="👴 ПЕРЕКЛЮЧИТЬ РЕЖИМ ДЛЯ ПОЖИЛЫХ"
+            android:textSize="@dimen/text_size_medium"
+            android:backgroundTint="@color/button_secondary"
+            android:textColor="@color/white"
+            app:cornerRadius="8dp" />
+
+    </LinearLayout>
+
+</LinearLayout> 

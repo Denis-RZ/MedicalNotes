@@ -1,0 +1,223 @@
+package com.medicalnotes.app
+
+import android.app.AlertDialog
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import com.medicalnotes.app.databinding.ActivitySettingsBinding
+import com.medicalnotes.app.utils.AppSettings
+import com.medicalnotes.app.viewmodels.SettingsViewModel
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+
+class SettingsActivity : AppCompatActivity() {
+    
+    private lateinit var binding: ActivitySettingsBinding
+    private lateinit var viewModel: SettingsViewModel
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        
+        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))[SettingsViewModel::class.java]
+        
+        setupViews()
+        setupListeners()
+        observeData()
+    }
+    
+    private fun setupViews() {
+        supportActionBar?.title = "Настройки"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+    
+    private fun setupListeners() {
+        // Слайдеры
+        binding.sliderAdvanceMinutes.addOnChangeListener { _, value, _ ->
+            binding.textAdvanceMinutes.text = "${value.toInt()} минут"
+        }
+        
+        binding.sliderLowStockThreshold.addOnChangeListener { _, value, _ ->
+            binding.textLowStockThreshold.text = "${value.toInt()} шт."
+        }
+        
+        binding.sliderMaxBackups.addOnChangeListener { _, value, _ ->
+            binding.textMaxBackups.text = "${value.toInt()} копий"
+        }
+        
+        // Кнопки
+        binding.buttonCustomizeButtons.setOnClickListener {
+            startActivity(Intent(this, ButtonCustomizationActivity::class.java))
+        }
+        
+        binding.buttonNotificationManager.setOnClickListener {
+            startActivity(Intent(this, NotificationManagerActivity::class.java))
+        }
+        
+        binding.buttonCreateBackup.setOnClickListener {
+            viewModel.createBackup()
+        }
+        
+        binding.buttonRestoreBackup.setOnClickListener {
+            showBackupRestoreDialog()
+        }
+        
+        binding.buttonBackupList.setOnClickListener {
+            showBackupListDialog()
+        }
+        
+        binding.buttonDataStatistics.setOnClickListener {
+            showDataStatisticsDialog()
+        }
+        
+        binding.buttonValidateData.setOnClickListener {
+            viewModel.validateDataIntegrity()
+        }
+        
+        binding.buttonClearData.setOnClickListener {
+            showClearDataDialog()
+        }
+        
+        binding.buttonSaveSettings.setOnClickListener {
+            saveSettings()
+        }
+        
+        binding.buttonBack.setOnClickListener {
+            finish()
+        }
+    }
+    
+    private fun observeData() {
+        viewModel.settings.observe(this) { settings ->
+            settings?.let {
+                binding.switchNotifications.isChecked = true // Уведомления всегда включены
+                binding.switchVibration.isChecked = true // Вибрация по умолчанию включена
+                binding.switchSound.isChecked = true // Звук по умолчанию включен
+                binding.sliderAdvanceMinutes.value = it.notificationAdvanceMinutes.toFloat()
+                binding.textAdvanceMinutes.text = "${it.notificationAdvanceMinutes} минут"
+                binding.sliderLowStockThreshold.value = it.lowStockThreshold.toFloat()
+                binding.textLowStockThreshold.text = "${it.lowStockThreshold} шт."
+                binding.switchAutoBackup.isChecked = it.autoBackup
+                binding.switchDataCompression.isChecked = it.dataCompression
+                binding.sliderMaxBackups.value = it.maxBackups.toFloat()
+                binding.textMaxBackups.text = "${it.maxBackups} копий"
+                binding.switchHighContrast.isChecked = false // По умолчанию выключен
+            }
+        }
+        
+        viewModel.message.observe(this) { message ->
+            message?.let {
+                Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    private fun saveSettings() {
+        val settings = AppSettings(
+            autoBackup = binding.switchAutoBackup.isChecked,
+            backupInterval = 24 * 60 * 60 * 1000, // 24 часа
+            maxBackups = binding.sliderMaxBackups.value.toInt(),
+            dataCompression = binding.switchDataCompression.isChecked,
+            encryptionEnabled = false,
+            notificationAdvanceMinutes = binding.sliderAdvanceMinutes.value.toInt(),
+            lowStockThreshold = binding.sliderLowStockThreshold.value.toInt(),
+            emergencyContacts = emptyList()
+        )
+        
+        viewModel.updateSettings(settings)
+    }
+    
+    private fun showBackupRestoreDialog() {
+        val backups = viewModel.backupList.value ?: emptyList()
+        if (backups.isEmpty()) {
+            Toast.makeText(this, "Нет доступных резервных копий", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        val backupNames = backups.map { it.name }.toTypedArray()
+        
+        AlertDialog.Builder(this)
+            .setTitle("Выберите резервную копию для восстановления")
+            .setItems(backupNames) { _, which ->
+                val selectedBackup = backups[which]
+                showConfirmRestoreDialog(selectedBackup)
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
+    private fun showConfirmRestoreDialog(backupFile: File) {
+        AlertDialog.Builder(this)
+            .setTitle("Подтверждение восстановления")
+            .setMessage("Восстановить данные из резервной копии '${backupFile.name}'? Текущие данные будут заменены.")
+            .setPositiveButton("Восстановить") { _, _ ->
+                viewModel.restoreFromBackup(backupFile.absolutePath)
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
+    private fun showBackupListDialog() {
+        val backups = viewModel.backupList.value ?: emptyList()
+        if (backups.isEmpty()) {
+            Toast.makeText(this, "Нет резервных копий", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+        val backupInfo = backups.map { file ->
+            "${file.name}\nРазмер: ${file.length() / 1024} KB\nДата: ${dateFormat.format(Date(file.lastModified()))}"
+        }.joinToString("\n\n")
+        
+        AlertDialog.Builder(this)
+            .setTitle("Список резервных копий")
+            .setMessage(backupInfo)
+            .setPositiveButton("Очистить старые", { _, _ ->
+                viewModel.cleanupOldBackups()
+            })
+            .setNegativeButton("Закрыть", null)
+            .show()
+    }
+    
+    private fun showDataStatisticsDialog() {
+        val statistics = viewModel.dataStatistics.value ?: emptyMap()
+        val statsText = statistics.entries.joinToString("\n") { (key, value) ->
+            when (key) {
+                "medicines_count" -> "Всего лекарств: $value"
+                "active_medicines" -> "Активных лекарств: $value"
+                "buttons_count" -> "Всего кнопок: $value"
+                "visible_buttons" -> "Видимых кнопок: $value"
+                "low_stock_medicines" -> "Лекарств с низким запасом: $value"
+                "backup_count" -> "Резервных копий: $value"
+                "config_version" -> "Версия конфигурации: $value"
+                else -> "$key: $value"
+            }
+        }
+        
+        AlertDialog.Builder(this)
+            .setTitle("Статистика данных")
+            .setMessage(statsText)
+            .setPositiveButton("OK", null)
+            .show()
+    }
+    
+    private fun showClearDataDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Очистка данных")
+            .setMessage("Вы уверены, что хотите удалить ВСЕ данные? Это действие нельзя отменить.")
+            .setPositiveButton("Удалить все") { _, _ ->
+                viewModel.clearAllData()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
+    }
+} 

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Медицинские заметки</string>
+    <string name="service_description">Сервис уведомлений о лекарствах</string>
+    
+    <!-- Главный экран -->
+    <string name="today_medicines">Лекарства на сегодня</string>
+    <string name="add_medicine">Добавить лекарство</string>
+    <string name="settings">Настройки</string>
+    <string name="customize_buttons">Настроить кнопки</string>
+    
+    <!-- Лекарства -->
+    <string name="medicine_name">Название лекарства</string>
+    <string name="medicine_dosage">Дозировка</string>
+    <string name="medicine_quantity">Количество таблеток</string>
+    <string name="medicine_time">Время приема</string>
+    <string name="medicine_notes">Заметки</string>
+    <string name="save_medicine">Сохранить</string>
+    <string name="delete_medicine">Удалить</string>
+    
+    <!-- Действия -->
+    <string name="taken">Принял</string>
+    <string name="skipped">Пропустил</string>
+    <string name="emergency_call">Экстренный вызов</string>
+    <string name="check_supply">Проверить запас</string>
+    
+    <!-- Настройки кнопок -->
+    <string name="button_size">Размер кнопок</string>
+    <string name="button_color">Цвет кнопок</string>
+    <string name="button_actions">Действия кнопок</string>
+    <string name="small_buttons">Маленькие</string>
+    <string name="medium_buttons">Средние</string>
+    <string name="large_buttons">Большие</string>
+    <string name="extra_large_buttons">Очень большие</string>
+    
+    <!-- Уведомления -->
+    <string name="medicine_reminder">Напоминание о лекарстве</string>
+    <string name="time_to_take">Время принимать</string>
+    <string name="medicine_reminder_text">Время принимать %1$s</string>
+    <string name="low_supply_warning">Заканчиваются таблетки</string>
+    <string name="low_supply_text">Осталось мало таблеток %1$s</string>
+    
+    <!-- Диабет -->
+    <string name="insulin_reminder">Напоминание об инсулине</string>
+    <string name="blood_sugar">Уровень сахара</string>
+    <string name="record_sugar">Записать сахар</string>
+    
+    <!-- Общие -->
+    <string name="ok">ОК</string>
+    <string name="cancel">Отмена</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="edit">Изменить</string>
+    <string name="delete">Удалить</string>
+    <string name="back">Назад</string>
+    
+    <!-- Управление лекарствами -->
+    <string name="manage_medicines">Управление лекарствами</string>
+    <string name="sos_button">КНОПКА SOS</string>
+    <string name="son">СЫН</string>
+    <string name="journal">ЖУРНАЛ</string>
+    <string name="my_medicines">МОИ ЛЕКАРСТВА</string>
+    <string name="remaining">Осталось</string>
+    <string name="tablets">таблеток</string>
+    <string name="taken_status">ПРИНЯТО</string>
+    <string name="missed_status">ПРОПУЩЕНО</string>
+    <string name="skip_dose">ПРОПУСТИТЬ ПРИЕМ</string>
+    <string name="elderly_mode">Режим для пожилых</string>
+    <string name="disable_elderly_mode">Выключить режим для пожилых</string>
+    
+    <!-- Частоты приема -->
+    <string name="daily">Каждый день</string>
+    <string name="every_other_day">Через день</string>
+    <string name="twice_a_week">2 раза в неделю</string>
+    <string name="three_times_a_week">3 раза в неделю</string>
+    <string name="weekly">Раз в неделю</string>
+    <string name="custom_schedule">По расписанию</string>
+    
+    <!-- Времена дня -->
+    <string name="morning">Утром</string>
+    <string name="afternoon">Днем</string>
+    <string name="evening">Вечером</string>
+    <string name="night">Ночью</string>
+    <string name="custom_time">Пользовательское время</string>
+</resources> 

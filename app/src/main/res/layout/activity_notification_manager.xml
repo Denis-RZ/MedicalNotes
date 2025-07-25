@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/margin_medium"
+    tools:context=".NotificationManagerActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Менеджер уведомлений"
+        android:textSize="@dimen/text_size_extra_large"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/margin_medium" />
+
+    <!-- Поиск -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_medium"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Поиск лекарств..."
+            android:inputType="text"
+            android:maxLines="1" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Фильтры -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/margin_medium">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonFilterAll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Все"
+            android:layout_marginEnd="@dimen/margin_small"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonFilterActive"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Активные"
+            android:layout_marginEnd="@dimen/margin_small"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonFilterInactive"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Неактивные"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    </LinearLayout>
+
+    <!-- Статистика -->
+    <TextView
+        android:id="@+id/textStatistics"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Всего: 0 | Активных: 0 | Низкий запас: 0"
+        android:textSize="@dimen/text_size_small"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/margin_medium"
+        android:background="@drawable/time_background"
+        android:padding="@dimen/margin_small" />
+
+    <!-- Действия -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/margin_medium">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonTestNotification"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Тест уведомления"
+            android:layout_marginEnd="@dimen/margin_small"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonCancelAllNotifications"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Отменить все"
+            android:layout_marginEnd="@dimen/margin_small"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonRefresh"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Обновить"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    </LinearLayout>
+
+    <!-- Список лекарств -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewMedicines"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="@dimen/margin_medium" />
+
+    <!-- Текст "не найдено" -->
+    <TextView
+        android:id="@+id/textNoMedicines"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Лекарства не найдены"
+        android:textSize="@dimen/text_size_large"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginBottom="@dimen/margin_medium" />
+
+    <!-- Кнопка назад -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonBack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/back"
+        android:textSize="@dimen/text_size_large"
+        style="@style/Widget.MedicalNotes.Button" />
+
+</LinearLayout> 

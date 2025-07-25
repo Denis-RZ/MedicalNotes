@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardMedicine"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/margin_medium"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation"
+    app:cardUseCompatPadding="true"
+    app:cardBackgroundColor="@color/card_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_large">
+
+        <!-- Заголовок с временем и названием -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/margin_medium"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/textMedicineTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏰ 08:00"
+                android:textSize="@dimen/text_size_large"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:background="@drawable/elderly_time_background"
+                android:padding="@dimen/padding_small"
+                android:layout_marginEnd="@dimen/margin_medium"
+                tools:text="⏰ 08:00" />
+
+            <TextView
+                android:id="@+id/textMedicineName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Метформин"
+                android:textSize="@dimen/text_size_large"
+                android:textStyle="bold"
+                android:textColor="@color/primary_text"
+                tools:text="Метформин" />
+
+        </LinearLayout>
+
+        <!-- Дозировка -->
+        <TextView
+            android:id="@+id/textMedicineDosage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="500 мг"
+            android:textSize="@dimen/text_size_medium"
+            android:textColor="@color/secondary_text"
+            android:layout_marginBottom="@dimen/margin_medium"
+            tools:text="500 мг" />
+
+        <!-- Количество таблеток и статус -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/margin_large"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/textMedicineQuantity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Осталось: 15 таблеток"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/secondary_text"
+                tools:text="📦 Осталось: 15 таблеток" />
+
+            <TextView
+                android:id="@+id/textMissedStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ПРОПУЩЕНО"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:background="@drawable/elderly_missed_background"
+                android:padding="@dimen/padding_small"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <!-- Заметки -->
+        <TextView
+            android:id="@+id/textMedicineNotes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Принимать во время еды"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/secondary_text"
+            android:layout_marginBottom="@dimen/margin_large"
+            android:visibility="gone"
+            tools:text="💡 Принимать во время еды"
+            tools:visibility="visible" />
+
+        <!-- Кнопка принятия лекарства -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonTakeMedicine"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_large"
+            android:text="ПРИНЯЛ ЛЕКАРСТВО"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold"
+            android:backgroundTint="@color/button_success"
+            android:textColor="@color/white"
+            app:cornerRadius="8dp"
+            app:elevation="4dp" />
+
+        <!-- Альтернативная кнопка пропуска (скрыта по умолчанию) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonSkipMedicine"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+                            android:text="ПРОПУСТИТЬ ПРИЕМ"
+            android:textSize="@dimen/text_size_medium"
+            android:backgroundTint="@color/button_danger"
+            android:textColor="@color/white"
+            android:layout_marginTop="@dimen/margin_small"
+            app:cornerRadius="8dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView> 

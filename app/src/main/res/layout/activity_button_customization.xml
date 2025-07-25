@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".ButtonCustomizationActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/margin_medium">
+
+        <!-- Размер кнопок -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/button_size"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <Spinner
+            android:id="@+id/spinnerButtonSize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_large"
+            android:minHeight="@dimen/button_height_large" />
+
+        <!-- Цвет кнопок -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/button_color"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <Spinner
+            android:id="@+id/spinnerButtonColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_large"
+            android:minHeight="@dimen/button_height_large" />
+
+        <!-- Дополнительные настройки -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Дополнительные настройки"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkBoxHighContrast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Высокий контраст"
+            android:textSize="@dimen/text_size_large"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkBoxVibration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Вибрация при уведомлениях"
+            android:textSize="@dimen/text_size_large"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkBoxSound"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Звук при уведомлениях"
+            android:textSize="@dimen/text_size_large"
+            android:layout_marginBottom="@dimen/margin_large" />
+
+        <!-- Кнопки -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/margin_medium">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonReset"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Сбросить"
+                android:layout_marginEnd="@dimen/margin_small"
+                style="@style/Widget.MedicalNotes.Button" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSave"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Сохранить"
+                android:layout_marginStart="@dimen/margin_small"
+                style="@style/Widget.MedicalNotes.Button" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView> 

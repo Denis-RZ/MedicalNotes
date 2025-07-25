@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.MedicalNotes" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryVariant">@color/primary_dark</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+        <item name="android:textSize">18sp</item>
+        <item name="android:buttonStyle">@style/Widget.MedicalNotes.Button</item>
+    </style>
+
+    <!-- Стиль для больших кнопок -->
+    <style name="Widget.MedicalNotes.Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:minHeight">64dp</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:padding">16dp</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
+    <!-- Стиль для очень больших кнопок -->
+    <style name="Widget.MedicalNotes.Button.Large" parent="Widget.MedicalNotes.Button">
+        <item name="android:minHeight">80dp</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:padding">20dp</item>
+    </style>
+
+    <!-- Стиль для экстра больших кнопок -->
+    <style name="Widget.MedicalNotes.Button.ExtraLarge" parent="Widget.MedicalNotes.Button">
+        <item name="android:minHeight">96dp</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:padding">24dp</item>
+    </style>
+
+    <!-- Стиль для кнопок высокого контраста -->
+    <style name="Widget.MedicalNotes.Button.HighContrast" parent="Widget.MedicalNotes.Button">
+        <item name="backgroundTint">@color/black</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+</resources> 

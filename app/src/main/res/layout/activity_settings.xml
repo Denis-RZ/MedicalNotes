@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/margin_medium">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Настройки приложения"
+            android:textSize="@dimen/text_size_extra_large"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="@dimen/margin_large" />
+
+        <!-- Секция уведомлений -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
+            style="@style/Widget.Material3.CardView.Filled">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/margin_medium">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Уведомления"
+                    android:textSize="@dimen/text_size_large"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchNotifications"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Включить уведомления"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchVibration"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Вибрация"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchSound"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Звук"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Напоминать за (минут):"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/sliderAdvanceMinutes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:valueFrom="5"
+                    android:valueTo="60"
+                    android:stepSize="5"
+                    android:value="15" />
+
+                <TextView
+                    android:id="@+id/textAdvanceMinutes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="15 минут"
+                    android:gravity="center"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Секция порогов -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
+            style="@style/Widget.Material3.CardView.Filled">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/margin_medium">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Пороги уведомлений"
+                    android:textSize="@dimen/text_size_large"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Предупреждение о низком запасе (шт.):"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/sliderLowStockThreshold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:valueFrom="1"
+                    android:valueTo="20"
+                    android:stepSize="1"
+                    android:value="5" />
+
+                <TextView
+                    android:id="@+id/textLowStockThreshold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="5 шт."
+                    android:gravity="center"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Секция резервного копирования -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
+            style="@style/Widget.Material3.CardView.Filled">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/margin_medium">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Резервное копирование"
+                    android:textSize="@dimen/text_size_large"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchAutoBackup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Автоматическое резервное копирование"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchDataCompression"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Сжатие данных"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Максимум резервных копий:"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/sliderMaxBackups"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:valueFrom="3"
+                    android:valueTo="20"
+                    android:stepSize="1"
+                    android:value="7" />
+
+                <TextView
+                    android:id="@+id/textMaxBackups"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="7 копий"
+                    android:gravity="center"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonCreateBackup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Создать резервную копию"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonRestoreBackup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Восстановить из копии"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonBackupList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Список резервных копий"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Секция интерфейса -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
+            style="@style/Widget.Material3.CardView.Filled">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/margin_medium">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Интерфейс"
+                    android:textSize="@dimen/text_size_large"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonCustomizeButtons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Настройка кнопок"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonNotificationManager"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Менеджер уведомлений"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchHighContrast"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Высокий контраст"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Секция данных -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
+            style="@style/Widget.Material3.CardView.Filled">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/margin_medium">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Данные"
+                    android:textSize="@dimen/text_size_large"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonDataStatistics"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Статистика данных"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonValidateData"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Проверить целостность данных"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonClearData"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Очистить все данные"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:backgroundTint="@android:color/holo_red_light" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Кнопки действий -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonSaveSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Сохранить настройки"
+            android:textSize="@dimen/text_size_large"
+            style="@style/Widget.MedicalNotes.Button.Large"
+            android:layout_marginBottom="@dimen/margin_medium" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/back"
+            android:textSize="@dimen/text_size_large"
+            style="@style/Widget.MedicalNotes.Button" />
+
+    </LinearLayout>
+</ScrollView> 

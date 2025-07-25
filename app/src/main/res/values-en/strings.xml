@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Medical Notes</string>
+    <string name="service_description">Medicine notification service</string>
+    
+    <!-- Main screen -->
+    <string name="today_medicines">Today\'s Medicines</string>
+    <string name="add_medicine">Add Medicine</string>
+    <string name="settings">Settings</string>
+    <string name="customize_buttons">Customize Buttons</string>
+    
+    <!-- Medicines -->
+    <string name="medicine_name">Medicine Name</string>
+    <string name="medicine_dosage">Dosage</string>
+    <string name="medicine_quantity">Number of tablets</string>
+    <string name="medicine_time">Time to take</string>
+    <string name="medicine_notes">Notes</string>
+    <string name="save_medicine">Save</string>
+    <string name="delete_medicine">Delete</string>
+    
+    <!-- Actions -->
+    <string name="taken">Taken</string>
+    <string name="skipped">Skipped</string>
+    <string name="emergency_call">Emergency Call</string>
+    <string name="check_supply">Check Supply</string>
+    
+    <!-- Button settings -->
+    <string name="button_size">Button Size</string>
+    <string name="button_color">Button Color</string>
+    <string name="button_actions">Button Actions</string>
+    <string name="small_buttons">Small</string>
+    <string name="medium_buttons">Medium</string>
+    <string name="large_buttons">Large</string>
+    <string name="extra_large_buttons">Extra Large</string>
+    
+    <!-- Notifications -->
+    <string name="medicine_reminder">Medicine Reminder</string>
+    <string name="time_to_take">Time to take</string>
+    <string name="medicine_reminder_text">Time to take %1$s</string>
+    <string name="low_supply_warning">Low Supply Warning</string>
+    <string name="low_supply_text">Low supply of %1$s</string>
+    
+    <!-- Diabetes -->
+    <string name="insulin_reminder">Insulin Reminder</string>
+    <string name="blood_sugar">Blood Sugar</string>
+    <string name="record_sugar">Record Sugar</string>
+    
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="back">Back</string>
+    
+    <!-- Medicine management -->
+    <string name="manage_medicines">Manage Medicines</string>
+    <string name="sos_button">SOS BUTTON</string>
+    <string name="son">SON</string>
+    <string name="journal">JOURNAL</string>
+    <string name="my_medicines">MY MEDICINES</string>
+    <string name="remaining">Remaining</string>
+    <string name="tablets">tablets</string>
+    <string name="taken_status">TAKEN</string>
+    <string name="missed_status">MISSED</string>
+    <string name="skip_dose">SKIP DOSE</string>
+    <string name="elderly_mode">ELDERLY MODE</string>
+    <string name="disable_elderly_mode">DISABLE ELDERLY MODE</string>
+    
+    <!-- Frequencies -->
+    <string name="daily">Daily</string>
+    <string name="every_other_day">Every other day</string>
+    <string name="twice_a_week">Twice a week</string>
+    <string name="three_times_a_week">Three times a week</string>
+    <string name="weekly">Weekly</string>
+    <string name="custom_schedule">Custom schedule</string>
+    
+    <!-- Time periods -->
+    <string name="morning">Morning</string>
+    <string name="afternoon">Afternoon</string>
+    <string name="evening">Evening</string>
+    <string name="night">Night</string>
+    <string name="custom_time">Custom time</string>
+</resources> 
