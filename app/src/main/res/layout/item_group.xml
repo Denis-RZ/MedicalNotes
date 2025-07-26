@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/margin_small"
+    android:layout_margin="@dimen/margin_small"
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp"
-    app:cardBackgroundColor="@color/white">
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/medical_gray">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,29 +24,51 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="@dimen/margin_small">
 
-            <TextView
-                android:id="@+id/textGroupName"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Название группы"
-                android:textSize="@dimen/text_size_large"
-                android:textStyle="bold"
-                android:textColor="@color/medical_blue" />
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/textMedicineCount"
+                <TextView
+                    android:id="@+id/textGroupName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Название группы"
+                    android:textSize="@dimen/text_size_large"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    tools:text="Витамины" />
+
+                <TextView
+                    android:id="@+id/textMedicineCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="0 лекарств"
+                    android:textSize="@dimen/text_size_small"
+                    android:textColor="@color/medical_gray"
+                    tools:text="3 лекарства" />
+
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonAddMedicine"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0 лекарств"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/medical_gray"
-                android:background="@drawable/status_background"
-                android:padding="4dp" />
+                android:text="+"
+                android:textSize="@dimen/text_size_large"
+                android:textStyle="bold"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                style="@style/Widget.Material3.Button.IconButton"
+                app:icon="@android:drawable/ic_input_add"
+                app:iconSize="24dp"
+                app:iconTint="@color/white"
+                android:backgroundTint="@color/medical_blue" />
 
         </LinearLayout>
 
-        <!-- Список лекарств -->
+        <!-- Список лекарств в группе -->
         <TextView
             android:id="@+id/textMedicineList"
             android:layout_width="match_parent"
@@ -52,36 +76,15 @@
             android:text="Список лекарств"
             android:textSize="@dimen/text_size_medium"
             android:textColor="@color/medical_gray"
-            android:layout_marginBottom="@dimen/margin_small" />
+            android:layout_marginBottom="@dimen/margin_small"
+            tools:text="Аспирин, Парацетамол, Ибупрофен" />
 
-        <!-- Кнопки действий -->
-        <LinearLayout
+        <!-- Разделитель -->
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonRename"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Переименовать"
-                android:textSize="@dimen/text_size_small"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_marginEnd="@dimen/margin_small" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonDelete"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Удалить"
-                android:textSize="@dimen/text_size_small"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:textColor="@color/medical_red"
-                app:strokeColor="@color/medical_red" />
-
-        </LinearLayout>
+            android:layout_height="1dp"
+            android:background="@color/medical_gray"
+            android:alpha="0.3" />
 
     </LinearLayout>
 

@@ -47,7 +47,25 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Количество таблеток -->
+        <!-- Тип лекарства -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Тип лекарства"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonMedicineType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Таблетки"
+            android:textSize="@dimen/text_size_large"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <!-- Количество -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -82,6 +100,33 @@
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_marginBottom="@dimen/margin_small" />
 
+        <!-- Дни недели (показывается только для "По расписанию") -->
+        <LinearLayout
+            android:id="@+id/layoutWeekDays"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="@dimen/margin_small">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Дни недели"
+                android:textSize="@dimen/text_size_medium"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/margin_small" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonWeekDays"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Выбрать дни"
+                android:textSize="@dimen/text_size_medium"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        </LinearLayout>
+
         <!-- Время приема -->
         <TextView
             android:layout_width="match_parent"
@@ -99,6 +144,35 @@
             android:textSize="@dimen/text_size_large"
             style="@style/Widget.MedicalNotes.Button.Large"
             android:layout_marginBottom="@dimen/margin_small" />
+
+        <!-- Группа времени приема -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Принимать вместе с"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonSelectMedicines"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Выбрать лекарства"
+            android:textSize="@dimen/text_size_large"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <!-- Список выбранных лекарств -->
+        <TextView
+            android:id="@+id/textSelectedMedicines"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Не выбрано"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/gray"
+            android:layout_marginBottom="@dimen/margin_small"
+            android:visibility="gone" />
 
         <!-- Несколько приемов в день -->
         <com.google.android.material.switchmaterial.SwitchMaterial
@@ -267,6 +341,34 @@
             android:text="Это инсулин"
             android:textSize="@dimen/text_size_large"
             android:layout_marginBottom="@dimen/margin_large" />
+
+        <!-- Группировка по времени приема -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Группировка по времени"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonTimeGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Добавить к группе времени"
+            android:textSize="@dimen/text_size_large"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <TextView
+            android:id="@+id/textSelectedTimeGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Не выбрана группа времени"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/dark_gray"
+            android:layout_marginBottom="@dimen/margin_large"
+            android:visibility="gone" />
 
         <!-- Кнопки -->
         <LinearLayout

@@ -27,4 +27,27 @@ class AddMedicineViewModel(application: Application) : AndroidViewModel(applicat
             callback(medicine)
         }
     }
+    
+    fun getAllMedicines(callback: (List<Medicine>) -> Unit) {
+        viewModelScope.launch {
+            android.util.Log.d("AddMedicineViewModel", "Getting all medicines")
+            val medicines = medicineRepository.getAllMedicines()
+            android.util.Log.d("AddMedicineViewModel", "Found ${medicines.size} medicines")
+            callback(medicines)
+        }
+    }
+    
+    suspend fun deleteMedicine(medicine: Medicine): Boolean {
+        return medicineRepository.deleteMedicine(medicine.id)
+    }
+    
+    suspend fun addMedicine(medicine: Medicine): Boolean {
+        return try {
+            val id = medicineRepository.insertMedicine(medicine)
+            id > 0
+        } catch (e: Exception) {
+            android.util.Log.e("AddMedicineViewModel", "Error adding medicine", e)
+            false
+        }
+    }
 } 

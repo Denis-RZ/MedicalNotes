@@ -12,7 +12,7 @@
     <!-- Лекарства -->
     <string name="medicine_name">Название лекарства</string>
     <string name="medicine_dosage">Дозировка</string>
-    <string name="medicine_quantity">Количество таблеток</string>
+    <string name="medicine_quantity">Количество</string>
     <string name="medicine_time">Время приема</string>
     <string name="medicine_notes">Заметки</string>
     <string name="save_medicine">Сохранить</string>

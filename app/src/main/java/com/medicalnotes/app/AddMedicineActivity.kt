@@ -30,6 +30,9 @@ class AddMedicineActivity : AppCompatActivity() {
     private var selectedTime: LocalTime = LocalTime.of(8, 0)
     private var selectedFrequency = DosageFrequency.DAILY
     private var selectedTimes = mutableListOf<LocalTime>()
+    private var selectedMedicineType = "Таблетки"
+    private var selectedDays = mutableSetOf<Int>() // Дни недели (1=понедельник, 7=воскресенье)
+    private var selectedRelatedMedicines = mutableListOf<Medicine>()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,16 +64,31 @@ class AddMedicineActivity : AppCompatActivity() {
             showFrequencyDialog()
         }
         
-        // Показываем/скрываем группировку в зависимости от выбранной частоты
+        binding.buttonMedicineType.setOnClickListener {
+            showMedicineTypeDialog()
+        }
+        
+        binding.buttonWeekDays.setOnClickListener {
+            showWeekDaysDialog()
+        }
+        
+        binding.buttonSelectMedicines.setOnClickListener {
+            showMedicineSelectionDialog()
+        }
+        
+        // Показываем/скрываем группировку и дни недели в зависимости от выбранной частоты
         binding.buttonFrequency.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: android.text.Editable?) {
                 val isEveryOtherDay = selectedFrequency == DosageFrequency.EVERY_OTHER_DAY
+                val isCustom = selectedFrequency == DosageFrequency.CUSTOM
+                
                 binding.layoutGrouping.visibility = if (isEveryOtherDay) View.VISIBLE else View.GONE
+                binding.layoutWeekDays.visibility = if (isCustom) View.VISIBLE else View.GONE
                 
                 // Если выбрали "через день", показываем поля группы
-                // Диалог выбора группы будет показан при нажатии кнопки "Изменить группу"
+                // Если выбрали "по расписанию", показываем выбор дней недели
             }
         })
         
@@ -98,6 +116,10 @@ class AddMedicineActivity : AppCompatActivity() {
         
         binding.buttonManageGroups.setOnClickListener {
             startActivity(Intent(this, GroupManagementActivity::class.java))
+        }
+        
+        binding.buttonTimeGroup.setOnClickListener {
+            showTimeGroupDialog()
         }
         
         binding.buttonSave.setOnClickListener {
@@ -202,6 +224,122 @@ class AddMedicineActivity : AppCompatActivity() {
             .show()
     }
     
+    private fun showTimeGroupDialog() {
+        val timeOptions = arrayOf(
+            "08:00 - Утро",
+            "12:00 - Обед", 
+            "18:00 - Вечер",
+            "20:00 - На ночь",
+            "Выбрать другое время"
+        )
+        
+        AlertDialog.Builder(this)
+            .setTitle("Выберите время приема группы")
+            .setItems(timeOptions) { _, which ->
+                when (which) {
+                    0 -> selectedTime = LocalTime.of(8, 0)
+                    1 -> selectedTime = LocalTime.of(12, 0)
+                    2 -> selectedTime = LocalTime.of(18, 0)
+                    3 -> selectedTime = LocalTime.of(20, 0)
+                    4 -> showTimePicker() // Показать time picker для выбора произвольного времени
+                }
+                updateTimeDisplay()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
+    private fun showMedicineTypeDialog() {
+        val medicineTypes = listOf(
+            "Таблетки",
+            "Капсулы", 
+            "Уколы (инъекции)",
+            "Оземпик",
+            "Мунджаро",
+            "Инсулин",
+            "Капли",
+            "Сироп",
+            "Ингаляции",
+            "Мази",
+            "Гели",
+            "Кремы",
+            "Свечи",
+            "Спреи",
+            "Аэрозоли",
+            "Порошки",
+            "Суспензии",
+            "Эмульсии",
+            "Другое"
+        )
+        val currentIndex = medicineTypes.indexOf(selectedMedicineType).coerceAtLeast(0)
+        
+        AlertDialog.Builder(this)
+            .setTitle("Выберите тип лекарства")
+            .setSingleChoiceItems(medicineTypes.toTypedArray(), currentIndex) { _, which ->
+                selectedMedicineType = medicineTypes[which]
+                binding.buttonMedicineType.text = selectedMedicineType
+                
+                // Автоматически отмечаем чекбокс инсулина для соответствующих типов
+                binding.checkBoxInsulin.isChecked = selectedMedicineType == "Инсулин" || 
+                                                   selectedMedicineType == "Оземпик" || 
+                                                   selectedMedicineType == "Мунджаро"
+            }
+            .setPositiveButton("OK", null)
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
+    private fun showWeekDaysDialog() {
+        val weekDays = arrayOf(
+            "Понедельник",
+            "Вторник", 
+            "Среда",
+            "Четверг",
+            "Пятница",
+            "Суббота",
+            "Воскресенье"
+        )
+        
+        val checkedItems = BooleanArray(7) { i ->
+            selectedDays.contains(i + 1) // i+1 потому что дни недели 1-7
+        }
+        
+        AlertDialog.Builder(this)
+            .setTitle("Выберите дни недели")
+            .setMultiChoiceItems(weekDays, checkedItems) { _, which, isChecked ->
+                val dayNumber = which + 1 // 1=понедельник, 7=воскресенье
+                if (isChecked) {
+                    selectedDays.add(dayNumber)
+                } else {
+                    selectedDays.remove(dayNumber)
+                }
+                updateWeekDaysDisplay()
+            }
+            .setPositiveButton("OK", null)
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
+    private fun updateWeekDaysDisplay() {
+        if (selectedDays.isEmpty()) {
+            binding.buttonWeekDays.text = "Выбрать дни"
+        } else {
+            val dayNames = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
+            val selectedDayNames = selectedDays.sorted().map { dayNames[it - 1] }
+            binding.buttonWeekDays.text = "Дни: ${selectedDayNames.joinToString(", ")}"
+        }
+    }
+    
+    private fun showMedicineSelectionDialog() {
+        // Пока что просто показываем сообщение
+        Toast.makeText(this, "Функция выбора связанных лекарств будет добавлена позже", Toast.LENGTH_LONG).show()
+    }
+    
+    private fun updateSelectedMedicinesDisplay() {
+        // Пока что скрываем
+        binding.textSelectedMedicines.visibility = View.GONE
+    }
+    
     private fun showTimePickerForMultiple() {
         CustomTimePickerDialog(this, LocalTime.of(8, 0)) { time ->
             if (!selectedTimes.contains(time)) {
@@ -271,7 +409,11 @@ class AddMedicineActivity : AppCompatActivity() {
         
         // Определяем customDays для пользовательской схемы
         val customDays = if (selectedFrequency == DosageFrequency.CUSTOM) {
-            listOf(1, 2, 3, 4, 5, 6, 7) // Все дни недели по умолчанию
+            if (selectedDays.isNotEmpty()) {
+                selectedDays.sorted().toList()
+            } else {
+                listOf(1, 2, 3, 4, 5, 6, 7) // Все дни недели по умолчанию
+            }
         } else {
             emptyList()
         }
@@ -303,6 +445,7 @@ class AddMedicineActivity : AppCompatActivity() {
             dosage = dosage,
             quantity = quantity,
             remainingQuantity = quantity,
+            medicineType = selectedMedicineType,
             time = selectedTime,
             notes = notes,
             isInsulin = isInsulin,
@@ -316,7 +459,9 @@ class AddMedicineActivity : AppCompatActivity() {
             doseTimes = doseTimes,
             groupId = groupId,
             groupName = groupName,
-            groupOrder = groupOrder
+            groupOrder = groupOrder,
+            relatedMedicineIds = selectedRelatedMedicines.map { it.id },
+            isPartOfGroup = selectedRelatedMedicines.isNotEmpty()
         )
         
         // Логируем созданное лекарство для отладки

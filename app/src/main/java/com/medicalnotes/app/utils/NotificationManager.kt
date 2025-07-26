@@ -414,7 +414,7 @@ class NotificationManager(private val context: Context) {
         activeNotifications[medicine.id] = NotificationAttempt(medicine, 1)
         android.util.Log.d("NotificationManager", "✓ Добавлено в активные уведомления")
         
-        // Планируем повторное уведомление каждые 10 секунд
+        // Планируем повторное уведомление каждые 3 секунды
         scheduler.schedule({
             android.util.Log.d("NotificationManager", "Планируем повторное уведомление для ${medicine.name}")
             // Проверяем, не было ли лекарство принято
@@ -423,7 +423,7 @@ class NotificationManager(private val context: Context) {
             } else {
                 android.util.Log.d("NotificationManager", "Лекарство ${medicine.name} уже принято, повторное уведомление отменено")
             }
-        }, 10, TimeUnit.SECONDS)
+        }, 3, TimeUnit.SECONDS)
         
         android.util.Log.d("NotificationManager", "=== ПОКАЗ УВЕДОМЛЕНИЯ ЗАВЕРШЕН ===")
         

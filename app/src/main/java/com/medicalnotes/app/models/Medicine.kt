@@ -25,6 +25,7 @@ data class Medicine(
     val dosage: String,
     val quantity: Int,
     val remainingQuantity: Int,
+    val medicineType: String = "Таблетки", // Тип лекарства (таблетки, уколы, капли и т.д.)
     val time: LocalTime,
     val notes: String = "",
     val isActive: Boolean = true,
@@ -57,5 +58,27 @@ data class Medicine(
     // Группировка лекарств
     val groupId: Long? = null, // ID группы (null = не в группе)
     val groupName: String = "", // Название группы
-    val groupOrder: Int = 0 // Порядок в группе (1, 2, 3...)
+    val groupOrder: Int = 0, // Порядок в группе (1, 2, 3...)
+    
+    // Связанные лекарства для одновременного приема
+    val relatedMedicineIds: List<Long> = emptyList(), // ID лекарств, принимаемых вместе
+    val isPartOfGroup: Boolean = false, // Является ли частью группы одновременного приема
+    
+    // Группировка по времени приема
+    val timeGroupId: Long? = null, // ID группы времени (лекарства, принимаемые одновременно)
+    val timeGroupName: String = "", // Название группы времени (например, "Завтрак", "Обед")
+    val timeGroupOrder: Int = 0 // Порядок в группе времени
 ) 
+
+// Новая модель для групп времени приема
+data class TimeGroup(
+    val id: Long = 0,
+    val name: String, // "Завтрак", "Обед", "Ужин", "Перед сном"
+    val time: LocalTime,
+    val description: String = "",
+    val isActive: Boolean = true,
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
+) 
+
+ 

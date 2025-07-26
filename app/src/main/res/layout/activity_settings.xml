@@ -197,7 +197,9 @@
                     android:id="@+id/buttonCreateBackup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Создать резервную копию"
+                    android:text="Создать копию"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_marginBottom="@dimen/margin_small" />
 
@@ -205,7 +207,9 @@
                     android:id="@+id/buttonRestoreBackup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Восстановить из копии"
+                    android:text="Восстановить"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_marginBottom="@dimen/margin_small" />
 
@@ -213,7 +217,9 @@
                     android:id="@+id/buttonBackupList"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Список резервных копий"
+                    android:text="Список копий"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
 
             </LinearLayout>
@@ -244,7 +250,9 @@
                     android:id="@+id/buttonCustomizeButtons"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Настройка кнопок"
+                    android:text="Настроить кнопки"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_marginBottom="@dimen/margin_small" />
 
@@ -252,7 +260,9 @@
                     android:id="@+id/buttonNotificationManager"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Менеджер уведомлений"
+                    android:text="Уведомления"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_marginBottom="@dimen/margin_small" />
 
@@ -291,7 +301,9 @@
                     android:id="@+id/buttonDataStatistics"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Статистика данных"
+                    android:text="Статистика"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_marginBottom="@dimen/margin_small" />
 

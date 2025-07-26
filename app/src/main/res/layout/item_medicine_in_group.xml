@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/padding_small"
+    android:background="@drawable/medicine_item_background"
+    android:layout_marginBottom="2dp"
+    android:gravity="center_vertical">
+
+    <!-- Иконка типа лекарства -->
+    <ImageView
+        android:id="@+id/imageMedicineType"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@android:drawable/ic_menu_help"
+        android:tint="@color/primary"
+        android:layout_marginEnd="@dimen/margin_small" />
+
+    <!-- Информация о лекарстве -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textMedicineName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Название лекарства"
+            android:textSize="@dimen/text_size_medium"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            tools:text="Аземпик" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/textMedicineDosage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1 мл"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/dark_gray"
+                tools:text="1 мл" />
+
+            <TextView
+                android:id="@+id/textMedicineQuantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5 уколов"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/dark_gray"
+                tools:text="5 уколов" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Статус принятия -->
+    <ImageView
+        android:id="@+id/imageTakenStatus"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@android:drawable/ic_menu_send"
+        android:tint="@color/medical_green"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout> 

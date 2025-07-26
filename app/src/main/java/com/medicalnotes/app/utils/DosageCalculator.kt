@@ -14,22 +14,34 @@ object DosageCalculator {
     fun shouldTakeMedicine(medicine: Medicine, date: LocalDate): Boolean {
         val startDate = LocalDate.ofEpochDay(medicine.startDate / (24 * 60 * 60 * 1000))
         
+        android.util.Log.d("DosageCalculator", "=== ПРОВЕРКА ЛЕКАРСТВА ===")
+        android.util.Log.d("DosageCalculator", "Лекарство: ${medicine.name}")
+        android.util.Log.d("DosageCalculator", "  - Дата: $date")
+        android.util.Log.d("DosageCalculator", "  - Дата начала: $startDate")
+        android.util.Log.d("DosageCalculator", "  - Группа ID: ${medicine.groupId}")
+        android.util.Log.d("DosageCalculator", "  - Частота: ${medicine.frequency}")
+        
         // Если дата раньше начала приема
         if (date.isBefore(startDate)) {
+            android.util.Log.d("DosageCalculator", "  - Результат: false (дата раньше начала)")
             return false
         }
         
         // Если лекарство в группе, используем логику группы
         if (medicine.groupId != null) {
+            android.util.Log.d("DosageCalculator", "  - Используем групповую логику")
             return shouldTakeMedicineInGroup(medicine, date)
         }
         
         // Обычная логика для лекарств не в группе
-        return when (medicine.frequency) {
+        val result = when (medicine.frequency) {
             DosageFrequency.DAILY -> true
             DosageFrequency.EVERY_OTHER_DAY -> {
                 val daysSinceStart = ChronoUnit.DAYS.between(startDate, date)
-                daysSinceStart % 2L == 0L
+                val shouldTake = daysSinceStart % 2L == 0L
+                android.util.Log.d("DosageCalculator", "  - Дней с начала: $daysSinceStart")
+                android.util.Log.d("DosageCalculator", "  - Через день: $shouldTake")
+                shouldTake
             }
             DosageFrequency.TWICE_A_WEEK -> {
                 val daysSinceStart = ChronoUnit.DAYS.between(startDate, date)
@@ -48,6 +60,9 @@ object DosageCalculator {
                 medicine.customDays.contains(dayOfWeek)
             }
         }
+        
+        android.util.Log.d("DosageCalculator", "  - Результат: $result")
+        return result
     }
     
 
@@ -284,16 +299,44 @@ object DosageCalculator {
         val startDate = LocalDate.ofEpochDay(medicine.startDate / (24 * 60 * 60 * 1000))
         val daysSinceStart = ChronoUnit.DAYS.between(startDate, date)
         
+        android.util.Log.d("DosageCalculator", "=== ГРУППОВАЯ ЛОГИКА ===")
+        android.util.Log.d("DosageCalculator", "Лекарство: ${medicine.name}")
+        android.util.Log.d("DosageCalculator", "  - Группа ID: ${medicine.groupId}")
+        android.util.Log.d("DosageCalculator", "  - Порядок в группе: ${medicine.groupOrder}")
+        android.util.Log.d("DosageCalculator", "  - Частота: ${medicine.frequency}")
+        android.util.Log.d("DosageCalculator", "  - Дней с начала: $daysSinceStart")
+        
         // Логика группы "через день"
         if (medicine.frequency == DosageFrequency.EVERY_OTHER_DAY) {
             // Определяем, какой день группы сегодня
             val groupDay = (daysSinceStart % 2).toInt()
-            // Лекарство активно, если его порядок в группе совпадает с днем группы
-            return groupDay == (medicine.groupOrder - 1)
+            val shouldTake = groupDay == (medicine.groupOrder - 1)
+            android.util.Log.d("DosageCalculator", "  - День группы: $groupDay")
+            android.util.Log.d("DosageCalculator", "  - Нужно принимать: $shouldTake")
+            return shouldTake
         }
         
-        // Для других частот можно добавить аналогичную логику
-        return false
+        // Для других частот используем обычную логику
+        val result = when (medicine.frequency) {
+            DosageFrequency.DAILY -> true
+            DosageFrequency.TWICE_A_WEEK -> {
+                daysSinceStart % 3L == 0L || daysSinceStart % 3L == 1L
+            }
+            DosageFrequency.THREE_TIMES_A_WEEK -> {
+                daysSinceStart % 2L == 0L
+            }
+            DosageFrequency.WEEKLY -> {
+                daysSinceStart % 7L == 0L
+            }
+            DosageFrequency.CUSTOM -> {
+                val dayOfWeek = date.dayOfWeek.value
+                medicine.customDays.contains(dayOfWeek)
+            }
+            else -> false
+        }
+        
+        android.util.Log.d("DosageCalculator", "  - Результат для других частот: $result")
+        return result
     }
 }
 

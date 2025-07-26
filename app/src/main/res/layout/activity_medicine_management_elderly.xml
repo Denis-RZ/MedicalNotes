@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="@color/background"
-    tools:context=".MedicineManagementActivity">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/padding_large">
+        android:padding="@dimen/margin_medium">
 
         <!-- Заголовок -->
         <TextView
@@ -25,20 +22,6 @@
             android:gravity="center"
             android:layout_marginBottom="@dimen/margin_large" />
 
-        <!-- Кнопка SOS -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonSOS"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height_extra_large"
-            android:text="КНОПКА SOS"
-            android:textSize="@dimen/text_size_large"
-            android:textStyle="bold"
-            android:backgroundTint="@color/sos_primary"
-            android:textColor="@color/white"
-            android:layout_marginBottom="@dimen/margin_large"
-            app:cornerRadius="12dp"
-            app:elevation="8dp" />
-
         <!-- Быстрые действия -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -47,29 +30,14 @@
             android:layout_marginBottom="@dimen/margin_large">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonCallSon"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/button_height_large"
-                android:layout_weight="1"
-                android:text="СЫН"
-                android:textSize="@dimen/text_size_medium"
-                android:textStyle="bold"
-                android:backgroundTint="@color/button_primary"
-                android:textColor="@color/white"
-                android:layout_marginEnd="@dimen/margin_small"
-                app:cornerRadius="8dp" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonJournal"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="@dimen/button_height_large"
-                android:layout_weight="1"
                 android:text="ЖУРНАЛ"
                 android:textSize="@dimen/text_size_medium"
                 android:textStyle="bold"
                 android:backgroundTint="@color/button_secondary"
                 android:textColor="@color/white"
-                android:layout_marginStart="@dimen/margin_small"
                 app:cornerRadius="8dp" />
         </LinearLayout>
 
@@ -77,7 +45,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="💊 МОИ ЛЕКАРСТВА"
+            android:text="МОИ ЛЕКАРСТВА"
             android:textSize="@dimen/text_size_large"
             android:textStyle="bold"
             android:textColor="@color/primary_text"
@@ -101,7 +69,7 @@
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_height"
                 android:layout_weight="1"
-                android:text="➕ ДОБАВИТЬ"
+                android:text="ДОБАВИТЬ"
                 android:textSize="@dimen/text_size_medium"
                 android:backgroundTint="@color/button_success"
                 android:textColor="@color/white"
@@ -135,7 +103,18 @@
             android:id="@+id/buttonSettings"
             android:layout_width="match_parent"
             android:layout_height="@dimen/button_height"
-            android:text="🔧 НАСТРОЙКИ ПРИЛОЖЕНИЯ"
+            android:text="НАСТРОЙКИ ПРИЛОЖЕНИЯ"
+            android:textSize="@dimen/text_size_medium"
+            android:backgroundTint="@color/button_primary"
+            android:textColor="@color/white"
+            android:layout_marginBottom="@dimen/margin_small"
+            app:cornerRadius="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonNotificationSettings"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:text="НАСТРОЙКИ УВЕДОМЛЕНИЙ"
             android:textSize="@dimen/text_size_medium"
             android:backgroundTint="@color/button_secondary"
             android:textColor="@color/white"
@@ -143,25 +122,14 @@
             app:cornerRadius="8dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonNotifications"
+            android:id="@+id/buttonGroupManagement"
             android:layout_width="match_parent"
             android:layout_height="@dimen/button_height"
-            android:text="🔔 НАСТРОЙКИ УВЕДОМЛЕНИЙ"
+            android:text="УПРАВЛЕНИЕ ГРУППАМИ"
             android:textSize="@dimen/text_size_medium"
             android:backgroundTint="@color/button_secondary"
             android:textColor="@color/white"
             android:layout_marginBottom="@dimen/margin_small"
-            app:cornerRadius="8dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonBackup"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:text="💾 СОХРАНИТЬ ДАННЫЕ"
-            android:textSize="@dimen/text_size_medium"
-            android:backgroundTint="@color/button_secondary"
-            android:textColor="@color/white"
-            android:layout_marginBottom="@dimen/margin_large"
             app:cornerRadius="8dp" />
 
         <!-- Кнопка возврата -->
@@ -169,10 +137,11 @@
             android:id="@+id/buttonBack"
             android:layout_width="match_parent"
             android:layout_height="@dimen/button_height"
-            android:text="🔙 ВЕРНУТЬСЯ НАЗАД"
+            android:text="НАЗАД"
             android:textSize="@dimen/text_size_medium"
-            android:backgroundTint="@color/button_secondary"
+            android:backgroundTint="@color/medical_gray"
             android:textColor="@color/white"
+            android:layout_marginTop="@dimen/margin_large"
             app:cornerRadius="8dp" />
 
     </LinearLayout>

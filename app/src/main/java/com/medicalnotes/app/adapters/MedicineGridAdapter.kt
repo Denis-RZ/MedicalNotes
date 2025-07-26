@@ -49,14 +49,32 @@ class MedicineGridAdapter(
                 
                 // Основная информация
                 textMedicineName.text = updatedMedicine.name
-                textMedicineDosage.text = updatedMedicine.dosage
                 
-                // Схема приема
+                // Дозировка с схемой приема
                 val dosageDescription = DosageCalculator.getDosageDescription(updatedMedicine)
-                textMedicineSchedule.text = dosageDescription
+                val groupInfo = if (updatedMedicine.groupName.isNotEmpty()) {
+                    " (${updatedMedicine.groupName}, №${updatedMedicine.groupOrder})"
+                } else {
+                    ""
+                }
+                val fullDosageText = if (updatedMedicine.dosage.isNotEmpty()) {
+                    "$dosageDescription - ${updatedMedicine.dosage}$groupInfo"
+                } else {
+                    dosageDescription + groupInfo
+                }
+                textMedicineDosage.text = fullDosageText
+                
+                // Время приема
+                val timeText = if (updatedMedicine.multipleDoses && updatedMedicine.doseTimes.isNotEmpty()) {
+                    val times = updatedMedicine.doseTimes.map { it.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) }
+                    times.joinToString(", ")
+                } else {
+                    updatedMedicine.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                }
+                textMedicineSchedule.text = timeText
                 
                 // Количество
-                textMedicineQuantity.text = "${updatedMedicine.remainingQuantity} таблеток"
+                textMedicineQuantity.text = "${updatedMedicine.remainingQuantity} ${updatedMedicine.medicineType.lowercase()}"
                 
                 // Статус в зависимости от состояния
                 when (status) {

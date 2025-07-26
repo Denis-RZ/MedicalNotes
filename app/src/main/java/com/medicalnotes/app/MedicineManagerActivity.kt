@@ -118,10 +118,21 @@ class MedicineManagerActivity : AppCompatActivity() {
     }
     
     private fun editMedicine(medicine: Medicine) {
-        android.util.Log.d("MedicineManager", "Edit medicine clicked: ${medicine.name}, id: ${medicine.id}")
+        android.util.Log.d("MedicineManager", "Edit medicine clicked: ${medicine.name}, id: ${medicine.id}, id type: ${medicine.id::class.java.simpleName}")
+        
+        // Проверяем, что ID не равен 0 или отрицательному значению
+        if (medicine.id <= 0) {
+            android.util.Log.e("MedicineManager", "Invalid medicine ID: ${medicine.id}")
+            Toast.makeText(this, "Ошибка: неверный ID лекарства", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
         val intent = Intent(this, EditMedicineActivity::class.java).apply {
             putExtra("medicine_id", medicine.id)
         }
+        
+        android.util.Log.d("MedicineManager", "Starting EditMedicineActivity with intent extras: ${intent.extras}")
+        
         try {
             startActivity(intent)
             android.util.Log.d("MedicineManager", "EditMedicineActivity started successfully")

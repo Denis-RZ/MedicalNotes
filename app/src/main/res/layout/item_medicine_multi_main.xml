@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardMedicineMulti"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/margin_small"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation"
+    app:cardUseCompatPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_medium">
+
+        <!-- Заголовок с временем и количеством -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/margin_small"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_view"
+                android:tint="@color/primary"
+                android:layout_marginEnd="@dimen/margin_small" />
+
+            <TextView
+                android:id="@+id/textMedicineTime"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="18:40"
+                android:textSize="@dimen/text_size_large"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                tools:text="18:40" />
+
+            <TextView
+                android:id="@+id/textMedicineCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3 препарата"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/white"
+                android:background="@drawable/count_background"
+                android:padding="@dimen/padding_small"
+                tools:text="3 препарата" />
+
+        </LinearLayout>
+
+        <!-- Разделитель -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/light_gray"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <!-- Список лекарств с разделителями -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewMedicines"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_small"
+            android:nestedScrollingEnabled="false" />
+
+        <!-- Статус группы -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/margin_small"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/textStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Готово к приему"
+                android:textSize="@dimen/text_size_medium"
+                android:textColor="@color/dark_gray"
+                tools:text="Готово к приему" />
+
+            <TextView
+                android:id="@+id/textMissedStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ПРОСРОЧЕНО"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:background="@drawable/missed_background"
+                android:padding="@dimen/padding_small"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <!-- Кнопка принятия всех лекарств -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonTakeAll"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_large"
+            android:text="ПРИНЯТЬ ВСЕ"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold"
+            android:backgroundTint="@color/button_success"
+            android:textColor="@color/white"
+            app:cornerRadius="8dp"
+            app:elevation="4dp" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView> 

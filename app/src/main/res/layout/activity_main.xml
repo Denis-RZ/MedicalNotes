@@ -38,21 +38,11 @@
         android:id="@+id/buttonManageMedicines"
         android:layout_width="match_parent"
         android:layout_height="@dimen/button_height"
-        android:text="УПРАВЛЕНИЕ ЛЕКАРСТВАМИ"
+        android:text="ЛЕКАРСТВА"
         android:textSize="@dimen/text_size_medium"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:backgroundTint="@color/medical_blue"
-        android:textColor="@color/white"
-        android:layout_marginBottom="@dimen/margin_medium"
-        app:cornerRadius="8dp" />
-
-    <!-- Кнопка остановки вибрации -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonStopVibration"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height"
-        android:text="ОСТАНОВИТЬ ВИБРАЦИЮ"
-        android:textSize="@dimen/text_size_medium"
-        android:backgroundTint="@color/medical_red"
         android:textColor="@color/white"
         android:layout_marginBottom="@dimen/margin_medium"
         app:cornerRadius="8dp" />
@@ -62,50 +52,114 @@
         android:id="@+id/buttonToggleLayout"
         android:layout_width="match_parent"
         android:layout_height="@dimen/button_height"
-        android:text="ВКЛЮЧИТЬ РЕЖИМ ДЛЯ ПОЖИЛЫХ"
+        android:text="РЕЖИМ ДЛЯ ПОЖИЛЫХ"
         android:textSize="@dimen/text_size_medium"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:backgroundTint="@color/medical_green"
         android:textColor="@color/white"
         android:layout_marginBottom="@dimen/margin_medium"
         app:cornerRadius="8dp" />
 
-    <!-- Кнопка очистки логов -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonClearLogs"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:text="ОЧИСТИТЬ ЛОГИ"
-        android:textSize="12sp"
-        android:backgroundTint="@color/medical_gray"
-        android:textColor="@color/white"
-        android:layout_marginBottom="@dimen/margin_small"
-        app:cornerRadius="8dp" />
-
-    <!-- Логи -->
-    <TextView
+    <!-- Кнопки управления -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ЛОГИ СИСТЕМЫ:"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:textColor="@color/medical_blue"
-        android:layout_marginBottom="@dimen/margin_small" />
+        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/margin_small">
 
-    <ScrollView
+        <!-- Кнопка показа/скрытия логов -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonToggleLogs"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="ЛОГИ"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:backgroundTint="@color/medical_gray"
+            android:textColor="@color/white"
+            app:cornerRadius="8dp" />
+
+        <!-- Кнопка экспорта данных -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonExportData"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="ЭКСПОРТ"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:backgroundTint="@color/medical_gray"
+            android:textColor="@color/white"
+            android:layout_marginStart="@dimen/margin_small"
+            app:cornerRadius="8dp" />
+
+        <!-- Кнопка тестирования групп -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonTestGroups"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="ТЕСТ ГРУПП"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:backgroundTint="@color/medical_blue"
+            android:textColor="@color/white"
+            android:layout_marginStart="@dimen/margin_small"
+            app:cornerRadius="8dp" />
+
+    </LinearLayout>
+
+    <!-- Логи (скрыты по умолчанию) -->
+    <LinearLayout
+        android:id="@+id/layoutLogs"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:background="@android:color/black"
-        android:padding="8dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <TextView
-            android:id="@+id/textViewLogs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@android:color/white"
-            android:textSize="10sp"
-            android:fontFamily="monospace"
-            android:text="Логи загрузки...\n" />
+            android:text="ЛОГИ СИСТЕМЫ:"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/medical_blue"
+            android:layout_marginBottom="@dimen/margin_small" />
 
-    </ScrollView>
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:background="@android:color/black"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/textViewLogs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:fontFamily="monospace"
+                android:text="Логи загрузки...\n" />
+
+        </ScrollView>
+
+        <!-- Кнопка очистки логов -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonClearLogs"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:text="ОЧИСТИТЬ ЛОГИ"
+            android:textSize="10sp"
+            android:backgroundTint="@color/medical_red"
+            android:textColor="@color/white"
+            android:layout_marginTop="@dimen/margin_small"
+            app:cornerRadius="6dp" />
+
+    </LinearLayout>
 
 </LinearLayout> 

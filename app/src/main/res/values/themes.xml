@@ -1,47 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.MedicalNotes" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.MedicalNotes" parent="Theme.Material3.DayNight">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorPrimaryContainer">@color/primary_light</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimaryContainer">@color/primary_dark</item>
+        
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/accent</item>
-        <item name="colorSecondaryVariant">@color/primary_dark</item>
-        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorSecondaryContainer">@color/accent_light</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnSecondaryContainer">@color/accent_dark</item>
+        
+        <!-- Surface colors -->
+        <item name="colorSurface">@color/background</item>
+        <item name="colorSurfaceVariant">@color/background_secondary</item>
+        <item name="colorOnSurface">@color/primary_text</item>
+        <item name="colorOnSurfaceVariant">@color/secondary_text</item>
+        
+        <!-- Outline color -->
+        <item name="colorOutline">@color/divider</item>
+        
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        
+        <!-- Typography -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Material3.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Material3.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Material3.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Material3.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Material3.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Material3.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Material3.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Material3.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Material3.BodySmall</item>
+        
         <!-- Customize your theme here. -->
         <item name="android:textSize">18sp</item>
         <item name="android:buttonStyle">@style/Widget.MedicalNotes.Button</item>
     </style>
 
-    <!-- Стиль для больших кнопок -->
-    <style name="Widget.MedicalNotes.Button" parent="Widget.MaterialComponents.Button">
-        <item name="android:minHeight">64dp</item>
-        <item name="android:textSize">18sp</item>
+    <!-- Material 3 Button Styles -->
+    <style name="Widget.MedicalNotes.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodyLarge</item>
         <item name="android:padding">16dp</item>
-        <item name="cornerRadius">8dp</item>
+        <item name="cornerRadius">28dp</item>
+        <item name="android:letterSpacing">0.01</item>
     </style>
 
-    <!-- Стиль для очень больших кнопок -->
+    <!-- Large Button Style -->
     <style name="Widget.MedicalNotes.Button.Large" parent="Widget.MedicalNotes.Button">
-        <item name="android:minHeight">80dp</item>
-        <item name="android:textSize">20sp</item>
+        <item name="android:minHeight">64dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.TitleMedium</item>
         <item name="android:padding">20dp</item>
+        <item name="cornerRadius">32dp</item>
     </style>
 
-    <!-- Стиль для экстра больших кнопок -->
+    <!-- Extra Large Button Style -->
     <style name="Widget.MedicalNotes.Button.ExtraLarge" parent="Widget.MedicalNotes.Button">
-        <item name="android:minHeight">96dp</item>
-        <item name="android:textSize">22sp</item>
+        <item name="android:minHeight">80dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.TitleLarge</item>
         <item name="android:padding">24dp</item>
+        <item name="cornerRadius">40dp</item>
     </style>
 
-    <!-- Стиль для кнопок высокого контраста -->
+    <!-- High Contrast Button Style -->
     <style name="Widget.MedicalNotes.Button.HighContrast" parent="Widget.MedicalNotes.Button">
         <item name="backgroundTint">@color/black</item>
         <item name="android:textColor">@color/white</item>
+        <item name="iconTint">@color/white</item>
+    </style>
+
+    <!-- Card Styles -->
+    <style name="Widget.MedicalNotes.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">?attr/colorOutline</item>
+    </style>
+
+    <!-- Text Input Styles -->
+    <style name="Widget.MedicalNotes.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">?attr/colorPrimary</item>
+        <item name="hintTextColor">?attr/colorPrimary</item>
+        <item name="startIconTint">?attr/colorPrimary</item>
+        <item name="endIconTint">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+
+
+    <!-- Toolbar Styles -->
+    <style name="Widget.MedicalNotes.Toolbar" parent="Widget.MaterialComponents.Toolbar">
+        <item name="titleTextAppearance">@style/TextAppearance.MaterialComponents.Headline6</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="navigationIconTint">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Theme for activities with custom toolbar (no action bar) -->
+    <style name="Theme.MedicalNotes.NoActionBar" parent="Theme.Material3.DayNight">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryContainer">@color/primary_light</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimaryContainer">@color/primary_dark</item>
+        
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryContainer">@color/accent_light</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnSecondaryContainer">@color/accent_dark</item>
+        
+        <!-- Surface colors -->
+        <item name="colorSurface">@color/background</item>
+        <item name="colorSurfaceVariant">@color/background_secondary</item>
+        <item name="colorOnSurface">@color/primary_text</item>
+        <item name="colorOnSurfaceVariant">@color/secondary_text</item>
+        
+        <!-- Outline color -->
+        <item name="colorOutline">@color/divider</item>
+        
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        
+        <!-- Disable action bar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        
+        <!-- Typography -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Material3.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Material3.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Material3.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Material3.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Material3.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Material3.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Material3.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Material3.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Material3.BodySmall</item>
+        
+        <!-- Customize your theme here. -->
+        <item name="android:textSize">18sp</item>
+        <item name="android:buttonStyle">@style/Widget.MedicalNotes.Button</item>
     </style>
 </resources> 

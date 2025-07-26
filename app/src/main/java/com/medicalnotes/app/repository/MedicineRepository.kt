@@ -36,8 +36,14 @@ class MedicineRepository(context: Context) {
         return@withContext dataManager.updateMedicine(medicine)
     }
     
-    suspend fun deleteMedicine(medicineId: Long) = withContext(Dispatchers.IO) {
-        dataManager.deleteMedicine(medicineId)
+    suspend fun deleteMedicine(medicineId: Long): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            dataManager.deleteMedicine(medicineId)
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("MedicineRepository", "Error deleting medicine", e)
+            false
+        }
     }
     
     suspend fun markMedicineAsTaken(medicineId: Long) = withContext(Dispatchers.IO) {

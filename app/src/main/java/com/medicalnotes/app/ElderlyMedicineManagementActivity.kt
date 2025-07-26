@@ -71,16 +71,6 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
     }
     
     private fun setupListeners() {
-        // Кнопка SOS
-        binding.buttonSOS.setOnClickListener {
-            showSOSDialog()
-        }
-        
-        // Кнопка звонка сыну
-        binding.buttonCallSon.setOnClickListener {
-            callSon()
-        }
-        
         // Кнопка журнала
         binding.buttonJournal.setOnClickListener {
             showJournalDialog()
@@ -102,13 +92,13 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
         }
         
         // Кнопка настроек уведомлений
-        binding.buttonNotifications.setOnClickListener {
+        binding.buttonNotificationSettings.setOnClickListener {
             startActivity(Intent(this, NotificationManagerActivity::class.java))
         }
         
-        // Кнопка резервного копирования
-        binding.buttonBackup.setOnClickListener {
-            showBackupDialog()
+        // Кнопка управления группами
+        binding.buttonGroupManagement.setOnClickListener {
+            startActivity(Intent(this, GroupManagementActivity::class.java))
         }
         
         // Кнопка возврата
@@ -128,40 +118,7 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
         // Это будет реализовано позже
     }
     
-    private fun showSOSDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("КНОПКА SOS")
-            .setMessage("Что вы хотите сделать?")
-            .setPositiveButton("ПОЗВОНИТЬ СЫНУ") { _, _ ->
-                callSon()
-            }
-            .setNegativeButton("ВЫЗВАТЬ СКОРУЮ") { _, _ ->
-                callAmbulance()
-            }
-            .setNeutralButton("ОТМЕНА", null)
-            .show()
-    }
-    
-    private fun callSon() {
-        try {
-            // Здесь должен быть номер телефона сына
-            val phoneNumber = "tel:+79001234567" // Замените на реальный номер
-            val intent = Intent(Intent.ACTION_DIAL, Uri.parse(phoneNumber))
-            startActivity(intent)
-        } catch (e: Exception) {
-            showErrorDialog("Ошибка звонка", "Не удалось совершить звонок: ${e.message}")
-        }
-    }
-    
-    private fun callAmbulance() {
-        try {
-            val phoneNumber = "tel:103" // Номер скорой помощи
-            val intent = Intent(Intent.ACTION_DIAL, Uri.parse(phoneNumber))
-            startActivity(intent)
-        } catch (e: Exception) {
-            showErrorDialog("Ошибка звонка", "Не удалось совершить звонок: ${e.message}")
-        }
-    }
+
     
     private fun showJournalDialog() {
         AlertDialog.Builder(this)
@@ -217,13 +174,7 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
         }
     }
     
-    private fun showBackupDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("💾 СОХРАНИТЬ ДАННЫЕ")
-            .setMessage("Функция резервного копирования будет добавлена в следующей версии приложения.")
-            .setPositiveButton("ПОНЯТНО", null)
-            .show()
-    }
+
     
     private fun showErrorDialog(title: String, message: String) {
         AlertDialog.Builder(this)

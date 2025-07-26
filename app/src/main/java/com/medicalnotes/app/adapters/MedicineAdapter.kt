@@ -46,20 +46,33 @@ class MedicineAdapter(
                 textMedicineName.text = medicine.name
                 textMedicineDosage.text = medicine.dosage
                 
-                // Получаем статус лекарства
-                val medicineStatus = DosageCalculator.getMedicineStatus(medicine)
-                val nextDoseTime = DosageCalculator.getNextDoseTime(medicine)
-                
-                // Отображаем схему приема с учетом статуса
+                // Добавляем схему приема к дозировке
                 val dosageDescription = DosageCalculator.getDosageDescription(medicine)
                 val groupInfo = if (medicine.groupName.isNotEmpty()) {
                     " (${medicine.groupName}, №${medicine.groupOrder})"
                 } else {
                     ""
                 }
-                textMedicineTime.text = dosageDescription + groupInfo
+                val fullDosageText = if (medicine.dosage.isNotEmpty()) {
+                    "$dosageDescription - ${medicine.dosage}$groupInfo"
+                } else {
+                    dosageDescription + groupInfo
+                }
+                textMedicineDosage.text = fullDosageText
                 
-                textMedicineQuantity.text = "Осталось: ${medicine.remainingQuantity} таблеток"
+                // Получаем статус лекарства
+                val medicineStatus = DosageCalculator.getMedicineStatus(medicine)
+                
+                // Отображаем время приема
+                val timeText = if (medicine.multipleDoses && medicine.doseTimes.isNotEmpty()) {
+                    val times = medicine.doseTimes.map { it.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) }
+                    times.joinToString(", ")
+                } else {
+                    medicine.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                }
+                textMedicineTime.text = timeText
+                
+                textMedicineQuantity.text = "Осталось: ${medicine.remainingQuantity} ${medicine.medicineType.lowercase()}"
                 
                 // Показываем статус в зависимости от состояния лекарства
                 when (medicineStatus) {

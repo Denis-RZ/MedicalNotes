@@ -36,14 +36,30 @@ class ElderlyMedicineAdapter(
             binding.textMedicineName.text = medicine.name
 
             // Время приема
-            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-            binding.textMedicineTime.text = "⏰ ${medicine.time.format(timeFormatter)}"
+            val timeText = if (medicine.multipleDoses && medicine.doseTimes.isNotEmpty()) {
+                val times = medicine.doseTimes.map { it.format(DateTimeFormatter.ofPattern("HH:mm")) }
+                "⏰ ${times.joinToString(", ")}"
+            } else {
+                "⏰ ${medicine.time.format(DateTimeFormatter.ofPattern("HH:mm"))}"
+            }
+            binding.textMedicineTime.text = timeText
 
-            // Дозировка
-            binding.textMedicineDosage.text = medicine.dosage
+            // Дозировка с схемой приема
+            val dosageDescription = com.medicalnotes.app.utils.DosageCalculator.getDosageDescription(medicine)
+            val groupInfo = if (medicine.groupName.isNotEmpty()) {
+                " (${medicine.groupName}, №${medicine.groupOrder})"
+            } else {
+                ""
+            }
+            val fullDosageText = if (medicine.dosage.isNotEmpty()) {
+                "$dosageDescription - ${medicine.dosage}$groupInfo"
+            } else {
+                dosageDescription + groupInfo
+            }
+            binding.textMedicineDosage.text = fullDosageText
 
             // Количество таблеток
-            binding.textMedicineQuantity.text = "📦 Осталось: ${medicine.remainingQuantity} таблеток"
+            binding.textMedicineQuantity.text = "📦 Осталось: ${medicine.remainingQuantity} ${medicine.medicineType.lowercase()}"
 
             // Заметки (показываем только если есть)
             if (medicine.notes.isNotEmpty()) {
