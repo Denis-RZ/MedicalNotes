@@ -125,13 +125,15 @@ class NotificationManager(private val context: Context) {
                 description = "Уведомления о просроченных лекарствах"
                 enableVibration(true)
                 enableLights(true)
-                vibrationPattern = longArrayOf(0, 500, 200, 500, 200, 500)
+                vibrationPattern = longArrayOf(0, 2000, 500, 2000, 500, 2000, 500, 2000, 500, 2000)
                 setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
                         .build()
                 )
+                setBypassDnd(true) // Обходит режим "Не беспокоить"
             }
             
             notificationManager.createNotificationChannels(listOf(medicineChannel, lowStockChannel, emergencyChannel, overdueChannel))
@@ -398,36 +400,67 @@ class NotificationManager(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         
+        // Усиленная вибрация для просроченных лекарств
+        val vibrationPattern = longArrayOf(0, 2000, 500, 2000, 500, 2000, 500, 2000, 500, 2000, 500, 2000)
+        
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_OVERDUE)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("ПРОСРОЧЕНО! Выпейте препарат")
+            .setContentTitle("🚨 ПРОСРОЧЕНО! Выпейте препарат СРОЧНО!")
             .setContentText("${medicine.name} - время приема прошло!")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText("🚨 ВНИМАНИЕ! Лекарство ${medicine.name} (${medicine.dosage}) просрочено!\n\n⏰ Время приема уже прошло!\n\n💊 Пожалуйста, примите лекарство немедленно!"))
+            .setPriority(NotificationCompat.PRIORITY_MAX)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
-            .addAction(R.drawable.ic_launcher_foreground, "Выпить препарат", takeMedicinePendingIntent)
+            .addAction(R.drawable.ic_launcher_foreground, "💊 ВЫПИТЬ ПРЕПАРАТ", takeMedicinePendingIntent)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setVibrate(vibrationPattern)
+            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+            .setLights(0xFF0000, 2000, 1000) // Красный свет
             .setOngoing(true)
             .build()
         
         notificationManager.notify((medicine.id + 200000).toInt(), notification)
         android.util.Log.d("NotificationManager", "✓ Уведомление показано (ID: ${(medicine.id + 200000).toInt()})")
         
+        // Дополнительная вибрация через Vibrator
+        if (vibrator.hasVibrator()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val effect = VibrationEffect.createWaveform(vibrationPattern, 0)
+                vibrator.vibrate(effect)
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(vibrationPattern, -1)
+            }
+        }
+        
         // Добавляем в активные уведомления
         activeNotifications[medicine.id] = NotificationAttempt(medicine, 1)
         android.util.Log.d("NotificationManager", "✓ Добавлено в активные уведомления")
         
-        // Планируем повторное уведомление каждые 3 секунды
+        // Планируем повторное уведомление каждые 5 секунд с усиленным звуком
         scheduler.schedule({
             android.util.Log.d("NotificationManager", "Планируем повторное уведомление для ${medicine.name}")
             // Проверяем, не было ли лекарство принято
             if (activeNotifications.containsKey(medicine.id)) {
+                // Повторяем звук и вибрацию
+                if (vibrator.hasVibrator()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val effect = VibrationEffect.createWaveform(vibrationPattern, 0)
+                        vibrator.vibrate(effect)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator.vibrate(vibrationPattern, -1)
+                    }
+                }
+                
+                // Показываем уведомление снова
                 showOverdueMedicineNotification(medicine)
             } else {
                 android.util.Log.d("NotificationManager", "Лекарство ${medicine.name} уже принято, повторное уведомление отменено")
             }
-        }, 3, TimeUnit.SECONDS)
+        }, 5, TimeUnit.SECONDS)
         
         android.util.Log.d("NotificationManager", "=== ПОКАЗ УВЕДОМЛЕНИЯ ЗАВЕРШЕН ===")
         

@@ -50,6 +50,10 @@ class SettingsActivity : AppCompatActivity() {
         }
         
         // Кнопки
+        binding.buttonDataBackup.setOnClickListener {
+            startActivity(Intent(this, DataBackupActivity::class.java))
+        }
+        
         binding.buttonCustomizeButtons.setOnClickListener {
             startActivity(Intent(this, ButtonCustomizationActivity::class.java))
         }

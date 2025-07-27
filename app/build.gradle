@@ -11,23 +11,39 @@ android {
         applicationId "com.medicalnotes.app"
         minSdk 26
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('medicalnotes.keystore')
+            storePassword 'medicalnotes123'
+            keyAlias 'medicalnotes'
+            keyPassword 'medicalnotes123'
+        }
+        debug {
+            storeFile file('medicalnotes.keystore')
+            storePassword 'medicalnotes123'
+            keyAlias 'medicalnotes'
+            keyPassword 'medicalnotes123'
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
             shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+            signingConfig signingConfigs.release
         }
         debug {
             minifyEnabled false
             shrinkResources false
             debuggable true
-            signingConfig null
+            signingConfig signingConfigs.debug
         }
     }
     

@@ -194,6 +194,16 @@
                     android:layout_marginBottom="@dimen/margin_small" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonDataBackup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Резервное копирование данных"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonCreateBackup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
