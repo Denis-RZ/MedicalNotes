@@ -1,380 +1,648 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
+    android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true"
     tools:context=".AddMedicineActivity">
 
-    <LinearLayout
+    <!-- Top App Bar -->
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/margin_medium">
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
 
-        <!-- Название лекарства -->
-        <com.google.android.material.textfield.TextInputLayout
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/margin_medium"
-            android:hint="@string/medicine_name"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorSurface"
+            app:contentInsetStartWithNavigation="0dp"
+            app:title="Добавить лекарство"
+            app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            app:titleTextColor="?attr/colorOnSurface"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            style="@style/Widget.MedicalNotes.Toolbar" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:textSize="@dimen/text_size_large" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-        </com.google.android.material.textfield.TextInputLayout>
+    <!-- Main Content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="88dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Дозировка -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/margin_medium"
-            android:hint="@string/medicine_dosage"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextDosage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:textSize="@dimen/text_size_large" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Тип лекарства -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Тип лекарства"
-            android:textSize="@dimen/text_size_large"
-            android:textStyle="bold"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonMedicineType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Таблетки"
-            android:textSize="@dimen/text_size_large"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <!-- Количество -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/margin_medium"
-            android:hint="@string/medicine_quantity"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextQuantity"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:textSize="@dimen/text_size_large" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Схема приема -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Схема приема"
-            android:textSize="@dimen/text_size_large"
-            android:textStyle="bold"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonFrequency"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Каждый день"
-            android:textSize="@dimen/text_size_large"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <!-- Дни недели (показывается только для "По расписанию") -->
         <LinearLayout
-            android:id="@+id/layoutWeekDays"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginBottom="@dimen/margin_small">
+            android:padding="@dimen/margin_medium">
 
-            <TextView
+            <!-- Basic Information Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Дни недели"
-                android:textSize="@dimen/text_size_medium"
-                android:textStyle="bold"
-                android:layout_marginBottom="@dimen/margin_small" />
+                android:layout_marginBottom="@dimen/margin_medium"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                style="@style/Widget.Material3.CardView.Filled">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonWeekDays"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Выбрать дни"
-                android:textSize="@dimen/text_size_medium"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
-
-        </LinearLayout>
-
-        <!-- Время приема -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/medicine_time"
-            android:textSize="@dimen/text_size_large"
-            android:textStyle="bold"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonTime"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="08:00"
-            android:textSize="@dimen/text_size_large"
-            style="@style/Widget.MedicalNotes.Button.Large"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <!-- Группа времени приема -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Принимать вместе с"
-            android:textSize="@dimen/text_size_large"
-            android:textStyle="bold"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonSelectMedicines"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Выбрать лекарства"
-            android:textSize="@dimen/text_size_large"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <!-- Список выбранных лекарств -->
-        <TextView
-            android:id="@+id/textSelectedMedicines"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Не выбрано"
-            android:textSize="@dimen/text_size_small"
-            android:textColor="@color/gray"
-            android:layout_marginBottom="@dimen/margin_small"
-            android:visibility="gone" />
-
-        <!-- Несколько приемов в день -->
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchMultipleDoses"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Несколько приемов в день"
-            android:textSize="@dimen/text_size_medium"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <LinearLayout
-            android:id="@+id/layoutMultipleTimes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginBottom="@dimen/margin_medium">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Времена приема:"
-                android:textSize="@dimen/text_size_medium"
-                android:layout_marginBottom="@dimen/margin_small" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewTimes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/margin_small" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonAddTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Добавить время"
-                android:textSize="@dimen/text_size_small"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
-
-        </LinearLayout>
-
-        <!-- Заметки -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/margin_medium"
-            android:hint="@string/medicine_notes"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextNotes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textMultiLine"
-                android:minLines="2"
-                android:maxLines="4"
-                android:textSize="@dimen/text_size_large" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-
-
-        <!-- Группировка лекарств (показывается только для "через день") -->
-        <LinearLayout
-            android:id="@+id/layoutGrouping"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginBottom="@dimen/margin_medium">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Группировка лекарств"
-                android:textSize="@dimen/text_size_large"
-                android:textStyle="bold"
-                android:layout_marginBottom="@dimen/margin_small" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/margin_small"
-                android:hint="Название группы"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editTextGroupName"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:textSize="@dimen/text_size_large" />
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_large">
 
-            </com.google.android.material.textfield.TextInputLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Основная информация"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:drawableStart="@drawable/ic_info"
+                        android:drawablePadding="@dimen/margin_small"
+                        android:gravity="center_vertical" />
 
-            <com.google.android.material.textfield.TextInputLayout
+                    <!-- Medicine Name -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:hint="@string/medicine_name"
+                        app:startIconDrawable="@drawable/ic_medicine"
+                        app:startIconTint="?attr/colorPrimary"
+                        app:endIconMode="clear_text"
+                        app:boxStrokeColor="?attr/colorPrimary"
+                        app:hintTextColor="?attr/colorPrimary"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                            android:inputType="textCapSentences"
+                            android:maxLines="2"
+                            android:importantForAccessibility="yes"
+                            android:contentDescription="Поле для ввода названия лекарства" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Dosage -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:hint="@string/medicine_dosage"
+                        app:startIconDrawable="@drawable/ic_dosage"
+                        app:startIconTint="?attr/colorPrimary"
+                        app:endIconMode="clear_text"
+                        app:boxStrokeColor="?attr/colorPrimary"
+                        app:hintTextColor="?attr/colorPrimary"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextDosage"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                            android:inputType="textCapSentences"
+                            android:importantForAccessibility="yes"
+                            android:contentDescription="Поле для ввода дозировки лекарства" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Medicine Type -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:hint="Тип лекарства"
+                        app:startIconDrawable="@drawable/ic_type"
+                        app:startIconTint="?attr/colorPrimary"
+                        app:endIconMode="dropdown_menu"
+                        app:boxStrokeColor="?attr/colorPrimary"
+                        app:hintTextColor="?attr/colorPrimary"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/autoCompleteMedicineType"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Таблетки"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                            android:inputType="none"
+                            android:focusable="true"
+                            android:clickable="true"
+                            android:focusableInTouchMode="true"
+                            android:enabled="true"
+                            android:editable="false"
+                            android:importantForAccessibility="yes"
+                            android:contentDescription="Выбор типа лекарства" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Quantity -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/medicine_quantity"
+                        app:startIconDrawable="@drawable/ic_quantity"
+                        app:startIconTint="?attr/colorPrimary"
+                        app:endIconMode="clear_text"
+                        app:boxStrokeColor="?attr/colorPrimary"
+                        app:hintTextColor="?attr/colorPrimary"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextQuantity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                            android:inputType="number"
+                            android:importantForAccessibility="yes"
+                            android:contentDescription="Поле для ввода количества лекарства" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Schedule Information Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/margin_small"
-                android:hint="Порядок в группе (1, 2, 3...)"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_marginBottom="@dimen/margin_medium"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                style="@style/Widget.Material3.CardView.Filled">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editTextGroupOrder"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:text="1"
-                    android:textSize="@dimen/text_size_large" />
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_large">
 
-            </com.google.android.material.textfield.TextInputLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Расписание приема"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:drawableStart="@drawable/ic_schedule"
+                        android:drawablePadding="@dimen/margin_small"
+                        android:gravity="center_vertical" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonChangeGroup"
+                    <!-- Time Selection -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="08:00"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        app:icon="@drawable/ic_time"
+                        app:iconGravity="textStart"
+                        app:iconPadding="@dimen/margin_small"
+                        app:iconTint="?attr/colorOnSurface"
+                        app:strokeColor="?attr/colorOutline"
+                        app:strokeWidth="1dp"
+                        android:minHeight="56dp"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:contentDescription="Выбор времени приема"
+                        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                    <!-- Frequency Selection -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonFrequency"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Каждый день"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        app:icon="@drawable/ic_schedule"
+                        app:iconGravity="textStart"
+                        app:iconPadding="@dimen/margin_small"
+                        app:iconTint="?attr/colorOnSurface"
+                        app:strokeColor="?attr/colorOutline"
+                        app:strokeWidth="1dp"
+                        android:minHeight="56dp"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:contentDescription="Выбор частоты приема"
+                        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                    <!-- Week Days Selection (Conditional) -->
+                    <LinearLayout
+                        android:id="@+id/layoutWeekDays"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Дни недели"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="@dimen/margin_small" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonWeekDays"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Выбрать дни"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                            app:icon="@drawable/ic_calendar"
+                            app:iconGravity="textStart"
+                            app:iconPadding="@dimen/margin_small"
+                            app:iconTint="?attr/colorOnSurface"
+                            app:strokeColor="?attr/colorOutline"
+                            app:strokeWidth="1dp"
+                            android:minHeight="48dp"
+                            android:contentDescription="Выбор дней недели"
+                            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Additional Information Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Изменить группу"
-                android:textSize="@dimen/text_size_small"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
+                android:layout_marginBottom="@dimen/margin_medium"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                style="@style/Widget.Material3.CardView.Filled">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_large">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Дополнительная информация"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:drawableStart="@drawable/ic_additional_info"
+                        android:drawablePadding="@dimen/margin_small"
+                        android:gravity="center_vertical" />
+
+                    <!-- Notes -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:hint="Заметки"
+                        app:startIconDrawable="@drawable/ic_notes"
+                        app:startIconTint="?attr/colorPrimary"
+                        app:endIconMode="clear_text"
+                        app:boxStrokeColor="?attr/colorPrimary"
+                        app:hintTextColor="?attr/colorPrimary"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextNotes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                            android:inputType="textMultiLine|textCapSentences"
+                            android:maxLines="3"
+                            android:importantForAccessibility="yes"
+                            android:contentDescription="Поле для ввода заметок о лекарстве" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Insulin Checkbox -->
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/checkBoxInsulin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Это инсулин"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:textColor="?attr/colorOnSurface"
+                        app:buttonTint="?attr/colorPrimary"
+                        android:importantForAccessibility="yes"
+                        android:contentDescription="Отметить, если это инсулин" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Grouping Information Card (Conditional) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/layoutGrouping"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_medium"
+                android:visibility="gone"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                style="@style/Widget.Material3.CardView.Filled">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_large">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Группировка лекарств"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:drawableStart="@drawable/ic_group"
+                        android:drawablePadding="@dimen/margin_small"
+                        android:gravity="center_vertical" />
+
+                    <!-- Group Name -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:hint="Название группы"
+                        app:startIconDrawable="@drawable/ic_group_name"
+                        app:startIconTint="?attr/colorPrimary"
+                        app:endIconMode="clear_text"
+                        app:boxStrokeColor="?attr/colorPrimary"
+                        app:hintTextColor="?attr/colorPrimary"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextGroupName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                            android:inputType="textCapSentences"
+                            android:importantForAccessibility="yes"
+                            android:contentDescription="Поле для ввода названия группы лекарств" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Group Order -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:hint="Порядок в группе (1, 2, 3...)"
+                        app:startIconDrawable="@drawable/ic_order"
+                        app:startIconTint="?attr/colorPrimary"
+                        app:endIconMode="clear_text"
+                        app:boxStrokeColor="?attr/colorPrimary"
+                        app:hintTextColor="?attr/colorPrimary"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextGroupOrder"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                            android:inputType="number"
+                            android:text="1"
+                            android:importantForAccessibility="yes"
+                            android:contentDescription="Поле для ввода порядка лекарства в группе" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Change Group Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonChangeGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Изменить группу"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                        app:icon="@drawable/ic_change_group"
+                        app:iconGravity="textStart"
+                        app:iconPadding="@dimen/margin_small"
+                        app:iconTint="?attr/colorOnSurface"
+                        app:strokeColor="?attr/colorOutline"
+                        app:strokeWidth="1dp"
+                        android:minHeight="48dp"
+                        android:contentDescription="Изменить группу лекарства"
+                        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Multiple Doses Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/layoutMultipleTimes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_medium"
+                android:visibility="gone"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                style="@style/Widget.Material3.CardView.Filled">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_large">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Несколько приемов в день"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:drawableStart="@drawable/ic_schedule"
+                        android:drawablePadding="@dimen/margin_small"
+                        android:gravity="center_vertical" />
+
+                    <!-- Multiple Doses Switch -->
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchMultipleDoses"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Несколько приемов в день"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:textColor="?attr/colorOnSurface"
+                        app:thumbTint="?attr/colorPrimary"
+                        app:trackTint="?attr/colorPrimary"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:importantForAccessibility="yes"
+                        android:contentDescription="Включить несколько приемов в день" />
+
+                    <!-- Add Time Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonAddTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Добавить время"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                        app:icon="@drawable/ic_time"
+                        app:iconGravity="textStart"
+                        app:iconPadding="@dimen/margin_small"
+                        app:iconTint="?attr/colorOnSurface"
+                        app:strokeColor="?attr/colorOutline"
+                        app:strokeWidth="1dp"
+                        android:minHeight="48dp"
+                        android:contentDescription="Добавить время приема"
+                        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                    <!-- Selected Times Display -->
+                    <TextView
+                        android:id="@+id/textSelectedTimes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Времена приема: 08:00"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginTop="@dimen/margin_small" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Related Medicines Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_medium"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                style="@style/Widget.Material3.CardView.Filled">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_large">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Связанные лекарства"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:drawableStart="@drawable/ic_medicine"
+                        android:drawablePadding="@dimen/margin_small"
+                        android:gravity="center_vertical" />
+
+                    <!-- Select Related Medicines Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonSelectMedicines"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Выбрать связанные лекарства"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                        app:icon="@drawable/ic_medicine"
+                        app:iconGravity="textStart"
+                        app:iconPadding="@dimen/margin_small"
+                        app:iconTint="?attr/colorOnSurface"
+                        app:strokeColor="?attr/colorOutline"
+                        app:strokeWidth="1dp"
+                        android:minHeight="48dp"
+                        android:contentDescription="Выбрать связанные лекарства"
+                        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                    <!-- Selected Medicines Display -->
+                    <TextView
+                        android:id="@+id/textSelectedMedicines"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Не выбрано"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginTop="@dimen/margin_small"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
-        <!-- Кнопки настроек -->
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Loading Overlay -->
+    <FrameLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/loading_background"
+            android:padding="@dimen/padding_large">
+
+            <ProgressBar
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:indeterminateTint="?attr/colorPrimary"
+                android:contentDescription="Сохранение лекарства" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Сохранение..."
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginTop="@dimen/margin_medium" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- Bottom Action Bar -->
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottomAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:fabCradleMargin="10dp"
+        app:fabCradleRoundedCornerRadius="10dp"
+        app:fabCradleVerticalOffset="10dp"
+        app:contentInsetStart="0dp"
+        app:contentInsetEnd="0dp"
+        style="@style/Widget.Material3.BottomAppBar">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="@dimen/margin_large">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonSettings"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Настройки"
-                android:textSize="@dimen/text_size_small"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_marginEnd="@dimen/margin_small" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonCustomize"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Настроить кнопки"
-                android:textSize="@dimen/text_size_small"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_marginStart="@dimen/margin_small" />
-
-        </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonManageGroups"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Управление группами"
-            android:textSize="@dimen/text_size_small"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_marginTop="@dimen/margin_small" />
-
-        <!-- Чекбокс для инсулина -->
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/checkBoxInsulin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Это инсулин"
-            android:textSize="@dimen/text_size_large"
-            android:layout_marginBottom="@dimen/margin_large" />
-
-        <!-- Группировка по времени приема -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Группировка по времени"
-            android:textSize="@dimen/text_size_large"
-            android:textStyle="bold"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonTimeGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Добавить к группе времени"
-            android:textSize="@dimen/text_size_large"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_marginBottom="@dimen/margin_small" />
-
-        <TextView
-            android:id="@+id/textSelectedTimeGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Не выбрана группа времени"
-            android:textSize="@dimen/text_size_small"
-            android:textColor="@color/dark_gray"
-            android:layout_marginBottom="@dimen/margin_large"
-            android:visibility="gone" />
-
-        <!-- Кнопки -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:padding="@dimen/padding_medium">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonCancel"
@@ -382,8 +650,17 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/cancel"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                app:icon="@drawable/ic_cancel"
+                app:iconGravity="textStart"
+                app:iconPadding="@dimen/margin_small"
+                app:iconTint="?attr/colorOnSurface"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp"
                 android:layout_marginEnd="@dimen/margin_small"
-                style="@style/Widget.MedicalNotes.Button" />
+                android:minHeight="56dp"
+                android:contentDescription="Отменить добавление лекарства"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonSave"
@@ -391,11 +668,18 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/save_medicine"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                app:icon="@drawable/ic_save"
+                app:iconGravity="textStart"
+                app:iconPadding="@dimen/margin_small"
+                app:iconTint="?attr/colorOnPrimary"
                 android:layout_marginStart="@dimen/margin_small"
-                style="@style/Widget.MedicalNotes.Button" />
+                android:minHeight="56dp"
+                android:contentDescription="Сохранить лекарство"
+                style="@style/Widget.Material3.Button" />
 
         </LinearLayout>
 
-    </LinearLayout>
+    </com.google.android.material.bottomappbar.BottomAppBar>
 
-</ScrollView> 
+</androidx.coordinatorlayout.widget.CoordinatorLayout> 

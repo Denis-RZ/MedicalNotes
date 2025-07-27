@@ -12,10 +12,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.medicalnotes.app.adapters.MedicineAdapter
 import com.medicalnotes.app.databinding.ActivityMedicineManagementElderlyBinding
 import com.medicalnotes.app.models.Medicine
+import com.medicalnotes.app.models.JournalAction
 import com.medicalnotes.app.repository.UserPreferencesRepository
 import com.medicalnotes.app.utils.DisplayUtils
 import com.medicalnotes.app.utils.NotificationManager
+import com.medicalnotes.app.utils.DataManager
 import com.medicalnotes.app.viewmodels.MainViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
+import java.time.format.DateTimeFormatter
 
 class ElderlyMedicineManagementActivity : AppCompatActivity() {
     
@@ -115,17 +122,188 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
     
     private fun applyUserPreferences() {
         // Применяем настройки пользователя к интерфейсу
-        // Это будет реализовано позже
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val preferences = userPreferencesRepository.getUserPreferences()
+                
+                CoroutineScope(Dispatchers.Main).launch {
+                    preferences?.let { prefs ->
+                        // Применяем размер шрифта
+                        if (prefs.largeTextEnabled) {
+                            binding.root.setTag(com.medicalnotes.app.R.id.tag_large_text, true)
+                            DisplayUtils.applyLargeText(binding.root)
+                        }
+                        
+                        // Применяем цвета
+                        if (prefs.useHighContrast) {
+                            DisplayUtils.applyHighContrast(binding.root)
+                        }
+                        
+                        // Применяем вибрацию
+                        if (prefs.enableVibration) {
+                            // Включаем вибрацию для кнопок
+                            binding.buttonAddMedicine.isHapticFeedbackEnabled = true
+                            binding.buttonEditMedicine.isHapticFeedbackEnabled = true
+                            binding.buttonSettings.isHapticFeedbackEnabled = true
+                        }
+                        
+                        // Применяем звуки
+                        if (prefs.enableSound) {
+                            // Звуки будут воспроизводиться через NotificationManager
+                        }
+                        
+                        // Применяем упрощенный интерфейс
+                        if (prefs.isElderlyMode) {
+                            DisplayUtils.applySimpleInterface(binding.root)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ElderlyMedicineManagementActivity", "Error applying user preferences", e)
+            }
+        }
     }
     
 
     
     private fun showJournalDialog() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val dataManager = DataManager(this@ElderlyMedicineManagementActivity)
+                val today = java.time.LocalDate.now()
+                val todayEntries = dataManager.getJournalEntriesForDate(today)
+                val allEntries = dataManager.loadJournalEntries()
+                
+                CoroutineScope(Dispatchers.Main).launch {
+                    val messageBuilder = StringBuilder()
+                    messageBuilder.appendLine("ЖУРНАЛ ПРИЕМА ЛЕКАРСТВ")
+                    messageBuilder.appendLine("=".repeat(30))
+                    messageBuilder.appendLine()
+                    
+                    if (todayEntries.isNotEmpty()) {
+                        messageBuilder.appendLine("СЕГОДНЯ (${today.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}):")
+                        messageBuilder.appendLine()
+                        
+                        todayEntries.sortedByDescending { it.timestamp }.forEach { entry ->
+                            val time = entry.timestamp.format(DateTimeFormatter.ofPattern("HH:mm"))
+                            val actionText = when (entry.action) {
+                                JournalAction.TAKEN -> "ПРИНЯТО"
+                                JournalAction.SKIPPED -> "ПРОПУЩЕНО"
+                                JournalAction.MISSED -> "ПРОСРОЧЕНО"
+                                JournalAction.EDITED -> "ИЗМЕНЕНО"
+                                JournalAction.DELETED -> "УДАЛЕНО"
+                            }
+                            messageBuilder.appendLine("$time - ${entry.medicineName} ($actionText)")
+                        }
+                    } else {
+                        messageBuilder.appendLine("Сегодня нет записей в журнале")
+                    }
+                    
+                    messageBuilder.appendLine()
+                    messageBuilder.appendLine("ВСЕГО ЗАПИСЕЙ: ${allEntries.size}")
+                    
+                    if (allEntries.isNotEmpty()) {
+                        val lastEntry = allEntries.maxByOrNull { it.timestamp }
+                        lastEntry?.let {
+                            messageBuilder.appendLine("ПОСЛЕДНЯЯ ЗАПИСЬ: ${it.timestamp.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))}")
+                        }
+                    }
+                    
+                    AlertDialog.Builder(this@ElderlyMedicineManagementActivity)
+                        .setTitle("ЖУРНАЛ ПРИЕМА ЛЕКАРСТВ")
+                        .setMessage(messageBuilder.toString())
+                        .setPositiveButton("ПОНЯТНО", null)
+                        .setNegativeButton("ОЧИСТИТЬ ЖУРНАЛ") { _, _ ->
+                            showClearJournalConfirmation()
+                        }
+                        .setNeutralButton("ЭКСПОРТ") { _, _ ->
+                            exportJournal()
+                        }
+                        .show()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ElderlyMedicineManagementActivity", "Error loading journal", e)
+                CoroutineScope(Dispatchers.Main).launch {
+                    AlertDialog.Builder(this@ElderlyMedicineManagementActivity)
+                        .setTitle("ОШИБКА")
+                        .setMessage("Не удалось загрузить журнал: ${e.message}")
+                        .setPositiveButton("ПОНЯТНО", null)
+                        .show()
+                }
+            }
+        }
+    }
+    
+    private fun showClearJournalConfirmation() {
         AlertDialog.Builder(this)
-            .setTitle("ЖУРНАЛ ПРИЕМА ЛЕКАРСТВ")
-            .setMessage("Функция журнала будет добавлена в следующей версии приложения.")
-            .setPositiveButton("ПОНЯТНО", null)
+            .setTitle("ОЧИСТИТЬ ЖУРНАЛ")
+            .setMessage("Вы уверены, что хотите очистить весь журнал приёма лекарств?\n\nЭто действие нельзя отменить.")
+            .setPositiveButton("ОЧИСТИТЬ") { _, _ ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val dataManager = DataManager(this@ElderlyMedicineManagementActivity)
+                        val success = dataManager.clearJournalEntries()
+                        
+                        CoroutineScope(Dispatchers.Main).launch {
+                            if (success) {
+                                Toast.makeText(this@ElderlyMedicineManagementActivity, "Журнал очищен", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this@ElderlyMedicineManagementActivity, "Ошибка очистки журнала", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            Toast.makeText(this@ElderlyMedicineManagementActivity, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("ОТМЕНА", null)
             .show()
+    }
+    
+    private fun exportJournal() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val dataManager = DataManager(this@ElderlyMedicineManagementActivity)
+                val entries = dataManager.loadJournalEntries()
+                
+                val exportBuilder = StringBuilder()
+                exportBuilder.appendLine("ЖУРНАЛ ПРИЕМА ЛЕКАРСТВ")
+                exportBuilder.appendLine("Экспорт от ${java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))}")
+                exportBuilder.appendLine("=".repeat(50))
+                exportBuilder.appendLine()
+                
+                entries.sortedByDescending { it.timestamp }.forEach { entry ->
+                    val date = entry.timestamp.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                    val time = entry.timestamp.format(DateTimeFormatter.ofPattern("HH:mm"))
+                    val actionText = when (entry.action) {
+                        JournalAction.TAKEN -> "ПРИНЯТО"
+                        JournalAction.SKIPPED -> "ПРОПУЩЕНО"
+                        JournalAction.MISSED -> "ПРОСРОЧЕНО"
+                        JournalAction.EDITED -> "ИЗМЕНЕНО"
+                        JournalAction.DELETED -> "УДАЛЕНО"
+                    }
+                    exportBuilder.appendLine("$date $time - ${entry.medicineName} ($actionText)")
+                    if (entry.notes.isNotEmpty()) {
+                        exportBuilder.appendLine("  Заметка: ${entry.notes}")
+                    }
+                    exportBuilder.appendLine()
+                }
+                
+                // Сохраняем в файл
+                val exportFile = File(this@ElderlyMedicineManagementActivity.filesDir, "journal_export_${System.currentTimeMillis()}.txt")
+                exportFile.writeText(exportBuilder.toString())
+                
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(this@ElderlyMedicineManagementActivity, "Журнал экспортирован в ${exportFile.name}", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(this@ElderlyMedicineManagementActivity, "Ошибка экспорта: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
     
     private fun showEditMedicineDialog(medicine: Medicine) {

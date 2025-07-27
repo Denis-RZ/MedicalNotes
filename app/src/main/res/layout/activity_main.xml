@@ -1,165 +1,425 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="@dimen/margin_medium">
+    android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true">
 
-    <!-- Заголовок -->
-    <TextView
+    <!-- Top App Bar -->
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Медицинские заметки"
-        android:textSize="@dimen/text_size_large"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="@dimen/margin_medium" />
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
 
-    <!-- Лекарства на сегодня -->
-    <TextView
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorSurface"
+            app:contentInsetStartWithNavigation="0dp"
+            app:title="@string/app_name"
+            app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            app:titleTextColor="?attr/colorOnSurface"
+            style="@style/Widget.MedicalNotes.Toolbar" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content -->
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Лекарства на сегодня"
-        android:textSize="@dimen/text_size_medium"
-        android:textStyle="bold"
-        android:layout_marginBottom="@dimen/margin_small" />
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="88dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <!-- Список лекарств -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewTodayMedicines"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginBottom="@dimen/margin_medium" />
-
-    <!-- Кнопки управления -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonManageMedicines"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height"
-        android:text="ЛЕКАРСТВА"
-        android:textSize="@dimen/text_size_medium"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:backgroundTint="@color/medical_blue"
-        android:textColor="@color/white"
-        android:layout_marginBottom="@dimen/margin_medium"
-        app:cornerRadius="8dp" />
-
-    <!-- Кнопка переключения режима для пожилых -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonToggleLayout"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height"
-        android:text="РЕЖИМ ДЛЯ ПОЖИЛЫХ"
-        android:textSize="@dimen/text_size_medium"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:backgroundTint="@color/medical_green"
-        android:textColor="@color/white"
-        android:layout_marginBottom="@dimen/margin_medium"
-        app:cornerRadius="8dp" />
-
-    <!-- Кнопки управления -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="@dimen/margin_small">
-
-        <!-- Кнопка показа/скрытия логов -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonToggleLogs"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:text="ЛОГИ"
-            android:textSize="12sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:backgroundTint="@color/medical_gray"
-            android:textColor="@color/white"
-            app:cornerRadius="8dp" />
-
-        <!-- Кнопка экспорта данных -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonExportData"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:text="ЭКСПОРТ"
-            android:textSize="12sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:backgroundTint="@color/medical_gray"
-            android:textColor="@color/white"
-            android:layout_marginStart="@dimen/margin_small"
-            app:cornerRadius="8dp" />
-
-        <!-- Кнопка тестирования групп -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonTestGroups"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:text="ТЕСТ ГРУПП"
-            android:textSize="12sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:backgroundTint="@color/medical_blue"
-            android:textColor="@color/white"
-            android:layout_marginStart="@dimen/margin_small"
-            app:cornerRadius="8dp" />
-
-    </LinearLayout>
-
-    <!-- Логи (скрыты по умолчанию) -->
-    <LinearLayout
-        android:id="@+id/layoutLogs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ЛОГИ СИСТЕМЫ:"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/medical_blue"
-            android:layout_marginBottom="@dimen/margin_small" />
+            android:orientation="vertical"
+            android:padding="@dimen/margin_medium">
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:background="@android:color/black"
-            android:padding="8dp">
-
-            <TextView
-                android:id="@+id/textViewLogs"
+            <!-- Today's Medicines Section -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
-                android:textSize="10sp"
-                android:fontFamily="monospace"
-                android:text="Логи загрузки...\n" />
+                android:layout_marginBottom="@dimen/margin_medium"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                style="@style/Widget.Material3.CardView.Filled">
 
-        </ScrollView>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_large">
 
-        <!-- Кнопка очистки логов -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonClearLogs"
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/today_medicines"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:drawableStart="@drawable/ic_medicine"
+                        android:drawablePadding="@dimen/margin_small"
+                        android:gravity="center_vertical" />
+
+                    <!-- Medicines RecyclerView -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewTodayMedicines"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="100dp"
+                        android:nestedScrollingEnabled="false"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/item_medicine_main" />
+
+                    <!-- Loading State -->
+                    <ProgressBar
+                        android:id="@+id/progressBarTodayMedicines"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        android:contentDescription="Загрузка лекарств" />
+
+                    <!-- Empty State -->
+                    <LinearLayout
+                        android:id="@+id/layoutEmptyTodayMedicines"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/padding_large"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/ic_medicine"
+                            android:alpha="0.5"
+                            android:contentDescription="Нет лекарств" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Нет лекарств на сегодня"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="@dimen/margin_medium" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Добавьте лекарства в расписание"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="@dimen/margin_small" />
+
+                    </LinearLayout>
+
+                    <!-- Error State -->
+                    <LinearLayout
+                        android:id="@+id/layoutErrorTodayMedicines"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/padding_large"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/ic_info"
+                            android:alpha="0.5"
+                            android:contentDescription="Ошибка загрузки" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ошибка загрузки"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                            android:textColor="?attr/colorError"
+                            android:layout_marginTop="@dimen/margin_medium" />
+
+                        <TextView
+                            android:id="@+id/textErrorMessage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Не удалось загрузить лекарства"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="@dimen/margin_small" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonRetry"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Повторить"
+                            android:layout_marginTop="@dimen/margin_medium"
+                            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="@dimen/margin_medium">
+
+                <!-- Manage Medicines Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonManageMedicines"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ЛЕКАРСТВА"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    app:icon="@drawable/ic_medicine"
+                    app:iconGravity="textStart"
+                    app:iconPadding="@dimen/margin_small"
+                    app:iconTint="?attr/colorOnPrimary"
+                    android:minHeight="56dp"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:contentDescription="Управление лекарствами"
+                    style="@style/Widget.Material3.Button" />
+
+                <!-- Elderly Mode Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonToggleLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="РЕЖИМ ДЛЯ ПОЖИЛЫХ"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    app:icon="@drawable/ic_info"
+                    app:iconGravity="textStart"
+                    app:iconPadding="@dimen/margin_small"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp"
+                    android:minHeight="56dp"
+                    android:layout_marginBottom="@dimen/margin_medium"
+                    android:contentDescription="Переключить режим для пожилых"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            </LinearLayout>
+
+            <!-- Debug Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="@dimen/margin_small">
+
+                <!-- Logs Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonToggleLogs"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="ЛОГИ"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    app:icon="@drawable/ic_info"
+                    app:iconSize="16dp"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp"
+                    android:contentDescription="Показать логи системы"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                <!-- Export Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonExportData"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="ЭКСПОРТ"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    app:icon="@drawable/ic_save"
+                    app:iconSize="16dp"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp"
+                    android:layout_marginStart="@dimen/margin_small"
+                    android:contentDescription="Экспорт данных"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                <!-- Test Groups Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonTestGroups"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="ТЕСТ ГРУПП"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    app:icon="@drawable/ic_group"
+                    app:iconSize="16dp"
+                    app:iconTint="?attr/colorOnPrimary"
+                    android:layout_marginStart="@dimen/margin_small"
+                    android:contentDescription="Тестирование групп лекарств"
+                    style="@style/Widget.Material3.Button" />
+
+            </LinearLayout>
+
+            <!-- Logs Section -->
+            <LinearLayout
+                android:id="@+id/layoutLogs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ЛОГИ СИСТЕМЫ:"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="?attr/colorPrimary"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="1dp"
+                    app:cardBackgroundColor="@android:color/black">
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:id="@+id/textViewLogs"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@android:color/white"
+                            android:textSize="10sp"
+                            android:fontFamily="monospace"
+                            android:text="Логи загрузки...\n" />
+
+                    </ScrollView>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Clear Logs Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonClearLogs"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="ОЧИСТИТЬ ЛОГИ"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    app:icon="@drawable/ic_delete"
+                    app:iconSize="16dp"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:contentDescription="Очистить логи системы"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Floating Action Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddMedicine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/margin_large"
+        android:contentDescription="Добавить лекарство"
+        app:srcCompat="@drawable/ic_add"
+        app:tint="?attr/colorOnPrimary"
+        style="@style/Widget.Material3.FloatingActionButton.Primary" />
+
+    <!-- Bottom Action Bar -->
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottomAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:fabCradleMargin="10dp"
+        app:fabCradleRoundedCornerRadius="10dp"
+        app:fabCradleVerticalOffset="10dp"
+        app:contentInsetStart="0dp"
+        app:contentInsetEnd="0dp"
+        style="@style/Widget.Material3.BottomAppBar">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:text="ОЧИСТИТЬ ЛОГИ"
-            android:textSize="10sp"
-            android:backgroundTint="@color/medical_red"
-            android:textColor="@color/white"
-            android:layout_marginTop="@dimen/margin_small"
-            app:cornerRadius="6dp" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/padding_medium">
 
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonManageMedicinesBottom"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Управление"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                app:icon="@drawable/ic_edit"
+                app:iconGravity="textStart"
+                app:iconPadding="@dimen/margin_small"
+                app:iconTint="?attr/colorOnSurface"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="@dimen/margin_small"
+                android:minHeight="48dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
 
-</LinearLayout> 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonManageGroupsBottom"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Группы"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                app:icon="@drawable/ic_group"
+                app:iconGravity="textStart"
+                app:iconPadding="@dimen/margin_small"
+                app:iconTint="?attr/colorOnSurface"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp"
+                android:layout_marginStart="@dimen/margin_small"
+                android:layout_marginEnd="@dimen/margin_small"
+                android:minHeight="48dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSettingsBottom"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Настройки"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                app:icon="@drawable/ic_info"
+                app:iconGravity="textStart"
+                app:iconPadding="@dimen/margin_small"
+                app:iconTint="?attr/colorOnSurface"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp"
+                android:layout_marginStart="@dimen/margin_small"
+                android:minHeight="48dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        </LinearLayout>
+
+    </com.google.android.material.bottomappbar.BottomAppBar>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout> 

@@ -15,6 +15,8 @@ import java.io.FileWriter
 import java.time.LocalTime
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import com.medicalnotes.app.models.MedicineJournalEntry
+import java.time.LocalDate
 
 class DataManager(private val context: Context) {
     
@@ -269,7 +271,7 @@ class DataManager(private val context: Context) {
     fun getExistingGroups(): List<String> {
         val medicines = loadMedicines()
         return medicines
-            .filter { it.groupName.isNotEmpty() && it.frequency == DosageFrequency.EVERY_OTHER_DAY }
+            .filter { it.groupName.isNotEmpty() }
             .map { it.groupName }
             .distinct()
             .sorted()
@@ -462,6 +464,75 @@ class DataManager(private val context: Context) {
         backupManager.cleanupOldBackups()
     }
     
+    // ==================== ЖУРНАЛ ПРИЕМА ЛЕКАРСТВ ====================
+    
+    fun addJournalEntry(entry: MedicineJournalEntry): Boolean {
+        return try {
+            val entries = loadJournalEntries().toMutableList()
+            val newEntry = entry.copy(id = System.currentTimeMillis())
+            entries.add(newEntry)
+            
+            val json = gson.toJson(entries)
+            val content = if (configManager.getSettings().dataCompression) {
+                compressData(json)
+            } else {
+                json
+            }
+            
+            val journalFile = File(context.filesDir, "medicine_journal.json")
+            FileWriter(journalFile).use { it.write(content) }
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding journal entry", e)
+            false
+        }
+    }
+    
+    fun loadJournalEntries(): List<MedicineJournalEntry> {
+        return try {
+            val journalFile = File(context.filesDir, "medicine_journal.json")
+            if (!journalFile.exists()) {
+                return emptyList()
+            }
+            
+            val content = FileReader(journalFile).readText()
+            val json = if (configManager.getSettings().dataCompression) {
+                decompressData(content)
+            } else {
+                content
+            }
+            
+            val type = object : TypeToken<List<MedicineJournalEntry>>() {}.type
+            gson.fromJson(json, type) ?: emptyList()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading journal entries", e)
+            emptyList()
+        }
+    }
+    
+    fun getJournalEntriesForMedicine(medicineId: Long): List<MedicineJournalEntry> {
+        return loadJournalEntries().filter { it.medicineId == medicineId }
+    }
+    
+    fun getJournalEntriesForDate(date: LocalDate): List<MedicineJournalEntry> {
+        return loadJournalEntries().filter { 
+            it.timestamp.toLocalDate() == date 
+        }
+    }
+    
+    fun clearJournalEntries(): Boolean {
+        return try {
+            val journalFile = File(context.filesDir, "medicine_journal.json")
+            if (journalFile.exists()) {
+                journalFile.delete()
+            }
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing journal entries", e)
+            false
+        }
+    }
+
     // ==================== УТИЛИТЫ ====================
     
     private fun compressData(data: String): String {

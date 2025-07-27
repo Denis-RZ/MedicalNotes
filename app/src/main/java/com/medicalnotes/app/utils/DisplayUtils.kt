@@ -64,4 +64,72 @@ object DisplayUtils {
             baseHeight
         }
     }
+    
+    fun applyLargeText(rootView: View) {
+        applyToAllTextViews(rootView) { textView ->
+            val currentSize = textView.textSize
+            val newSize = currentSize * 1.3f
+            textView.textSize = newSize / textView.resources.displayMetrics.density
+        }
+    }
+    
+    fun applyHighContrast(rootView: View) {
+        applyToAllViews(rootView) { view ->
+            when (view) {
+                is TextView -> {
+                    view.setTextColor(view.context.getColor(android.R.color.black))
+                    view.setBackgroundColor(view.context.getColor(android.R.color.white))
+                }
+                is MaterialButton -> {
+                    view.setTextColor(view.context.getColor(android.R.color.white))
+                    view.setBackgroundColor(view.context.getColor(android.R.color.black))
+                }
+            }
+        }
+    }
+    
+    fun applySimpleInterface(rootView: View) {
+        applyToAllViews(rootView) { view ->
+            when (view) {
+                is MaterialButton -> {
+                    // Увеличиваем размер кнопок
+                    val layoutParams = view.layoutParams
+                    if (layoutParams != null) {
+                        layoutParams.height = (view.resources.displayMetrics.density * 80).toInt() // 80dp
+                        view.layoutParams = layoutParams
+                    }
+                    
+                    // Увеличиваем отступы
+                    view.setPadding(
+                        (view.paddingLeft * 1.5).toInt(),
+                        (view.paddingTop * 1.5).toInt(),
+                        (view.paddingRight * 1.5).toInt(),
+                        (view.paddingBottom * 1.5).toInt()
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun applyToAllTextViews(view: View, action: (TextView) -> Unit) {
+        if (view is TextView) {
+            action(view)
+        }
+        
+        if (view is android.view.ViewGroup) {
+            for (i in 0 until view.childCount) {
+                applyToAllTextViews(view.getChildAt(i), action)
+            }
+        }
+    }
+    
+    private fun applyToAllViews(view: View, action: (View) -> Unit) {
+        action(view)
+        
+        if (view is android.view.ViewGroup) {
+            for (i in 0 until view.childCount) {
+                applyToAllViews(view.getChildAt(i), action)
+            }
+        }
+    }
 } 

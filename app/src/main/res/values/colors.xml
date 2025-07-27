@@ -76,4 +76,11 @@
     <color name="sos_primary">#D32F2F</color>     <!-- Основной красный -->
     <color name="sos_secondary">#FF1744</color>    <!-- Яркий красный -->
     <color name="sos_background">#FFEBEE</color>   <!-- Светло-красный фон -->
+    
+    <!-- ===== ЦВЕТА ДЛЯ ERROR STATES ===== -->
+    <color name="error_red">#FFB71C1C</color>
+    <color name="error_light">#FFE57373</color>
+    <color name="warning_orange">#FFFF9800</color>
+    <color name="success_green">#FF4CAF50</color>
+    <color name="info_blue">#FF2196F3</color>
 </resources> 

@@ -64,7 +64,7 @@ class AddMedicineActivity : AppCompatActivity() {
             showFrequencyDialog()
         }
         
-        binding.buttonMedicineType.setOnClickListener {
+        binding.autoCompleteMedicineType.setOnClickListener {
             showMedicineTypeDialog()
         }
         
@@ -106,21 +106,25 @@ class AddMedicineActivity : AppCompatActivity() {
             showGroupSelectionDialog()
         }
         
-        binding.buttonSettings.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
+        // binding.buttonSettings.setOnClickListener {
+        //     startActivity(Intent(this, SettingsActivity::class.java))
+        // }
         
-        binding.buttonCustomize.setOnClickListener {
-            startActivity(Intent(this, ButtonCustomizationActivity::class.java))
-        }
+        // binding.buttonCustomize.setOnClickListener {
+        //     startActivity(Intent(this, ButtonCustomizationActivity::class.java))
+        // }
         
-        binding.buttonManageGroups.setOnClickListener {
-            startActivity(Intent(this, GroupManagementActivity::class.java))
-        }
+        // binding.buttonManageGroups.setOnClickListener {
+        //     startActivity(Intent(this, GroupManagementActivity::class.java))
+        // }
         
-        binding.buttonTimeGroup.setOnClickListener {
-            showTimeGroupDialog()
-        }
+        // binding.buttonCreateGroupFromExisting.setOnClickListener {
+        //     showCreateGroupFromExistingDialog()
+        // }
+        
+        // binding.buttonTimeGroup.setOnClickListener {
+        //     showTimeGroupDialog()
+        // }
         
         binding.buttonSave.setOnClickListener {
             saveMedicine()
@@ -277,7 +281,7 @@ class AddMedicineActivity : AppCompatActivity() {
             .setTitle("Выберите тип лекарства")
             .setSingleChoiceItems(medicineTypes.toTypedArray(), currentIndex) { _, which ->
                 selectedMedicineType = medicineTypes[which]
-                binding.buttonMedicineType.text = selectedMedicineType
+                binding.autoCompleteMedicineType.setText(selectedMedicineType)
                 
                 // Автоматически отмечаем чекбокс инсулина для соответствующих типов
                 binding.checkBoxInsulin.isChecked = selectedMedicineType == "Инсулин" || 
@@ -331,13 +335,82 @@ class AddMedicineActivity : AppCompatActivity() {
     }
     
     private fun showMedicineSelectionDialog() {
-        // Пока что просто показываем сообщение
-        Toast.makeText(this, "Функция выбора связанных лекарств будет добавлена позже", Toast.LENGTH_LONG).show()
+        val dataManager = DataManager(this)
+        val existingMedicines = dataManager.loadMedicines()
+        
+        if (existingMedicines.isEmpty()) {
+            Toast.makeText(this, "Нет доступных лекарств для выбора", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // Создаем список названий лекарств для диалога
+        val medicineNames = existingMedicines.map { 
+            "${it.name} (${it.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))})" 
+        }.toTypedArray()
+        
+        // Отмечаем уже выбранные лекарства
+        val checkedItems = BooleanArray(medicineNames.size) { index ->
+            existingMedicines[index] in selectedRelatedMedicines
+        }
+        
+        AlertDialog.Builder(this)
+            .setTitle("Выберите связанные лекарства")
+            .setMessage("Выберите лекарства, которые принимаются вместе с этим препаратом:")
+            .setMultiChoiceItems(medicineNames, checkedItems) { _, which, isChecked ->
+                val selectedMedicine = existingMedicines[which]
+                if (isChecked) {
+                    if (!selectedRelatedMedicines.contains(selectedMedicine)) {
+                        selectedRelatedMedicines.add(selectedMedicine)
+                    }
+                } else {
+                    selectedRelatedMedicines.remove(selectedMedicine)
+                }
+                updateRelatedMedicinesDisplay()
+            }
+            .setPositiveButton("OK") { _, _ ->
+                updateRelatedMedicinesDisplay()
+            }
+            .setNegativeButton("Отмена") { _, _ ->
+                // Восстанавливаем предыдущее состояние
+                selectedRelatedMedicines.clear()
+            }
+            .setNeutralButton("Очистить") { _, _ ->
+                selectedRelatedMedicines.clear()
+                updateRelatedMedicinesDisplay()
+            }
+            .show()
+    }
+    
+    private fun updateRelatedMedicinesDisplay() {
+        if (selectedRelatedMedicines.isEmpty()) {
+            binding.buttonSelectMedicines.text = "Выбрать связанные лекарства"
+            binding.textSelectedMedicines.visibility = View.GONE
+        } else {
+            val count = selectedRelatedMedicines.size
+            binding.buttonSelectMedicines.text = "Выбрано: $count лекарств"
+            
+            // Показываем краткую информацию о выбранных лекарствах
+            val medicineInfo = selectedRelatedMedicines.joinToString(", ") { 
+                "${it.name} (${it.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))})" 
+            }
+            
+            binding.textSelectedMedicines.text = medicineInfo
+            binding.textSelectedMedicines.visibility = View.VISIBLE
+        }
     }
     
     private fun updateSelectedMedicinesDisplay() {
-        // Пока что скрываем
-        binding.textSelectedMedicines.visibility = View.GONE
+        if (selectedRelatedMedicines.isEmpty()) {
+            binding.textSelectedMedicines.visibility = View.GONE
+        } else {
+            val count = selectedRelatedMedicines.size
+            val medicineInfo = selectedRelatedMedicines.joinToString(", ") { 
+                "${it.name} (${it.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))})" 
+            }
+            
+            binding.textSelectedMedicines.text = "Выбрано: $count лекарств\n$medicineInfo"
+            binding.textSelectedMedicines.visibility = View.VISIBLE
+        }
     }
     
     private fun showTimePickerForMultiple() {
@@ -351,14 +424,24 @@ class AddMedicineActivity : AppCompatActivity() {
     }
     
     private fun updateMultipleTimesDisplay() {
-        // Здесь можно добавить адаптер для RecyclerView
-        // Пока просто обновляем текст кнопки
         if (selectedTimes.isNotEmpty()) {
             val timesText = selectedTimes.joinToString(", ") { 
                 it.format(DateTimeFormatter.ofPattern("HH:mm")) 
             }
-            binding.buttonAddTime.text = "Добавить время ($timesText)"
+            binding.textSelectedTimes.text = "Времена приема: $timesText"
+        } else {
+            binding.textSelectedTimes.text = "Времена приема: 08:00"
         }
+    }
+    
+    private fun showLoadingState() {
+        binding.loadingOverlay.visibility = View.VISIBLE
+        binding.bottomAppBar.visibility = View.GONE
+    }
+    
+    private fun hideLoadingState() {
+        binding.loadingOverlay.visibility = View.GONE
+        binding.bottomAppBar.visibility = View.VISIBLE
     }
     
     private fun saveMedicine() {
@@ -368,79 +451,32 @@ class AddMedicineActivity : AppCompatActivity() {
         val notes = binding.editTextNotes.text.toString().trim()
         val isInsulin = binding.checkBoxInsulin.isChecked
         
+        // Показываем loading state
+        showLoadingState()
+        
         // Валидация
         if (name.isEmpty()) {
+            hideLoadingState()
             binding.editTextName.error = "Введите название лекарства"
             return
         }
         
-        if (dosage.isEmpty()) {
-            binding.editTextDosage.error = "Введите дозировку"
-            return
-        }
-        
         if (quantityText.isEmpty()) {
+            hideLoadingState()
             binding.editTextQuantity.error = "Введите количество"
             return
         }
         
         val quantity = quantityText.toIntOrNull()
         if (quantity == null || quantity <= 0) {
+            hideLoadingState()
             binding.editTextQuantity.error = "Введите корректное количество"
             return
         }
         
-        // Определяем времена приема
-        val doseTimes = if (binding.switchMultipleDoses.isChecked && selectedTimes.isNotEmpty()) {
-            selectedTimes
-        } else {
-            listOf(selectedTime)
-        }
-        
-        // Определяем dosageTimes на основе выбранной частоты
-        val dosageTimes = when (selectedFrequency) {
-            DosageFrequency.DAILY -> listOf(DosageTime.MORNING, DosageTime.AFTERNOON, DosageTime.EVENING)
-            DosageFrequency.EVERY_OTHER_DAY -> listOf(DosageTime.MORNING)
-            DosageFrequency.TWICE_A_WEEK -> listOf(DosageTime.MORNING, DosageTime.EVENING)
-            DosageFrequency.THREE_TIMES_A_WEEK -> listOf(DosageTime.MORNING, DosageTime.AFTERNOON, DosageTime.EVENING)
-            DosageFrequency.WEEKLY -> listOf(DosageTime.MORNING)
-            DosageFrequency.CUSTOM -> listOf(DosageTime.CUSTOM)
-        }
-        
-        // Определяем customDays для пользовательской схемы
-        val customDays = if (selectedFrequency == DosageFrequency.CUSTOM) {
-            if (selectedDays.isNotEmpty()) {
-                selectedDays.sorted().toList()
-            } else {
-                listOf(1, 2, 3, 4, 5, 6, 7) // Все дни недели по умолчанию
-            }
-        } else {
-            emptyList()
-        }
-        
-        // Определяем customTimes для пользовательской схемы
-        val customTimes = if (selectedFrequency == DosageFrequency.CUSTOM) {
-            doseTimes
-        } else {
-            emptyList()
-        }
-        
-
-        
-        // Получаем данные группы
-        val groupName = binding.editTextGroupName.text.toString().trim()
-        val groupOrderText = binding.editTextGroupOrder.text.toString().trim()
-        val groupOrder = groupOrderText.toIntOrNull() ?: 1
-        
-        // Создаем ID группы, если указано название
-        val groupId = if (groupName.isNotEmpty()) {
-            System.currentTimeMillis() // Простой способ генерации ID
-        } else {
-            null
-        }
-        
         // Создаем лекарство
         val medicine = Medicine(
+            id = 0,
             name = name,
             dosage = dosage,
             quantity = quantity,
@@ -449,57 +485,147 @@ class AddMedicineActivity : AppCompatActivity() {
             time = selectedTime,
             notes = notes,
             isInsulin = isInsulin,
-            frequency = selectedFrequency,
-            dosageTimes = dosageTimes,
-            customDays = customDays,
-            customTimes = customTimes,
-            startDate = System.currentTimeMillis(),
+            isActive = true,
+            takenToday = false,
+            isMissed = false,
+            groupName = binding.editTextGroupName.text.toString().trim(),
+            groupOrder = binding.editTextGroupOrder.text.toString().toIntOrNull() ?: 1,
             multipleDoses = binding.switchMultipleDoses.isChecked,
-            dosesPerDay = doseTimes.size,
-            doseTimes = doseTimes,
-            groupId = groupId,
-            groupName = groupName,
-            groupOrder = groupOrder,
+            doseTimes = selectedTimes,
+            customDays = selectedDays.toList(),
             relatedMedicineIds = selectedRelatedMedicines.map { it.id },
             isPartOfGroup = selectedRelatedMedicines.isNotEmpty()
         )
         
-        // Логируем созданное лекарство для отладки
-        android.util.Log.d("AddMedicine", "Creating medicine: name=${medicine.name}, dosage=${medicine.dosage}, " +
-            "quantity=${medicine.quantity}, frequency=${medicine.frequency}, " +
-            "dosageTimes=${medicine.dosageTimes}, customDays=${medicine.customDays}, " +
-            "customTimes=${medicine.customTimes}, multipleDoses=${medicine.multipleDoses}, " +
-            "doseTimes=${medicine.doseTimes}")
-        
-        // Сохраняем в корутине
+        // Сохраняем лекарство
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val medicineId = viewModel.insertMedicine(medicine)
+                val success = viewModel.insertMedicine(medicine)
                 
-                // Переключаемся на главный поток для UI операций
-                CoroutineScope(Dispatchers.Main).launch {
-                    if (medicineId > 0) {
-                        // Планируем уведомление для нового лекарства
-                        val intent = Intent(this@AddMedicineActivity, NotificationService::class.java).apply {
-                            action = "SCHEDULE_MEDICINE"
-                            putExtra("medicine_id", medicineId)
-                        }
-                        startService(intent)
-                        
+                if (success > 0) {
+                    // Если есть связанные лекарства, создаем группу
+                    if (selectedRelatedMedicines.isNotEmpty()) {
+                        createMedicineGroup(medicine, selectedRelatedMedicines)
+                    }
+                    
+                    CoroutineScope(Dispatchers.Main).launch {
+                        hideLoadingState()
                         Toast.makeText(this@AddMedicineActivity, "Лекарство добавлено", Toast.LENGTH_SHORT).show()
                         finish()
-                    } else {
-                        Toast.makeText(this@AddMedicineActivity, "Ошибка сохранения лекарства", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        hideLoadingState()
+                        Toast.makeText(this@AddMedicineActivity, "Ошибка добавления", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
-                // Переключаемся на главный поток для показа ошибки
                 CoroutineScope(Dispatchers.Main).launch {
-                    Toast.makeText(this@AddMedicineActivity, "Ошибка сохранения: ${e.message}", Toast.LENGTH_LONG).show()
-                    e.printStackTrace()
+                    hideLoadingState()
+                    Toast.makeText(this@AddMedicineActivity, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+    
+    private fun createMedicineGroup(newMedicine: Medicine, relatedMedicines: List<Medicine>) {
+        val dataManager = DataManager(this)
+        val groupName = "Группа ${newMedicine.name}"
+        
+        // Обновляем новое лекарство с названием группы
+        val updatedNewMedicine = newMedicine.copy(
+            groupName = groupName,
+            groupOrder = 1
+        )
+        dataManager.updateMedicine(updatedNewMedicine)
+        
+        // Обновляем связанные лекарства
+        relatedMedicines.forEachIndexed { index, medicine ->
+            val updatedMedicine = medicine.copy(
+                groupName = groupName,
+                groupOrder = index + 2 // Новое лекарство имеет порядок 1
+            )
+            dataManager.updateMedicine(updatedMedicine)
+        }
+        
+        android.util.Log.d("AddMedicineActivity", "Создана группа '$groupName' с ${relatedMedicines.size + 1} лекарствами")
+    }
+    
+    private fun showCreateGroupFromExistingDialog() {
+        val dataManager = DataManager(this)
+        val existingMedicines = dataManager.loadMedicines()
+        
+        if (existingMedicines.isEmpty()) {
+            Toast.makeText(this, "Нет доступных лекарств для создания группы", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // Создаем список названий лекарств для диалога
+        val medicineNames = existingMedicines.map { 
+            "${it.name} (${it.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))})" 
+        }.toTypedArray()
+        
+        val selectedMedicines = mutableListOf<Medicine>()
+        val checkedItems = BooleanArray(medicineNames.size) { false }
+        
+        AlertDialog.Builder(this)
+            .setTitle("Создать группу из существующих лекарств")
+            .setMessage("Выберите лекарства для объединения в группу:")
+            .setMultiChoiceItems(medicineNames, checkedItems) { _, which, isChecked ->
+                val selectedMedicine = existingMedicines[which]
+                if (isChecked) {
+                    if (!selectedMedicines.contains(selectedMedicine)) {
+                        selectedMedicines.add(selectedMedicine)
+                    }
+                } else {
+                    selectedMedicines.remove(selectedMedicine)
+                }
+            }
+            .setPositiveButton("Создать группу") { _, _ ->
+                if (selectedMedicines.isNotEmpty()) {
+                    showGroupNameDialog(selectedMedicines)
+                } else {
+                    Toast.makeText(this, "Выберите хотя бы одно лекарство", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
+    private fun showGroupNameDialog(medicines: List<Medicine>) {
+        val input = android.widget.EditText(this)
+        input.hint = "Введите название группы"
+        input.setText("Группа ${medicines.first().name}")
+        
+        AlertDialog.Builder(this)
+            .setTitle("Название группы")
+            .setView(input)
+            .setPositiveButton("Создать") { _, _ ->
+                val groupName = input.text.toString().trim()
+                if (groupName.isNotEmpty()) {
+                    createGroupFromExistingMedicines(groupName, medicines)
+                } else {
+                    Toast.makeText(this, "Введите название группы", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
+    private fun createGroupFromExistingMedicines(groupName: String, medicines: List<Medicine>) {
+        val dataManager = DataManager(this)
+        
+        // Обновляем все выбранные лекарства
+        medicines.forEachIndexed { index, medicine ->
+            val updatedMedicine = medicine.copy(
+                groupName = groupName,
+                groupOrder = index + 1
+            )
+            dataManager.updateMedicine(updatedMedicine)
+        }
+        
+        Toast.makeText(this, "Группа '$groupName' создана с ${medicines.size} лекарствами", Toast.LENGTH_SHORT).show()
+        android.util.Log.d("AddMedicineActivity", "Создана группа '$groupName' с ${medicines.size} лекарствами")
     }
     
     override fun onSupportNavigateUp(): Boolean {

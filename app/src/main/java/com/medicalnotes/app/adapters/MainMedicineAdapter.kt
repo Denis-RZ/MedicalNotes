@@ -36,145 +36,153 @@ class MainMedicineAdapter(
         private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
         fun bind(medicine: Medicine) {
-            binding.apply {
-                // Устанавливаем название лекарства
-                textMedicineName.text = medicine.name
-                
-                textMedicineDosage.text = medicine.dosage
-                
-                // Добавляем схему приема к дозировке
-                val dosageDescription = DosageCalculator.getDosageDescription(medicine)
-                val groupInfo = if (medicine.groupName.isNotEmpty()) {
-                    " (${medicine.groupName}, №${medicine.groupOrder})"
-                } else {
-                    ""
-                }
-                val fullDosageText = if (medicine.dosage.isNotEmpty()) {
-                    "$dosageDescription - ${medicine.dosage}$groupInfo"
-                } else {
-                    dosageDescription + groupInfo
-                }
-                textMedicineDosage.text = fullDosageText
-                
-                // Получаем статус лекарства
-                val medicineStatus = DosageCalculator.getMedicineStatus(medicine)
-                
-                // Отображаем время приема
-                val timeText = if (medicine.multipleDoses && medicine.doseTimes.isNotEmpty()) {
-                    val times = medicine.doseTimes.map { it.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) }
-                    times.joinToString(", ")
-                } else {
-                    medicine.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
-                }
-                textMedicineTime.text = timeText
-                
-                textMedicineQuantity.text = "Осталось: ${medicine.remainingQuantity} ${medicine.medicineType.lowercase()}"
-                
-                // Показываем статус в зависимости от состояния лекарства
-                when (medicineStatus) {
-                    MedicineStatus.OVERDUE -> {
-                        textMissedStatus.visibility = android.view.View.VISIBLE
-                        textMissedStatus.text = "ПРОСРОЧЕНО"
-                        textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
-                        textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.missed_background)
-                        
-                        // Красный фон для просроченных лекарств
+            try {
+                binding.apply {
+                    // Устанавливаем название лекарства
+                    textMedicineName.text = medicine.name
+                    
+                    textMedicineDosage.text = medicine.dosage
+                    
+                    // Добавляем схему приема к дозировке
+                    val dosageDescription = DosageCalculator.getDosageDescription(medicine)
+                    val groupInfo = if (medicine.groupName.isNotEmpty()) {
+                        " (${medicine.groupName}, №${medicine.groupOrder})"
+                    } else {
+                        ""
+                    }
+                    val fullDosageText = if (medicine.dosage.isNotEmpty()) {
+                        "$dosageDescription - ${medicine.dosage}$groupInfo"
+                    } else {
+                        dosageDescription + groupInfo
+                    }
+                    textMedicineDosage.text = fullDosageText
+                    
+                    // Получаем статус лекарства
+                    val medicineStatus = DosageCalculator.getMedicineStatus(medicine)
+                    
+                    // Отображаем время приема
+                    val timeText = if (medicine.multipleDoses && medicine.doseTimes.isNotEmpty()) {
+                        val times = medicine.doseTimes.map { it.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) }
+                        times.joinToString(", ")
+                    } else {
+                        medicine.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                    }
+                    textMedicineTime.text = timeText
+                    
+                    textMedicineQuantity.text = "Осталось: ${medicine.remainingQuantity} ${medicine.medicineType.lowercase()}"
+                    
+                    // Показываем статус в зависимости от состояния лекарства
+                    when (medicineStatus) {
+                        MedicineStatus.OVERDUE -> {
+                            textMissedStatus.visibility = android.view.View.VISIBLE
+                            textMissedStatus.text = "ПРОСРОЧЕНО"
+                            textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
+                            textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.missed_background)
+                            
+                            // Красный фон для просроченных лекарств
+                            cardMedicine.setCardBackgroundColor(
+                                root.context.getColor(com.medicalnotes.app.R.color.medical_red_light)
+                            )
+                            
+                            // Мигание кнопки для просроченных лекарств
+                            startButtonBlinkingAnimation(buttonTakeMedicine, true)
+                            
+                            // Уведомление для просроченных лекарств
+                            try {
+                                val notificationManager = com.medicalnotes.app.utils.NotificationManager(binding.root.context)
+                                notificationManager.showOverdueMedicineNotification(medicine)
+                            } catch (e: Exception) {
+                                android.util.Log.e("MainMedicineAdapter", "Error showing notification", e)
+                            }
+                            
+                            // Красная кнопка для просроченных лекарств
+                            buttonTakeMedicine.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                                root.context.getColor(com.medicalnotes.app.R.color.medical_red)
+                            )
+                        }
+                        MedicineStatus.UPCOMING -> {
+                            textMissedStatus.visibility = android.view.View.VISIBLE
+                            textMissedStatus.text = "СЕГОДНЯ"
+                            textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_green))
+                            textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
+                            
+                            // Обычный фон
+                            cardMedicine.setCardBackgroundColor(
+                                root.context.getColor(com.medicalnotes.app.R.color.white)
+                            )
+                            
+                            // Зеленая кнопка для обычных лекарств
+                            buttonTakeMedicine.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                                root.context.getColor(com.medicalnotes.app.R.color.button_success)
+                            )
+                        }
+                        MedicineStatus.TAKEN_TODAY -> {
+                            textMissedStatus.visibility = android.view.View.VISIBLE
+                            textMissedStatus.text = "ПРИНЯТО"
+                            textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_blue))
+                            textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
+                            
+                            // Обычный фон
+                            cardMedicine.setCardBackgroundColor(
+                                root.context.getColor(com.medicalnotes.app.R.color.white)
+                            )
+                            
+                            // Синяя кнопка для принятых лекарств
+                            buttonTakeMedicine.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                                root.context.getColor(com.medicalnotes.app.R.color.medical_blue)
+                            )
+                        }
+                        else -> {
+                            textMissedStatus.visibility = android.view.View.GONE
+                            cardMedicine.setCardBackgroundColor(
+                                root.context.getColor(com.medicalnotes.app.R.color.white)
+                            )
+                            
+                            // Обычная кнопка
+                            buttonTakeMedicine.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                                root.context.getColor(com.medicalnotes.app.R.color.button_success)
+                            )
+                        }
+                    }
+                    
+                    if (medicine.notes.isNotEmpty()) {
+                        textMedicineNotes.text = medicine.notes
+                        textMedicineNotes.visibility = android.view.View.VISIBLE
+                    } else {
+                        textMedicineNotes.visibility = android.view.View.GONE
+                    }
+                    
+                    // Цветовая индикация для инсулина
+                    if (medicine.isInsulin) {
                         cardMedicine.setCardBackgroundColor(
-                            root.context.getColor(com.medicalnotes.app.R.color.medical_red_light)
+                            root.context.getColor(com.medicalnotes.app.R.color.medical_orange)
                         )
-                        
-                        // Мигание кнопки для просроченных лекарств
-                        startButtonBlinkingAnimation(buttonTakeMedicine, true)
-                        
-                        // Уведомление для просроченных лекарств
-                        val notificationManager = com.medicalnotes.app.utils.NotificationManager(binding.root.context)
-                        notificationManager.showOverdueMedicineNotification(medicine)
-                        
-                        // Красная кнопка для просроченных лекарств
-                        buttonTakeMedicine.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                    }
+                    
+                    // Индикация низкого запаса
+                    if (medicine.remainingQuantity <= 5) {
+                        textMedicineQuantity.setTextColor(
                             root.context.getColor(com.medicalnotes.app.R.color.medical_red)
                         )
-                    }
-                    MedicineStatus.UPCOMING -> {
-                        textMissedStatus.visibility = android.view.View.VISIBLE
-                        textMissedStatus.text = "СЕГОДНЯ"
-                        textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_green))
-                        textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
-                        
-                        // Обычный фон
-                        cardMedicine.setCardBackgroundColor(
-                            root.context.getColor(com.medicalnotes.app.R.color.white)
-                        )
-                        
-                        // Зеленая кнопка для обычных лекарств
-                        buttonTakeMedicine.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                            root.context.getColor(com.medicalnotes.app.R.color.button_success)
+                    } else {
+                        textMedicineQuantity.setTextColor(
+                            root.context.getColor(com.medicalnotes.app.R.color.black)
                         )
                     }
-                    MedicineStatus.TAKEN_TODAY -> {
-                        textMissedStatus.visibility = android.view.View.VISIBLE
-                        textMissedStatus.text = "ПРИНЯТО"
-                        textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_blue))
-                        textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
-                        
-                        // Обычный фон
-                        cardMedicine.setCardBackgroundColor(
-                            root.context.getColor(com.medicalnotes.app.R.color.white)
-                        )
-                        
-                        // Синяя кнопка для принятых лекарств
-                        buttonTakeMedicine.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                            root.context.getColor(com.medicalnotes.app.R.color.medical_blue)
-                        )
+                    
+                    buttonTakeMedicine.setOnClickListener {
+                        onMedicineClick(medicine)
                     }
-                    else -> {
-                        textMissedStatus.visibility = android.view.View.GONE
-                        cardMedicine.setCardBackgroundColor(
-                            root.context.getColor(com.medicalnotes.app.R.color.white)
-                        )
-                        
-                        // Обычная кнопка
-                        buttonTakeMedicine.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                            root.context.getColor(com.medicalnotes.app.R.color.button_success)
-                        )
+                    
+                    // Устанавливаем тег для мигания
+                    if (medicineStatus == MedicineStatus.OVERDUE) {
+                        buttonTakeMedicine.tag = "overdue"
+                    } else {
+                        buttonTakeMedicine.tag = null
                     }
                 }
-                
-                if (medicine.notes.isNotEmpty()) {
-                    textMedicineNotes.text = medicine.notes
-                    textMedicineNotes.visibility = android.view.View.VISIBLE
-                } else {
-                    textMedicineNotes.visibility = android.view.View.GONE
-                }
-                
-                // Цветовая индикация для инсулина
-                if (medicine.isInsulin) {
-                    cardMedicine.setCardBackgroundColor(
-                        root.context.getColor(com.medicalnotes.app.R.color.medical_orange)
-                    )
-                }
-                
-                // Индикация низкого запаса
-                if (medicine.remainingQuantity <= 5) {
-                    textMedicineQuantity.setTextColor(
-                        root.context.getColor(com.medicalnotes.app.R.color.medical_red)
-                    )
-                } else {
-                    textMedicineQuantity.setTextColor(
-                        root.context.getColor(com.medicalnotes.app.R.color.black)
-                    )
-                }
-                
-                buttonTakeMedicine.setOnClickListener {
-                    onMedicineClick(medicine)
-                }
-                
-                // Устанавливаем тег для мигания
-                if (medicineStatus == MedicineStatus.OVERDUE) {
-                    buttonTakeMedicine.tag = "overdue"
-                } else {
-                    buttonTakeMedicine.tag = null
-                }
+            } catch (e: Exception) {
+                android.util.Log.e("MainMedicineAdapter", "Error binding medicine data", e)
             }
         }
         

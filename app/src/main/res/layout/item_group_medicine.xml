@@ -5,33 +5,35 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/margin_small"
-    app:cardCornerRadius="8dp"
+    app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
     app:strokeWidth="1dp"
-    app:strokeColor="@color/medical_gray">
+    app:strokeColor="?attr/colorOutline"
+    style="@style/Widget.Material3.CardView.Filled">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="@dimen/margin_medium"
+        android:padding="@dimen/padding_medium"
         android:gravity="center_vertical">
 
-        <!-- Порядок в группе -->
-        <TextView
-            android:id="@+id/textOrder"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:text="1"
-            android:textSize="@dimen/text_size_large"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:background="@drawable/status_background"
-            android:layout_marginEnd="@dimen/margin_small"
-            tools:text="1" />
+        <!-- Order in group -->
+                    <com.google.android.material.chip.Chip
+                android:id="@+id/textOrder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorOnPrimary"
+                app:chipBackgroundColor="?attr/colorPrimary"
+                app:chipStrokeWidth="1dp"
+                app:chipStrokeColor="?attr/colorOutline"
+                android:layout_marginEnd="@dimen/margin_small"
+                android:contentDescription="Порядок в группе"
+                tools:text="1" />
 
-        <!-- Основная информация о лекарстве -->
+        <!-- Medicine information -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -43,9 +45,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Название лекарства"
-                android:textSize="@dimen/text_size_large"
-                android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                android:textColor="?attr/colorOnSurface"
                 android:maxLines="1"
                 android:ellipsize="end"
                 tools:text="Аспирин" />
@@ -55,8 +56,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Дозировка"
-                android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/medical_gray"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 tools:text="500 мг" />
 
             <LinearLayout
@@ -65,107 +66,107 @@
                 android:orientation="horizontal"
                 android:layout_marginTop="@dimen/margin_small">
 
-                <!-- Время приема -->
-                <TextView
+                <!-- Time -->
+                <com.google.android.material.chip.Chip
                     android:id="@+id/textMedicineTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="08:00"
-                    android:textSize="@dimen/text_size_small"
-                    android:textColor="@color/medical_blue"
-                    android:background="@drawable/time_background"
-                    android:padding="4dp"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    app:chipBackgroundColor="?attr/colorPrimaryContainer"
+                    app:chipStrokeWidth="1dp"
+                    app:chipStrokeColor="?attr/colorOutline"
                     android:layout_marginEnd="@dimen/margin_small"
+                    android:contentDescription="Время приема"
                     tools:text="08:00" />
 
-                <!-- Количество остатка -->
-                <TextView
+                <!-- Quantity -->
+                <com.google.android.material.chip.Chip
                     android:id="@+id/textRemainingQuantity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="25 таблеток"
-                    android:textSize="@dimen/text_size_small"
-                    android:textColor="@color/medical_gray"
-                    android:background="@drawable/count_background"
-                    android:padding="4dp"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    app:chipBackgroundColor="?attr/colorSurfaceVariant"
+                    app:chipStrokeWidth="1dp"
+                    app:chipStrokeColor="?attr/colorOutline"
+                    android:layout_marginEnd="@dimen/margin_small"
+                    android:contentDescription="Количество остатка"
                     tools:text="25 таблеток" />
 
-                <!-- Статус -->
-                <TextView
+                <!-- Status -->
+                <com.google.android.material.chip.Chip
                     android:id="@+id/textStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="СЕГОДНЯ"
-                    android:textSize="@dimen/text_size_small"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
                     android:textColor="@color/white"
-                    android:background="@drawable/status_background"
-                    android:padding="4dp"
+                    app:chipBackgroundColor="@color/medical_green"
+                    app:chipStrokeWidth="1dp"
+                    app:chipStrokeColor="?attr/colorOutline"
+                    android:contentDescription="Статус лекарства"
                     tools:text="СЕГОДНЯ" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Кнопки управления -->
+        <!-- Control buttons -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_marginStart="@dimen/margin_small">
 
-            <!-- Кнопка редактирования -->
+            <!-- Edit button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonEdit"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:text="✏️"
-                android:textSize="@dimen/text_size_small"
-                style="@style/Widget.Material3.Button.IconButton"
-                app:icon="@android:drawable/ic_menu_edit"
+                app:icon="@drawable/ic_edit"
                 app:iconSize="20dp"
-                app:iconTint="@color/medical_blue"
-                android:layout_marginBottom="@dimen/margin_small" />
+                app:iconTint="?attr/colorPrimary"
+                android:layout_marginBottom="@dimen/margin_small"
+                android:contentDescription="Редактировать лекарство"
+                style="@style/Widget.Material3.Button.IconButton" />
 
-            <!-- Кнопка перемещения вверх -->
+            <!-- Move up button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonMoveUp"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:text="↑"
-                android:textSize="@dimen/text_size_small"
-                android:textStyle="bold"
-                style="@style/Widget.Material3.Button.IconButton"
-                app:icon="@android:drawable/arrow_up_float"
+                app:icon="@drawable/ic_arrow_up"
                 app:iconSize="20dp"
-                app:iconTint="@color/medical_gray"
-                android:layout_marginBottom="@dimen/margin_small" />
+                app:iconTint="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="@dimen/margin_small"
+                android:contentDescription="Переместить вверх"
+                style="@style/Widget.Material3.Button.IconButton" />
 
-            <!-- Кнопка перемещения вниз -->
+            <!-- Move down button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonMoveDown"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:text="↓"
-                android:textSize="@dimen/text_size_small"
-                android:textStyle="bold"
-                style="@style/Widget.Material3.Button.IconButton"
-                app:icon="@android:drawable/arrow_down_float"
+                app:icon="@drawable/ic_arrow_down"
                 app:iconSize="20dp"
-                app:iconTint="@color/medical_gray"
-                android:layout_marginBottom="@dimen/margin_small" />
+                app:iconTint="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="@dimen/margin_small"
+                android:contentDescription="Переместить вниз"
+                style="@style/Widget.Material3.Button.IconButton" />
 
-            <!-- Кнопка удаления из группы -->
+            <!-- Remove button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonRemove"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:text="✕"
-                android:textSize="@dimen/text_size_small"
-                android:textStyle="bold"
-                style="@style/Widget.Material3.Button.IconButton"
-                app:icon="@android:drawable/ic_menu_delete"
+                app:icon="@drawable/ic_delete"
                 app:iconSize="20dp"
-                app:iconTint="@color/medical_red" />
+                app:iconTint="@color/medical_red"
+                android:contentDescription="Удалить из группы"
+                style="@style/Widget.Material3.Button.IconButton" />
 
         </LinearLayout>
 

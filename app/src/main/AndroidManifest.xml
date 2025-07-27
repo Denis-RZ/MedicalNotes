@@ -2,22 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Основные разрешения для уведомлений и будильников -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Базовые разрешения -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    
-    <!-- Дополнительные разрешения для работы в фоне -->
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
-    
-    <!-- Разрешения для работы с файлами -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
@@ -26,28 +13,16 @@
     <application
         android:name=".MedicalNotesApplication"
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MedicalNotes"
-        android:hardwareAccelerated="true"
-        android:requestLegacyExternalStorage="false"
-        android:preserveLegacyExternalStorage="false"
-        tools:targetApi="31">
+        android:theme="@style/Theme.MedicalNotes">
         
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
-            android:taskAffinity=""
-            android:excludeFromRecents="false"
-            android:theme="@style/Theme.MedicalNotes"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:windowSoftInputMode="adjustResize">
+            android:theme="@style/Theme.MedicalNotes">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -57,79 +32,34 @@
         <activity
             android:name=".AddMedicineActivity"
             android:exported="false"
-            android:theme="@style/Theme.MedicalNotes"
-            android:screenOrientation="portrait" />
-
-        <activity
-            android:name=".ButtonCustomizationActivity"
-            android:exported="false"
-            android:theme="@style/Theme.MedicalNotes"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.MedicalNotes" />
 
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
-            android:theme="@style/Theme.MedicalNotes"
-            android:screenOrientation="portrait" />
-
-        <activity
-            android:name=".NotificationManagerActivity"
-            android:exported="false"
-            android:theme="@style/Theme.MedicalNotes"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.MedicalNotes" />
 
         <activity
             android:name=".MedicineManagerActivity"
             android:exported="false"
-            android:theme="@style/Theme.MedicalNotes"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.MedicalNotes" />
 
         <activity
             android:name=".EditMedicineActivity"
             android:exported="false"
-            android:theme="@style/Theme.MedicalNotes.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.MedicalNotes.NoActionBar" />
 
         <activity
             android:name=".GroupManagementActivity"
             android:exported="false"
-            android:theme="@style/Theme.MedicalNotes"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.MedicalNotes" />
 
         <activity
             android:name=".ElderlyMedicineManagementActivity"
             android:exported="false"
-            android:theme="@style/Theme.MedicalNotes"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.MedicalNotes" />
 
-        <!-- Сервис для уведомлений -->
-        <service
-            android:name=".service.NotificationService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="specialUse"
-            android:description="@string/service_description" />
-
-        <!-- Сервис для ежедневного сброса статуса -->
-        <service
-            android:name=".service.DailyResetService"
-            android:enabled="true"
-            android:exported="false" />
-
-        <!-- Ресивер для автозапуска при загрузке системы -->
-        <receiver
-            android:name=".receiver.BootReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </receiver>
-
-        <!-- Ресивер для обработки уведомлений о лекарствах -->
+        <!-- Ресивер для уведомлений -->
         <receiver
             android:name=".receiver.MedicineAlarmReceiver"
             android:enabled="true"
@@ -138,29 +68,6 @@
                 <action android:name="com.medicalnotes.app.MEDICINE_REMINDER" />
             </intent-filter>
         </receiver>
-
-        <!-- WorkManager для фоновых задач -->
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
-        </provider>
-
-        <!-- FileProvider для экспорта данных -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
 
     </application>
 

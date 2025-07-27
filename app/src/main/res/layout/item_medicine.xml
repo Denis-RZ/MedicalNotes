@@ -6,9 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/margin_small"
-    app:cardCornerRadius="@dimen/card_corner_radius"
-    app:cardElevation="@dimen/card_elevation"
-    app:cardUseCompatPadding="true">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="?attr/colorOutline"
+    app:cardUseCompatPadding="true"
+    style="@style/Widget.Material3.CardView.Filled">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,7 +19,7 @@
         android:orientation="vertical"
         android:padding="@dimen/padding_medium">
 
-        <!-- CheckBox для выбора -->
+        <!-- CheckBox for selection -->
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/checkboxMedicine"
             android:layout_width="wrap_content"
@@ -25,14 +28,16 @@
             android:layout_marginBottom="@dimen/margin_small"
             android:visibility="gone"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:contentDescription="Выбрать лекарство" />
 
-        <!-- Заголовок с названием и временем -->
+        <!-- Header with name and time -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="@dimen/margin_small">
+            android:layout_marginBottom="@dimen/margin_small"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/textMedicineName"
@@ -40,41 +45,45 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Название лекарства"
-                android:textSize="@dimen/text_size_large"
-                android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:maxLines="2"
+                android:ellipsize="end"
                 tools:text="Метформин" />
 
-            <TextView
+            <com.google.android.material.chip.Chip
                 android:id="@+id/textMedicineTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="08:00"
-                android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/primary"
-                android:background="@drawable/time_background"
-                android:padding="@dimen/padding_small"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                app:chipBackgroundColor="?attr/colorPrimaryContainer"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                app:chipStrokeWidth="1dp"
+                app:chipStrokeColor="?attr/colorOutline"
+                android:contentDescription="Время приема лекарства"
                 tools:text="08:00" />
 
         </LinearLayout>
 
-        <!-- Дозировка -->
+        <!-- Dosage -->
         <TextView
             android:id="@+id/textMedicineDosage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Дозировка"
-            android:textSize="@dimen/text_size_medium"
-            android:textColor="@color/dark_gray"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginBottom="@dimen/margin_small"
             tools:text="500 мг 2 раза в день" />
 
-        <!-- Количество таблеток и статус пропуска -->
+        <!-- Quantity and status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="@dimen/margin_small">
+            android:layout_marginBottom="@dimen/margin_small"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/textMedicineQuantity"
@@ -82,98 +91,108 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Осталось: 0 таблеток"
-                android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/black"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                android:textColor="?attr/colorOnSurface"
                 tools:text="Осталось: 15 таблеток" />
 
-            <TextView
+            <com.google.android.material.chip.Chip
                 android:id="@+id/textMissedStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="ПРОПУЩЕНО"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/medical_red"
-                android:textStyle="bold"
-                android:background="@drawable/missed_background"
-                android:padding="@dimen/padding_small"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:textColor="@color/white"
+                app:chipBackgroundColor="@color/medical_red"
                 android:visibility="gone"
+                android:contentDescription="Статус пропуска лекарства"
                 tools:visibility="visible" />
 
         </LinearLayout>
 
-        <!-- Заметки -->
+        <!-- Notes -->
         <TextView
             android:id="@+id/textMedicineNotes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Заметки"
-            android:textSize="@dimen/text_size_small"
-            android:textColor="@color/gray"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginBottom="@dimen/margin_small"
             android:visibility="gone"
+            android:contentDescription="Заметки о лекарстве"
             tools:text="Принимать во время еды"
             tools:visibility="visible" />
 
-        <!-- Кнопки действий -->
+        <!-- Action buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/margin_small">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonTakeMedicine"
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="Принял"
-                android:textSize="10sp"
-                android:layout_marginEnd="2dp"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
+                android:text="@string/taken"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                app:icon="@drawable/ic_save"
+                app:iconSize="16dp"
+                app:iconTint="?attr/colorOnPrimary"
+                android:layout_marginEnd="4dp"
+                android:contentDescription="Отметить как принято"
+                style="@style/Widget.Material3.Button" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonSkipMedicine"
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="Пропустил"
-                android:textSize="10sp"
-                android:layout_marginStart="2dp"
-                android:layout_marginEnd="2dp"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:backgroundTint="@color/medical_red" />
+                android:text="@string/skipped"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                app:icon="@drawable/ic_cancel"
+                app:iconSize="16dp"
+                app:iconTint="?attr/colorOnSurface"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:contentDescription="Отметить как пропущено"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonEditMedicine"
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="Изменить"
-                android:textSize="10sp"
-                android:textColor="@color/primary"
-                android:layout_marginStart="2dp"
-                android:layout_marginEnd="2dp"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:backgroundTint="@color/white" />
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                app:icon="@drawable/ic_edit"
+                app:iconSize="16dp"
+                app:iconTint="?attr/colorPrimary"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:contentDescription="Редактировать лекарство"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonDeleteMedicine"
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="Удалить"
-                android:textSize="10sp"
-                android:textColor="@color/medical_red"
-                android:layout_marginStart="2dp"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:backgroundTint="@color/white" />
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                app:icon="@drawable/ic_delete"
+                app:iconSize="16dp"
+                app:iconTint="@color/medical_red"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="Удалить лекарство"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
 
         </LinearLayout>
 

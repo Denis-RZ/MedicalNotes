@@ -41,6 +41,54 @@
         <!-- Customize your theme here. -->
         <item name="android:textSize">18sp</item>
         <item name="android:buttonStyle">@style/Widget.MedicalNotes.Button</item>
+        
+        <!-- Material You support -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+    </style>
+
+    <!-- Material You theme with dynamic colors -->
+    <style name="Theme.MedicalNotes.MaterialYou" parent="Theme.Material3.DayNight">
+        <!-- Dynamic colors for Material You -->
+        <item name="colorPrimary">@android:color/system_accent1_600</item>
+        <item name="colorPrimaryContainer">@android:color/system_accent1_100</item>
+        <item name="colorOnPrimary">@android:color/system_accent1_0</item>
+        <item name="colorOnPrimaryContainer">@android:color/system_accent1_900</item>
+        
+        <item name="colorSecondary">@android:color/system_accent2_600</item>
+        <item name="colorSecondaryContainer">@android:color/system_accent2_100</item>
+        <item name="colorOnSecondary">@android:color/system_accent2_0</item>
+        <item name="colorOnSecondaryContainer">@android:color/system_accent2_900</item>
+        
+        <item name="colorSurface">@android:color/system_neutral1_50</item>
+        <item name="colorSurfaceVariant">@android:color/system_neutral1_100</item>
+        <item name="colorOnSurface">@android:color/system_neutral1_900</item>
+        <item name="colorOnSurfaceVariant">@android:color/system_neutral1_700</item>
+        
+        <item name="colorOutline">@android:color/system_neutral1_200</item>
+        
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        
+        <!-- Typography -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Material3.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Material3.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Material3.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Material3.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Material3.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Material3.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Material3.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Material3.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Material3.BodySmall</item>
+        
+        <!-- Customize your theme here. -->
+        <item name="android:textSize">18sp</item>
+        <item name="android:buttonStyle">@style/Widget.MedicalNotes.Button</item>
+        
+        <!-- Material You support -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
 
     <!-- Material 3 Button Styles -->
@@ -90,8 +138,6 @@
         <item name="startIconTint">?attr/colorPrimary</item>
         <item name="endIconTint">?attr/colorOnSurfaceVariant</item>
     </style>
-
-
 
     <!-- Toolbar Styles -->
     <style name="Widget.MedicalNotes.Toolbar" parent="Widget.MaterialComponents.Toolbar">
