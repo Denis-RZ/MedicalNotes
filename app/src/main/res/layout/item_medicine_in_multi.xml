@@ -1,124 +1,218 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardMedicine"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="@dimen/padding_small"
-    android:background="@drawable/medicine_item_background"
-    android:layout_marginBottom="2dp"
-    android:gravity="center_vertical">
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardUseCompatPadding="true"
+    style="@style/Widget.Material3.CardView.Filled">
 
-    <!-- Цветной индикатор -->
-    <View
-        android:id="@+id/viewColorIndicator"
-        android:layout_width="8dp"
-        android:layout_height="40dp"
-        android:background="@color/primary"
-        android:layout_marginEnd="@dimen/margin_small" />
-
-    <!-- Информация о лекарстве -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical">
 
-        <!-- Название лекарства -->
-        <TextView
-            android:id="@+id/textMedicineName"
-            android:layout_width="match_parent"
+        <!-- CheckBox для выбора -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkboxMedicine"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Название лекарства"
-            android:textSize="@dimen/text_size_medium"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:gravity="start|center_vertical"
-            android:maxLines="1"
-            android:ellipsize="end"
-            tools:text="Аспирин" />
+            android:layout_marginEnd="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:buttonTint="@color/medicine_accent"
+            android:contentDescription="Выбрать лекарство" />
 
-        <!-- Дозировка и количество -->
+        <!-- Иконка лекарства -->
+        <FrameLayout
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/medicine_in_group_background">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_medicine"
+                app:tint="@color/medicine_accent" />
+
+        </FrameLayout>
+
+        <!-- Информация о лекарстве -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="2dp"
-            android:gravity="center_vertical">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
+            <!-- Название и порядок -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:id="@+id/textMedicineName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Название лекарства"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/medicine_text_primary"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="Метформин" />
+
+                <TextView
+                    android:id="@+id/textMedicineOrder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="№1"
+                    android:textSize="11sp"
+                    android:textColor="@color/medicine_accent"
+                    android:textStyle="bold"
+                    android:background="@drawable/time_pill_background"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    tools:text="№1" />
+
+            </LinearLayout>
+
+            <!-- Дозировка -->
             <TextView
                 android:id="@+id/textMedicineDosage"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="500 мг"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/dark_gray"
-                android:gravity="start|center_vertical"
+                android:text="Дозировка"
+                android:textSize="12sp"
+                android:textColor="@color/medicine_text_secondary"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginBottom="2dp"
                 tools:text="500 мг" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="•"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/dark_gray"
-                android:layout_marginStart="@dimen/margin_small"
-                android:layout_marginEnd="@dimen/margin_small" />
-
+            <!-- Количество -->
             <TextView
                 android:id="@+id/textMedicineQuantity"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1 таблетка"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/dark_gray"
-                tools:text="1 таблетка" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="•"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/dark_gray"
-                android:layout_marginStart="@dimen/margin_small"
-                android:layout_marginEnd="@dimen/margin_small" />
-
-            <TextView
-                android:id="@+id/textRemainingQuantity"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Осталось: 15"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/dark_gray"
-                tools:text="Осталось: 15" />
+                android:text="Осталось: 0 шт"
+                android:textSize="11sp"
+                android:textColor="@color/medicine_text_secondary"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Осталось: 15 шт" />
 
         </LinearLayout>
 
+
+
+        <!-- Статус -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <!-- Статус активности -->
+            <TextView
+                android:id="@+id/textStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="АКТИВНО"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/status_pill_background"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:layout_marginBottom="2dp"
+                android:letterSpacing="0.2"
+                tools:text="АКТИВНО" />
+
+            <!-- Статус низкого запаса -->
+            <TextView
+                android:id="@+id/textLowStockStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="МАЛО"
+                android:textSize="8sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/low_stock_status_pill_background"
+                android:paddingHorizontal="4dp"
+                android:paddingVertical="1dp"
+                android:visibility="gone"
+                android:letterSpacing="0.1"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <!-- Статус принятия -->
+        <ImageView
+            android:id="@+id/imageTakenStatus"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_check"
+            app:tint="@color/medicine_success"
+            android:visibility="gone"
+            android:contentDescription="Лекарство принято"
+            tools:visibility="visible" />
+
     </LinearLayout>
 
-    <!-- Предупреждение о низком количестве -->
+    <!-- Оставшееся количество -->
+    <TextView
+        android:id="@+id/textRemainingQuantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Осталось: 15"
+        android:textSize="10sp"
+        android:textColor="@color/medicine_text_secondary"
+        android:layout_gravity="center"
+        android:layout_marginTop="8dp"
+        tools:text="Осталось: 15" />
+
+    <!-- Цветовой индикатор -->
+    <View
+        android:id="@+id/viewColorIndicator"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/medicine_accent"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <!-- Предупреждение о низком запасе -->
     <TextView
         android:id="@+id/textLowStockWarning"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="⚠️"
-        android:textSize="@dimen/text_size_large"
-        android:textColor="@color/medical_red"
+        android:text="ЗАКАНЧИВАЕТСЯ!"
+        android:textSize="9sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:background="@drawable/low_stock_status_background"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="2dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="4dp"
         android:visibility="gone"
-        android:layout_marginStart="@dimen/margin_small"
+        android:letterSpacing="0.2"
         tools:visibility="visible" />
 
-    <!-- Статус принятия -->
-    <ImageView
-        android:id="@+id/imageTakenStatus"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@android:drawable/ic_menu_send"
-        android:tint="@color/medical_green"
-        android:visibility="gone"
-        android:layout_marginStart="@dimen/margin_small"
-        tools:visibility="visible" />
-
-</LinearLayout> 
+</com.google.android.material.card.MaterialCardView> 

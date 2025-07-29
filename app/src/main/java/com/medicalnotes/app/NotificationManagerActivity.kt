@@ -46,6 +46,8 @@ class NotificationManagerActivity : AppCompatActivity() {
     }
     
     private fun setupViews() {
+        // Настройка toolbar
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Менеджер уведомлений"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }

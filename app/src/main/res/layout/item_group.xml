@@ -2,29 +2,55 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardGroup"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/margin_small"
-    app:cardCornerRadius="16dp"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="18dp"
     app:cardElevation="4dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="?attr/colorOutline"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardUseCompatPadding="true"
     style="@style/Widget.Material3.CardView.Filled">
+
+    <!-- Градиентный фон карточки -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/medicine_card_gradient" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/padding_large">
+        android:padding="20dp">
 
-        <!-- Group header -->
+        <!-- Заголовок группы -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="@dimen/margin_small">
+            android:layout_marginBottom="16dp"
+            android:gravity="center_vertical">
 
+            <!-- Иконка группы -->
+            <FrameLayout
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/group_icon_background">
+
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_group"
+                    app:tint="@color/white" />
+
+            </FrameLayout>
+
+            <!-- Название группы -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -36,56 +62,214 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Название группы"
-                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/medicine_text_primary"
                     android:maxLines="1"
                     android:ellipsize="end"
-                    tools:text="Витамины" />
+                    tools:text="Утренние лекарства" />
 
                 <TextView
-                    android:id="@+id/textMedicineCount"
-                    android:layout_width="match_parent"
+                    android:id="@+id/textGroupOrder"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0 лекарств"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    tools:text="3 лекарства" />
+                    android:text="Порядок: 1"
+                    android:textSize="14sp"
+                    android:textColor="@color/medicine_accent"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    tools:text="Порядок: 1" />
 
             </LinearLayout>
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/buttonAddMedicine"
+            <!-- Статус группы -->
+            <TextView
+                android:id="@+id/textGroupStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="48dp"
-                android:minHeight="48dp"
-                app:fabSize="mini"
-                app:icon="@drawable/ic_add"
-                app:iconSize="20dp"
-                app:iconTint="?attr/colorOnPrimary"
-                android:backgroundTint="?attr/colorPrimary"
-                android:contentDescription="Добавить лекарство в группу"
-                app:tint="?attr/colorOnPrimary" />
+                android:text="АКТИВНА"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/group_status_background"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:letterSpacing="0.5"
+                tools:text="АКТИВНА" />
 
         </LinearLayout>
 
-        <!-- Medicine list -->
+        <!-- Информация о группе -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp">
+
+            <!-- Количество лекарств -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/info_block_soft"
+                android:padding="16dp"
+                android:layout_marginBottom="12dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_medicine"
+                    android:layout_marginEnd="12dp"
+                    app:tint="@color/medicine_accent" />
+
+                <TextView
+                    android:id="@+id/textMedicineCount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Лекарств в группе: 0"
+                    android:textSize="15sp"
+                    android:textColor="@color/medicine_text_secondary"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="Лекарств в группе: 3" />
+
+            </LinearLayout>
+
+            <!-- Время приема группы -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/info_block_soft"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_time"
+                    android:layout_marginEnd="12dp"
+                    app:tint="@color/medicine_accent" />
+
+                <TextView
+                    android:id="@+id/textGroupTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Время приема: 08:00"
+                    android:textSize="15sp"
+                    android:textColor="@color/medicine_text_secondary"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="Время приема: 08:00" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Список лекарств -->
         <TextView
             android:id="@+id/textMedicineList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Список лекарств"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:layout_marginBottom="@dimen/margin_small"
-            tools:text="Аспирин, Парацетамол, Ибупрофен" />
+            android:textSize="14sp"
+            android:textColor="@color/medicine_text_secondary"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/notes_block_background"
+            android:padding="16dp"
+            android:lineSpacingExtra="2dp"
+            tools:text="Метформин, Гликлазид, Аспирин" />
 
-        <!-- Divider -->
-        <View
+        <!-- Заметки группы (если есть) -->
+        <TextView
+            android:id="@+id/textGroupNotes"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?attr/colorOutline"
-            android:alpha="0.3" />
+            android:layout_height="wrap_content"
+            android:text="Заметки группы"
+            android:textSize="14sp"
+            android:textColor="@color/medicine_text_secondary"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/notes_block_background"
+            android:padding="16dp"
+            android:visibility="gone"
+            android:lineSpacingExtra="2dp"
+            tools:text="Принимать все лекарства вместе"
+            tools:visibility="visible" />
+
+        <!-- Кнопки действий -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- Кнопка добавления -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonAddMedicine"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="ДОБАВИТЬ ЛЕКАРСТВО"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/medicine_success"
+                app:icon="@drawable/ic_add"
+                app:iconSize="18dp"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconTint="@color/medicine_success"
+                app:strokeColor="@color/medicine_success"
+                app:strokeWidth="2dp"
+                app:cornerRadius="12dp"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            <!-- Кнопка редактирования -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonEditGroup"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="ИЗМЕНИТЬ"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/medicine_accent"
+                app:icon="@drawable/ic_edit"
+                app:iconSize="20dp"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@color/medicine_accent"
+                app:strokeColor="@color/medicine_accent"
+                app:strokeWidth="2dp"
+                app:cornerRadius="12dp"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            <!-- Кнопка удаления -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonDeleteGroup"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="УДАЛИТЬ"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/medicine_error"
+                app:icon="@drawable/ic_delete"
+                app:iconSize="20dp"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@color/medicine_error"
+                app:strokeColor="@color/medicine_error"
+                app:strokeWidth="2dp"
+                app:cornerRadius="12dp"
+                android:layout_marginStart="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

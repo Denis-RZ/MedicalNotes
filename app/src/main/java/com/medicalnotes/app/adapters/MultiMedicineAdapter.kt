@@ -77,7 +77,7 @@ class MultiMedicineAdapter(
                     )
                     
                     // Красный фон для просроченных
-                    binding.cardMedicineMulti.setCardBackgroundColor(
+                    binding.cardMedicine.setCardBackgroundColor(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.medical_red_light)
                     )
                 }
@@ -90,7 +90,7 @@ class MultiMedicineAdapter(
                     )
                     
                     // Обычный фон
-                    binding.cardMedicineMulti.setCardBackgroundColor(
+                    binding.cardMedicine.setCardBackgroundColor(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                     )
                 }

@@ -46,13 +46,81 @@ class AddMedicineActivity : AppCompatActivity() {
     }
     
     private fun setupViews() {
-        // Устанавливаем заголовок
+        // Настройка toolbar
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Добавить лекарство"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        
+        // Настраиваем AutoCompleteTextView для типов лекарств
+        setupMedicineTypeDropdown()
         
         // Устанавливаем время по умолчанию
         updateTimeDisplay()
         updateFrequencyDisplay()
+    }
+    
+    private fun setupMedicineTypeDropdown() {
+        val medicineTypes = listOf(
+            "Таблетки",
+            "Капсулы", 
+            "Уколы (инъекции)",
+            "Оземпик",
+            "Мунджаро",
+            "Инсулин",
+            "Капли",
+            "Сироп",
+            "Ингаляции",
+            "Мази",
+            "Гели",
+            "Кремы",
+            "Свечи",
+            "Спреи",
+            "Аэрозоли",
+            "Порошки",
+            "Суспензии",
+            "Эмульсии",
+            "Другое"
+        )
+        
+        val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, medicineTypes)
+        binding.autoCompleteMedicineType.setAdapter(adapter)
+        
+        // ✅ ИСПРАВЛЕНО: Правильно устанавливаем значение по умолчанию
+        binding.autoCompleteMedicineType.setText(selectedMedicineType, false)
+        android.util.Log.d("AddMedicine", "Set default medicine type: $selectedMedicineType")
+        
+        // ✅ ИСПРАВЛЕНО: Обработчик выбора типа лекарства
+        binding.autoCompleteMedicineType.setOnItemClickListener { _, _, position, _ ->
+            selectedMedicineType = medicineTypes[position]
+            android.util.Log.d("AddMedicine", "Medicine type selected: $selectedMedicineType")
+            
+            // Автоматически отмечаем чекбокс инсулина для соответствующих типов
+            binding.checkBoxInsulin.isChecked = selectedMedicineType == "Инсулин" || 
+                                               selectedMedicineType == "Оземпик" || 
+                                               selectedMedicineType == "Мунджаро"
+            
+            android.util.Log.d("AddMedicine", "Insulin checkbox set to: ${binding.checkBoxInsulin.isChecked}")
+        }
+        
+        // ✅ ИСПРАВЛЕНО: Обработчики для AutoCompleteTextView
+        binding.autoCompleteMedicineType.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.autoCompleteMedicineType.showDropDown()
+            }
+        }
+        
+        // Добавляем обработчик изменения текста для отслеживания ручного ввода
+        binding.autoCompleteMedicineType.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val newType = s?.toString()?.trim() ?: ""
+                if (newType.isNotEmpty()) {
+                    selectedMedicineType = newType
+                    android.util.Log.d("AddMedicine", "Medicine type changed via text input: $selectedMedicineType")
+                }
+            }
+        })
     }
     
     private fun setupListeners() {
@@ -64,9 +132,10 @@ class AddMedicineActivity : AppCompatActivity() {
             showFrequencyDialog()
         }
         
-        binding.autoCompleteMedicineType.setOnClickListener {
-            showMedicineTypeDialog()
-        }
+        // Убираем старый обработчик - теперь используется AutoCompleteTextView
+        // binding.autoCompleteMedicineType.setOnClickListener {
+        //     showMedicineTypeDialog()
+        // }
         
         binding.buttonWeekDays.setOnClickListener {
             showWeekDaysDialog()
@@ -253,45 +322,7 @@ class AddMedicineActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun showMedicineTypeDialog() {
-        val medicineTypes = listOf(
-            "Таблетки",
-            "Капсулы", 
-            "Уколы (инъекции)",
-            "Оземпик",
-            "Мунджаро",
-            "Инсулин",
-            "Капли",
-            "Сироп",
-            "Ингаляции",
-            "Мази",
-            "Гели",
-            "Кремы",
-            "Свечи",
-            "Спреи",
-            "Аэрозоли",
-            "Порошки",
-            "Суспензии",
-            "Эмульсии",
-            "Другое"
-        )
-        val currentIndex = medicineTypes.indexOf(selectedMedicineType).coerceAtLeast(0)
-        
-        AlertDialog.Builder(this)
-            .setTitle("Выберите тип лекарства")
-            .setSingleChoiceItems(medicineTypes.toTypedArray(), currentIndex) { _, which ->
-                selectedMedicineType = medicineTypes[which]
-                binding.autoCompleteMedicineType.setText(selectedMedicineType)
-                
-                // Автоматически отмечаем чекбокс инсулина для соответствующих типов
-                binding.checkBoxInsulin.isChecked = selectedMedicineType == "Инсулин" || 
-                                                   selectedMedicineType == "Оземпик" || 
-                                                   selectedMedicineType == "Мунджаро"
-            }
-            .setPositiveButton("OK", null)
-            .setNegativeButton("Отмена", null)
-            .show()
-    }
+    // Метод showMedicineTypeDialog удален - теперь используется AutoCompleteTextView
     
     private fun showWeekDaysDialog() {
         val weekDays = arrayOf(
@@ -474,6 +505,24 @@ class AddMedicineActivity : AppCompatActivity() {
             return
         }
         
+        // ✅ ИСПРАВЛЕНО: Определяем dosageTimes на основе выбранной частоты
+        val dosageTimes = when (selectedFrequency) {
+            DosageFrequency.DAILY -> listOf(DosageTime.MORNING, DosageTime.AFTERNOON, DosageTime.EVENING)
+            DosageFrequency.EVERY_OTHER_DAY -> listOf(DosageTime.MORNING)
+            DosageFrequency.TWICE_A_WEEK -> listOf(DosageTime.MORNING, DosageTime.EVENING)
+            DosageFrequency.THREE_TIMES_A_WEEK -> listOf(DosageTime.MORNING, DosageTime.AFTERNOON, DosageTime.EVENING)
+            DosageFrequency.WEEKLY -> listOf(DosageTime.MORNING)
+            DosageFrequency.CUSTOM -> listOf(DosageTime.CUSTOM)
+        }
+        
+        android.util.Log.d("AddMedicine", "=== СОЗДАНИЕ ЛЕКАРСТВА ===")
+        android.util.Log.d("AddMedicine", "Название: $name")
+        android.util.Log.d("AddMedicine", "Частота: $selectedFrequency")
+        android.util.Log.d("AddMedicine", "DosageTimes: $dosageTimes")
+        android.util.Log.d("AddMedicine", "Время: $selectedTime")
+        android.util.Log.d("AddMedicine", "Группа: ${binding.editTextGroupName.text.toString().trim()}")
+        android.util.Log.d("AddMedicine", "Порядок в группе: ${binding.editTextGroupOrder.text.toString().toIntOrNull() ?: 1}")
+        
         // Создаем лекарство
         val medicine = Medicine(
             id = 0,
@@ -488,11 +537,13 @@ class AddMedicineActivity : AppCompatActivity() {
             isActive = true,
             takenToday = false,
             isMissed = false,
+            frequency = selectedFrequency, // ✅ ИСПРАВЛЕНО: Добавляем частоту
+            dosageTimes = dosageTimes, // ✅ ИСПРАВЛЕНО: Добавляем времена приема
+            customDays = selectedDays.toList(),
             groupName = binding.editTextGroupName.text.toString().trim(),
             groupOrder = binding.editTextGroupOrder.text.toString().toIntOrNull() ?: 1,
             multipleDoses = binding.switchMultipleDoses.isChecked,
             doseTimes = selectedTimes,
-            customDays = selectedDays.toList(),
             relatedMedicineIds = selectedRelatedMedicines.map { it.id },
             isPartOfGroup = selectedRelatedMedicines.isNotEmpty()
         )

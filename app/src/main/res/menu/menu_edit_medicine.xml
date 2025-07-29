@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_delete"
-        android:icon="@drawable/ic_delete"
-        android:title="Удалить"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/action_save"
+        android:title="Сохранить"
+        android:icon="@drawable/ic_save"
+        app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_duplicate"
-        android:icon="@drawable/ic_duplicate"
-        android:title="Дублировать"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/action_delete"
+        android:title="Удалить"
+        android:icon="@drawable/ic_delete"
+        app:showAsAction="always" />
 
 </menu> 

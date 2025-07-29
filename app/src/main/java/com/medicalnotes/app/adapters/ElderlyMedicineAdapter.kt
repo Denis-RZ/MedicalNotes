@@ -82,14 +82,14 @@ class ElderlyMedicineAdapter(
             }
 
             // Кнопка пропуска (показываем только если лекарство не принято)
-            if (!medicine.takenToday) {
-                binding.buttonSkipMedicine.visibility = android.view.View.VISIBLE
-                binding.buttonSkipMedicine.setOnClickListener {
-                    onSkipClick(medicine)
+                            if (!medicine.takenToday) {
+                    binding.buttonSkip.visibility = android.view.View.VISIBLE
+                    binding.buttonSkip.setOnClickListener {
+                        onSkipClick(medicine)
+                    }
+                } else {
+                    binding.buttonSkip.visibility = android.view.View.GONE
                 }
-            } else {
-                binding.buttonSkipMedicine.visibility = android.view.View.GONE
-            }
 
             // Изменяем текст кнопки в зависимости от статуса
             if (medicine.takenToday) {

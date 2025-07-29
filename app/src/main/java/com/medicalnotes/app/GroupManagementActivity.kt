@@ -35,6 +35,11 @@ class GroupManagementActivity : AppCompatActivity() {
     }
     
     private fun setupViews() {
+        // Настройка toolbar
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = "Управление группами"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        
         // Настройка RecyclerView
         groupAdapter = GroupAdapter(
             onGroupClick = { groupName ->

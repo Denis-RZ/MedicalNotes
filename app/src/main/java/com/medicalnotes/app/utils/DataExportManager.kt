@@ -200,11 +200,19 @@ class DataExportManager(private val context: Context) {
     private fun createExportInfo(exportFolder: File, timestamp: String) {
         try {
             val infoFile = File(exportFolder, "export_info.txt")
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            val versionCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode.toInt()
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.versionCode
+            }
+            
             val info = """
                 Экспорт данных MedicalNotes
                 Дата: $timestamp
-                Версия приложения: ${context.packageManager.getPackageInfo(context.packageName, 0).versionName}
-                Код версии: ${context.packageManager.getPackageInfo(context.packageName, 0).versionCode}
+                Версия приложения: ${packageInfo.versionName}
+                Код версии: $versionCode
                 
                 Файлы в этой папке:
                 - medicines.json - данные о лекарствах

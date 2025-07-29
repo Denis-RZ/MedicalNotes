@@ -37,6 +37,14 @@ class AddMedicineViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
     
+    fun loadTodayMedicines() {
+        viewModelScope.launch {
+            android.util.Log.d("AddMedicineViewModel", "Loading today medicines")
+            val medicines = medicineRepository.getAllMedicines()
+            android.util.Log.d("AddMedicineViewModel", "Loaded ${medicines.size} medicines for today")
+        }
+    }
+    
     suspend fun deleteMedicine(medicine: Medicine): Boolean {
         return medicineRepository.deleteMedicine(medicine.id)
     }

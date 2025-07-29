@@ -47,8 +47,12 @@ class MedicineGridAdapter(
                 val updatedMedicine = MedicineStatusHelper.updateMedicineStatus(medicine)
                 val status = MedicineStatusHelper.getMedicineStatus(updatedMedicine)
                 
-                // Основная информация
-                textMedicineName.text = updatedMedicine.name
+                // Основная информация - ограничиваем длину названия
+                textMedicineName.text = if (updatedMedicine.name.length > 15) {
+                    updatedMedicine.name.take(12) + "..."
+                } else {
+                    updatedMedicine.name
+                }
                 
                 // Дозировка с схемой приема
                 val dosageDescription = DosageCalculator.getDosageDescription(updatedMedicine)
@@ -62,7 +66,12 @@ class MedicineGridAdapter(
                 } else {
                     dosageDescription + groupInfo
                 }
-                textMedicineDosage.text = fullDosageText
+                // Ограничиваем длину текста для предотвращения обрезания
+                textMedicineDosage.text = if (fullDosageText.length > 25) {
+                    fullDosageText.take(22) + "..."
+                } else {
+                    fullDosageText
+                }
                 
                 // Время приема
                 val timeText = if (updatedMedicine.multipleDoses && updatedMedicine.doseTimes.isNotEmpty()) {
@@ -71,67 +80,64 @@ class MedicineGridAdapter(
                 } else {
                     updatedMedicine.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                 }
-                textMedicineSchedule.text = timeText
+                binding.textMedicineTime.text = timeText
                 
-                // Количество
+                // Количество - показываем только количество таблеток, не время
                 textMedicineQuantity.text = "${updatedMedicine.remainingQuantity} ${updatedMedicine.medicineType.lowercase()}"
                 
                 // Статус в зависимости от состояния
                 when (status) {
                     MedicineStatus.UPCOMING -> {
                         textStatus.text = "СЕГОДНЯ"
-                        textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_green))
-                        textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
-                        root.setCardBackgroundColor(root.context.getColor(com.medicalnotes.app.R.color.white))
+                        textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
+                        textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_light_background)
                     }
                     MedicineStatus.OVERDUE -> {
                         textStatus.text = "ПРОСРОЧЕНО"
                         textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
-                        textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
-                        root.setCardBackgroundColor(root.context.getColor(com.medicalnotes.app.R.color.medical_red))
+                        textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.missed_light_background)
                     }
                     MedicineStatus.TAKEN_TODAY -> {
                         textStatus.text = "ПРИНЯТО"
-                        textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_blue))
-                        textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
-                        root.setCardBackgroundColor(root.context.getColor(com.medicalnotes.app.R.color.light_gray))
+                        textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
+                        textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_light_background)
                     }
                     MedicineStatus.NOT_TODAY -> {
-                        textStatus.text = "НЕ СЕГОДНЯ"
-                        textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.gray))
-                        textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
-                        root.setCardBackgroundColor(root.context.getColor(com.medicalnotes.app.R.color.white))
+                        textStatus.text = "НЕ АКТИВНО"
+                        textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
+                        textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_light_background)
                     }
                 }
                 
                 // Индикатор низкого запаса
                 if (medicine.remainingQuantity <= 5) {
-                    textLowStock.visibility = android.view.View.VISIBLE
+                    binding.textLowStock.visibility = android.view.View.VISIBLE
+                    binding.textLowStock.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.low_stock_compact_background)
                 } else {
-                    textLowStock.visibility = android.view.View.GONE
+                    binding.textLowStock.visibility = android.view.View.GONE
                 }
                 
                 // Кнопки в зависимости от статуса
                 when (status) {
                     MedicineStatus.UPCOMING -> {
-                        buttonToggle.text = "Принял"
-                        buttonToggle.visibility = android.view.View.VISIBLE
-                        buttonEdit.visibility = android.view.View.VISIBLE
+                        binding.buttonToggle.text = "Принял"
+                        binding.buttonToggle.visibility = android.view.View.VISIBLE
+                        binding.buttonEdit.visibility = android.view.View.VISIBLE
                     }
                     MedicineStatus.OVERDUE -> {
-                        buttonToggle.text = "Принял"
-                        buttonToggle.visibility = android.view.View.VISIBLE
-                        buttonEdit.visibility = android.view.View.VISIBLE
+                        binding.buttonToggle.text = "Принял"
+                        binding.buttonToggle.visibility = android.view.View.VISIBLE
+                        binding.buttonEdit.visibility = android.view.View.VISIBLE
                     }
                     MedicineStatus.TAKEN_TODAY -> {
-                        buttonToggle.text = "Отменить"
-                        buttonToggle.visibility = android.view.View.VISIBLE
-                        buttonEdit.visibility = android.view.View.VISIBLE
+                        binding.buttonToggle.text = "Отменить"
+                        binding.buttonToggle.visibility = android.view.View.VISIBLE
+                        binding.buttonEdit.visibility = android.view.View.VISIBLE
                     }
                     MedicineStatus.NOT_TODAY -> {
-                        buttonToggle.text = "Отключить"
-                        buttonToggle.visibility = android.view.View.VISIBLE
-                        buttonEdit.visibility = android.view.View.VISIBLE
+                        binding.buttonToggle.text = "Отключить"
+                        binding.buttonToggle.visibility = android.view.View.VISIBLE
+                        binding.buttonEdit.visibility = android.view.View.VISIBLE
                     }
                 }
                 
@@ -148,14 +154,13 @@ class MedicineGridAdapter(
                 
                 // Обработчики событий
                 root.setOnClickListener { onMedicineClick(updatedMedicine) }
-                buttonDelete.setOnClickListener { onDeleteClick(updatedMedicine) }
-                buttonEdit.setOnClickListener { 
+                binding.buttonEdit.setOnClickListener { 
                     android.util.Log.d("MedicineGridAdapter", "Edit button clicked for: ${updatedMedicine.name}")
                     onEditClick(updatedMedicine) 
                 }
                 
                 // Обработчик кнопки принятия/отмены
-                buttonToggle.setOnClickListener { 
+                binding.buttonToggle.setOnClickListener { 
                     when (status) {
                         MedicineStatus.UPCOMING, MedicineStatus.OVERDUE -> {
                             android.util.Log.d("MedicineGridAdapter", "Taken button clicked for: ${updatedMedicine.name}")

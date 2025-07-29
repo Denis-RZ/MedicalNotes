@@ -33,4 +33,32 @@
     <!-- ===== РАЗМЕРЫ КАРТОЧЕК ===== -->
     <dimen name="card_corner_radius">8dp</dimen>
     <dimen name="card_elevation">4dp</dimen>
+    
+    <!-- ===== МОБИЛЬНЫЕ ОПТИМИЗАЦИИ ===== -->
+    <!-- Минимальная высота для кнопок на мобильных -->
+    <dimen name="button_min_height_mobile">48dp</dimen>
+    <!-- Минимальная ширина для кнопок с текстом -->
+    <dimen name="button_min_width_mobile">80dp</dimen>
+    <!-- Отступы для маленьких экранов -->
+    <dimen name="margin_mobile_small">4dp</dimen>
+    <dimen name="margin_mobile_medium">8dp</dimen>
+    <dimen name="margin_mobile_large">12dp</dimen>
+    <!-- Размеры текста для мобильных -->
+    <dimen name="text_size_mobile_small">12sp</dimen>
+    <dimen name="text_size_mobile_medium">14sp</dimen>
+    <dimen name="text_size_mobile_large">16sp</dimen>
+    <!-- Высота полей ввода для мобильных -->
+    <dimen name="input_height_mobile">48dp</dimen>
+    <!-- Радиус скругления для мобильных -->
+    <dimen name="corner_radius_mobile">8dp</dimen>
+    
+    <!-- ===== АДАПТИВНЫЕ РАЗМЕРЫ ===== -->
+    <!-- Для экранов меньше 360dp -->
+    <dimen name="text_size_compact">11sp</dimen>
+    <dimen name="button_height_compact">44dp</dimen>
+    <dimen name="margin_compact">2dp</dimen>
+    <!-- Для экранов больше 600dp -->
+    <dimen name="text_size_large_screen">18sp</dimen>
+    <dimen name="button_height_large_screen">64dp</dimen>
+    <dimen name="margin_large_screen">24dp</dimen>
 </resources> 

@@ -5,11 +5,12 @@
     android:id="@+id/cardMedicine"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/margin_small"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
     app:cardCornerRadius="16dp"
-    app:cardElevation="2dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="?attr/colorOutline"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/white"
     app:cardUseCompatPadding="true"
     style="@style/Widget.Material3.CardView.Filled">
 
@@ -17,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/padding_medium">
+        android:padding="16dp">
 
         <!-- CheckBox for selection -->
         <com.google.android.material.checkbox.MaterialCheckBox
@@ -25,10 +26,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:layout_marginBottom="@dimen/margin_small"
+            android:layout_marginBottom="12dp"
             android:visibility="gone"
             android:clickable="true"
             android:focusable="true"
+            app:buttonTint="@color/medicine_accent"
             android:contentDescription="Выбрать лекарство" />
 
         <!-- Header with name and time -->
@@ -36,8 +38,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="@dimen/margin_small"
+            android:layout_marginBottom="12dp"
             android:gravity="center_vertical">
+
+            <!-- Иконка лекарства -->
+            <FrameLayout
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/medicine_icon_modern_background">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_medicine"
+                    app:tint="@color/medicine_accent" />
+
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/textMedicineName"
@@ -46,9 +64,10 @@
                 android:layout_weight="1"
                 android:text="Название лекарства"
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/medicine_text_primary"
                 android:maxLines="2"
                 android:ellipsize="end"
+                android:lineSpacingExtra="1dp"
                 tools:text="Метформин" />
 
             <com.google.android.material.chip.Chip
@@ -57,10 +76,11 @@
                 android:layout_height="wrap_content"
                 android:text="08:00"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                app:chipBackgroundColor="?attr/colorPrimaryContainer"
-                android:textColor="?attr/colorOnPrimaryContainer"
-                app:chipStrokeWidth="1dp"
-                app:chipStrokeColor="?attr/colorOutline"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                app:chipBackgroundColor="@color/medicine_accent"
+                app:chipStrokeWidth="0dp"
+                app:chipCornerRadius="12dp"
                 android:contentDescription="Время приема лекарства"
                 tools:text="08:00" />
 
@@ -73,16 +93,32 @@
             android:layout_height="wrap_content"
             android:text="Дозировка"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:layout_marginBottom="@dimen/margin_small"
+            android:textColor="@color/medicine_text_secondary"
+            android:layout_marginBottom="12dp"
+            android:lineSpacingExtra="1dp"
             tools:text="500 мг 2 раза в день" />
+
+        <!-- Notes -->
+        <TextView
+            android:id="@+id/textMedicineNotes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Заметки"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            android:textColor="@color/medicine_text_secondary"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone"
+            android:lineSpacingExtra="1dp"
+            android:contentDescription="Заметки о лекарстве"
+            tools:text="Принимать во время еды"
+            tools:visibility="visible" />
 
         <!-- Quantity and status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="@dimen/margin_small"
+            android:layout_marginBottom="12dp"
             android:gravity="center_vertical">
 
             <TextView
@@ -92,54 +128,76 @@
                 android:layout_weight="1"
                 android:text="Осталось: 0 таблеток"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/medicine_text_secondary"
                 tools:text="Осталось: 15 таблеток" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/textMissedStatus"
+            <!-- Status indicators -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ПРОПУЩЕНО"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                android:textColor="@color/white"
-                app:chipBackgroundColor="@color/medical_red"
-                android:visibility="gone"
-                android:contentDescription="Статус пропуска лекарства"
-                tools:visibility="visible" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Low stock indicator -->
+                <TextView
+                    android:id="@+id/textLowStockStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="МАЛО"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@drawable/low_stock_status_background"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:visibility="gone"
+                    android:letterSpacing="0.3"
+                    tools:visibility="visible" />
+
+                <!-- Missed status -->
+                <TextView
+                    android:id="@+id/textMissedStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ПРОПУЩЕНО"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@drawable/missed_status_background"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:visibility="gone"
+                    android:letterSpacing="0.3"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
 
         </LinearLayout>
-
-        <!-- Notes -->
-        <TextView
-            android:id="@+id/textMedicineNotes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Заметки"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:layout_marginBottom="@dimen/margin_small"
-            android:visibility="gone"
-            android:contentDescription="Заметки о лекарстве"
-            tools:text="Принимать во время еды"
-            tools:visibility="visible" />
 
         <!-- Action buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="@dimen/margin_small">
+            android:gravity="center">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonTakeMedicine"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="@string/taken"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                app:icon="@drawable/ic_save"
+                android:text="ПРИНЯТЬ"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                app:icon="@drawable/ic_check"
                 app:iconSize="16dp"
-                app:iconTint="?attr/colorOnPrimary"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconTint="@color/white"
+                android:backgroundTint="@color/medicine_success"
+                app:cornerRadius="8dp"
                 android:layout_marginEnd="4dp"
                 android:contentDescription="Отметить как принято"
                 style="@style/Widget.Material3.Button" />
@@ -149,12 +207,16 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="@string/skipped"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:text="ПРОПУСТИТЬ"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/medicine_warning"
                 app:icon="@drawable/ic_cancel"
                 app:iconSize="16dp"
-                app:iconTint="?attr/colorOnSurface"
-                app:strokeColor="?attr/colorOutline"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconTint="@color/medicine_warning"
+                app:strokeColor="@color/medicine_warning"
                 app:strokeWidth="1dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -166,12 +228,16 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="Изменить"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:text="ИЗМЕНИТЬ"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/medicine_accent"
                 app:icon="@drawable/ic_edit"
                 app:iconSize="16dp"
-                app:iconTint="?attr/colorPrimary"
-                app:strokeColor="?attr/colorOutline"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconTint="@color/medicine_accent"
+                app:strokeColor="@color/medicine_accent"
                 app:strokeWidth="1dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -183,12 +249,16 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="Удалить"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                android:text="УДАЛИТЬ"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/medicine_error"
                 app:icon="@drawable/ic_delete"
                 app:iconSize="16dp"
-                app:iconTint="@color/medical_red"
-                app:strokeColor="?attr/colorOutline"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconTint="@color/medicine_error"
+                app:strokeColor="@color/medicine_error"
                 app:strokeWidth="1dp"
                 android:layout_marginStart="4dp"
                 android:contentDescription="Удалить лекарство"

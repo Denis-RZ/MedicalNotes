@@ -40,7 +40,8 @@ class MedicineManagerActivity : AppCompatActivity() {
     }
     
     private fun setupViews() {
-        // Устанавливаем заголовок
+        // Настройка toolbar
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Управление лекарствами"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         

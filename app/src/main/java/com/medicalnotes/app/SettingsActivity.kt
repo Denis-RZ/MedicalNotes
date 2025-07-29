@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.medicalnotes.app.databinding.ActivitySettingsBinding
 import com.medicalnotes.app.utils.AppSettings
+import com.medicalnotes.app.utils.VersionUtils
 import com.medicalnotes.app.viewmodels.SettingsViewModel
 import java.io.File
 import java.text.SimpleDateFormat
@@ -31,8 +32,23 @@ class SettingsActivity : AppCompatActivity() {
     }
     
     private fun setupViews() {
+        // Настройка toolbar
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Настройки"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        
+        // Отображение информации о версии
+        binding.textViewVersion.text = "Версия: ${VersionUtils.getShortVersionInfo(this)}"
+        binding.textViewBuildTime.text = "Обновлено: ${VersionUtils.getLastUpdateTime(this)}"
+        
+        try {
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            val installTime = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+                .format(java.util.Date(packageInfo.firstInstallTime))
+            binding.textViewInstallTime.text = "Установлено: $installTime"
+        } catch (e: Exception) {
+            binding.textViewInstallTime.text = "Установлено: Неизвестно"
+        }
     }
     
     private fun setupListeners() {

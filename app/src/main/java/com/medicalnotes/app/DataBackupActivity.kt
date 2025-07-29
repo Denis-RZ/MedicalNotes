@@ -53,6 +53,8 @@ class DataBackupActivity : AppCompatActivity() {
     }
     
     private fun setupViews() {
+        // Настройка toolbar
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Резервное копирование"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }

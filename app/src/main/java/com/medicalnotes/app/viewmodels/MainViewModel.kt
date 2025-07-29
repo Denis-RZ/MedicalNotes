@@ -49,6 +49,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             
             todayMedicines.forEach { medicine ->
                 android.util.Log.d("MainViewModel", "Сегодня: ${medicine.name}")
+                android.util.Log.d("MainViewModel", "  - Время: ${medicine.time}")
+                android.util.Log.d("MainViewModel", "  - Принято сегодня: ${medicine.takenToday}")
+                android.util.Log.d("MainViewModel", "  - Дата начала: ${medicine.startDate}")
             }
             
             _todayMedicines.value = todayMedicines

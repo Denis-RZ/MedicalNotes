@@ -1,132 +1,137 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardMedicine"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    app:cardBackgroundColor="@color/white">
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardUseCompatPadding="true"
+    style="@style/Widget.Material3.CardView.Filled">
+
+    <!-- Градиентный фон карточки -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/medicine_card_gradient" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="16dp"
+        android:gravity="center">
 
-        <!-- Заголовок с кнопкой удаления -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
+        <!-- Иконка лекарства -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/medicine_icon_compact_background">
 
-            <TextView
-                android:id="@+id/textMedicineName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Название лекарства"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <ImageButton
-                android:id="@+id/buttonDelete"
+            <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_delete"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Удалить"
-                app:tint="@color/medical_red" />
+                android:layout_gravity="center"
+                android:src="@drawable/ic_medicine"
+                app:tint="@color/medicine_accent" />
 
-        </LinearLayout>
+        </FrameLayout>
+
+        <!-- Название лекарства -->
+        <TextView
+            android:id="@+id/textMedicineName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Название"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/medicine_text_primary"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:lineSpacingExtra="1dp"
+            android:layout_marginBottom="8dp"
+            tools:text="Метформин" />
+
+        <!-- Время приема -->
+        <TextView
+            android:id="@+id/textMedicineTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="08:00"
+            android:textSize="12sp"
+            android:textColor="@color/medicine_accent"
+            android:textStyle="bold"
+            android:background="@drawable/time_light_background"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:layout_marginBottom="8dp"
+            tools:text="08:00" />
 
         <!-- Дозировка -->
         <TextView
             android:id="@+id/textMedicineDosage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="10 мг"
-            android:textSize="14sp"
-            android:textColor="@color/gray"
-            android:layout_marginBottom="4dp" />
-
-        <!-- Схема приема -->
-        <TextView
-            android:id="@+id/textMedicineSchedule"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="каждый день в 08:00"
-            android:textSize="12sp"
-            android:textColor="@color/medical_blue"
-            android:layout_marginBottom="8dp" />
+            android:text="Дозировка"
+            android:textSize="11sp"
+            android:textColor="@color/medicine_text_secondary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:layout_marginBottom="8dp"
+            tools:text="500 мг" />
 
         <!-- Количество -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/textMedicineQuantity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Осталось:"
-                android:textSize="12sp"
-                android:textColor="@color/gray" />
-
-            <TextView
-                android:id="@+id/textMedicineQuantity"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="15 таблеток"
-                android:textSize="12sp"
-                android:textColor="@color/black"
-                android:layout_marginStart="4dp" />
-
-        </LinearLayout>
+            android:text="0 шт"
+            android:textSize="11sp"
+            android:textColor="@color/medicine_text_secondary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:layout_marginBottom="12dp"
+            tools:text="15 шт" />
 
         <!-- Статус -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/textStatus"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:text="ПРИНЯТО"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:background="@drawable/taken_status_background"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:letterSpacing="0.3"
+            tools:text="ПРИНЯТО" />
 
-            <!-- Статус активности -->
-            <TextView
-                android:id="@+id/textStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="АКТИВНО"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:textColor="@color/medical_green"
-                android:background="@drawable/status_background"
-                android:padding="4dp"
-                android:layout_marginEnd="8dp" />
-
-            <!-- Индикатор низкого запаса -->
-            <TextView
-                android:id="@+id/textLowStock"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ЗАКАНЧИВАЕТСЯ"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:background="@drawable/low_stock_background"
-                android:padding="4dp"
-                android:visibility="gone" />
-
-        </LinearLayout>
+        <!-- Индикатор низкого запаса -->
+        <TextView
+            android:id="@+id/textLowStock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ЗАКАНЧИВАЕТСЯ"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:background="@drawable/low_stock_compact_background"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:letterSpacing="0.2"
+            tools:visibility="visible" />
 
         <!-- Кнопки действий -->
         <LinearLayout
@@ -138,21 +143,41 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonEdit"
                 android:layout_width="0dp"
-                android:layout_height="32dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="Изменить"
-                android:textSize="10sp"
+                android:text="ИЗМЕНИТЬ"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/medicine_accent"
+                app:icon="@drawable/ic_edit"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconTint="@color/medicine_accent"
+                app:strokeColor="@color/medicine_accent"
+                app:strokeWidth="1dp"
                 android:layout_marginEnd="4dp"
+                app:cornerRadius="8dp"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonToggle"
                 android:layout_width="0dp"
-                android:layout_height="32dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="Отключить"
-                android:textSize="10sp"
+                android:text="УДАЛИТЬ"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/medicine_error"
+                app:icon="@drawable/ic_delete"
+                app:iconSize="16dp"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconTint="@color/medicine_error"
+                app:strokeColor="@color/medicine_error"
+                app:strokeWidth="1dp"
                 android:layout_marginStart="4dp"
+                app:cornerRadius="8dp"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
         </LinearLayout>

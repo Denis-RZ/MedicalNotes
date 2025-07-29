@@ -1,15 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true"
     tools:context=".SettingsActivity">
 
-    <LinearLayout
+    <!-- Top App Bar -->
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/margin_medium">
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorSurface"
+            app:contentInsetStartWithNavigation="0dp"
+            app:title="Настройки"
+            app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            app:titleTextColor="?attr/colorOnSurface"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            style="@style/Widget.MedicalNotes.Toolbar" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="88dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/margin_medium">
 
         <TextView
             android:layout_width="match_parent"
@@ -312,6 +345,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Статистика"
+                    android:textSize="@dimen/text_size_mobile_medium"
                     android:maxLines="1"
                     android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
@@ -322,6 +356,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Проверить целостность данных"
+                    android:textSize="@dimen/text_size_mobile_medium"
+                    android:maxLines="2"
+                    android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_marginBottom="@dimen/margin_small" />
 
@@ -330,8 +367,58 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Очистить все данные"
+                    android:textSize="@dimen/text_size_mobile_medium"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:backgroundTint="@android:color/holo_red_light" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Информация о приложении -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
+            style="@style/Widget.Material3.CardView.Filled">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/margin_medium">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="О приложении"
+                    android:textSize="@dimen/text_size_large"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <TextView
+                    android:id="@+id/textViewVersion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Версия: v1.2 (3)"
+                    android:textSize="@dimen/text_size_medium"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <TextView
+                    android:id="@+id/textViewBuildTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Обновлено: 27.12.2024 15:30"
+                    android:textSize="@dimen/text_size_medium"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <TextView
+                    android:id="@+id/textViewInstallTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Установлено: 27.12.2024 15:30"
+                    android:textSize="@dimen/text_size_medium" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -342,7 +429,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Сохранить настройки"
-            android:textSize="@dimen/text_size_large"
+            android:textSize="@dimen/text_size_mobile_large"
+            android:maxLines="1"
+            android:ellipsize="end"
             style="@style/Widget.MedicalNotes.Button.Large"
             android:layout_marginBottom="@dimen/margin_medium" />
 
@@ -351,8 +440,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/back"
-            android:textSize="@dimen/text_size_large"
+            android:textSize="@dimen/text_size_mobile_large"
+            android:maxLines="1"
+            android:ellipsize="end"
             style="@style/Widget.MedicalNotes.Button" />
 
-    </LinearLayout>
-</ScrollView> 
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout> 

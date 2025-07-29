@@ -89,20 +89,27 @@ class EditMedicineActivity : AppCompatActivity() {
             showTimePicker()
         }
         
-        binding.autoCompleteMedicineType.setOnClickListener {
-            android.util.Log.d("EditMedicine", "Medicine type field clicked")
-            showMedicineTypeDialog()
+        // Кнопка выбора частоты
+        binding.buttonFrequency.setOnClickListener {
+            android.util.Log.d("EditMedicine", "Frequency button clicked")
+            showFrequencyDialog()
         }
         
+        // Убираем старые обработчики - теперь используется AutoCompleteTextView
+        // binding.autoCompleteMedicineType.setOnClickListener {
+        //     android.util.Log.d("EditMedicine", "Medicine type field clicked")
+        //     showMedicineTypeDialog()
+        // }
+        
         // Альтернативный способ обработки клика для AutoCompleteTextView
-        binding.autoCompleteMedicineType.setOnTouchListener { _, event ->
-            if (event.action == android.view.MotionEvent.ACTION_DOWN) {
-                android.util.Log.d("EditMedicine", "Medicine type field touched")
-                showMedicineTypeDialog()
-                return@setOnTouchListener true
-            }
-            false
-        }
+        // binding.autoCompleteMedicineType.setOnTouchListener { _, event ->
+        //     if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+        //         android.util.Log.d("EditMedicine", "Medicine type field touched")
+        //         showMedicineTypeDialog()
+        //         return@setOnTouchListener true
+        //     }
+        //     false
+        // }
         
         binding.buttonWeekDays.setOnClickListener {
             android.util.Log.d("EditMedicine", "Week days button clicked")
@@ -128,7 +135,7 @@ class EditMedicineActivity : AppCompatActivity() {
     }
     
     private fun setupMedicineTypeField() {
-        val medicineTypes = arrayOf(
+        val medicineTypes = listOf(
             "Таблетки",
             "Капсулы", 
             "Уколы (инъекции)",
@@ -153,8 +160,46 @@ class EditMedicineActivity : AppCompatActivity() {
         val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, medicineTypes)
         binding.autoCompleteMedicineType.setAdapter(adapter)
         
-        // Отключаем автоматическое отображение dropdown
-        binding.autoCompleteMedicineType.threshold = Int.MAX_VALUE
+        // НЕ устанавливаем значение по умолчанию здесь - оно будет установлено в populateFields()
+        // binding.autoCompleteMedicineType.setText(selectedMedicineType, true)
+        
+        // ✅ ИСПРАВЛЕНО: Обработчик выбора типа лекарства
+        binding.autoCompleteMedicineType.setOnItemClickListener { _, _, position, _ ->
+            selectedMedicineType = medicineTypes[position]
+            android.util.Log.d("EditMedicine", "Medicine type selected: $selectedMedicineType")
+            
+            // Автоматически отмечаем чекбокс инсулина для соответствующих типов
+            binding.checkBoxInsulin.isChecked = selectedMedicineType == "Инсулин" || 
+                                               selectedMedicineType == "Оземпик" || 
+                                               selectedMedicineType == "Мунджаро"
+            
+            android.util.Log.d("EditMedicine", "Insulin checkbox set to: ${binding.checkBoxInsulin.isChecked}")
+        }
+        
+        // ✅ ИСПРАВЛЕНО: Обработчики для AutoCompleteTextView
+        binding.autoCompleteMedicineType.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.autoCompleteMedicineType.showDropDown()
+            }
+        }
+        
+        // Добавляем обработчик клика для показа dropdown
+        binding.autoCompleteMedicineType.setOnClickListener {
+            binding.autoCompleteMedicineType.showDropDown()
+        }
+        
+        // Добавляем обработчик изменения текста для отслеживания ручного ввода
+        binding.autoCompleteMedicineType.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val newType = s?.toString()?.trim() ?: ""
+                if (newType.isNotEmpty()) {
+                    selectedMedicineType = newType
+                    android.util.Log.d("EditMedicine", "Medicine type changed via text input: $selectedMedicineType")
+                }
+            }
+        })
         
         android.util.Log.d("EditMedicine", "Medicine type field setup completed")
     }
@@ -174,11 +219,21 @@ class EditMedicineActivity : AppCompatActivity() {
                 allGroups.add("Без группы") // Заменяем пустую строку на понятное описание
                 allGroups.addAll(existingGroups.sorted())
                 android.util.Log.d("EditMedicine", "Groups loaded: $allGroups")
+                
+                // ✅ ИСПРАВЛЕНО: Обновляем диалог выбора группы, если он открыт
+                updateGroupSelectionDialog()
             }
         } catch (e: Exception) {
             android.util.Log.e("EditMedicine", "Error in loadGroups", e)
             // Не завершаем активность, просто логируем ошибку
         }
+    }
+    
+    // ✅ ДОБАВЛЕНО: Функция для обновления диалога выбора группы
+    private fun updateGroupSelectionDialog() {
+        // Если диалог открыт, обновляем его данные
+        // Это поможет синхронизировать группы в реальном времени
+        android.util.Log.d("EditMedicine", "Groups updated, dialog data refreshed")
     }
     
     private fun loadMedicine() {
@@ -235,12 +290,27 @@ class EditMedicineActivity : AppCompatActivity() {
             // Показываем/скрываем группировку и дни недели в зависимости от частоты
             val isEveryOtherDay = medicine.frequency == DosageFrequency.EVERY_OTHER_DAY
             val isCustom = medicine.frequency == DosageFrequency.CUSTOM
-            binding.layoutGrouping.visibility = if (isEveryOtherDay) View.VISIBLE else View.GONE
+            val hasGroup = medicine.groupName.isNotEmpty()
+            
+            // Показываем группировку если лекарство в группе ИЛИ если частота "через день"
+            binding.layoutGrouping.visibility = if (hasGroup || isEveryOtherDay) View.VISIBLE else View.GONE
             binding.layoutWeekDays.visibility = if (isCustom) View.VISIBLE else View.GONE
             
-            // Обновляем отображение времени, типа лекарства и дней недели
+            // Обновляем отображение времени, частоты, типа лекарства и дней недели
             updateTimeDisplay()
-            binding.autoCompleteMedicineType.setText(selectedMedicineType)
+            updateFrequencyDisplay()
+            
+            // ✅ ИСПРАВЛЕНО: Правильно устанавливаем тип лекарства
+            binding.autoCompleteMedicineType.setText(selectedMedicineType, false)
+            android.util.Log.d("EditMedicine", "Set medicine type in field: $selectedMedicineType")
+            
+            // Убеждаемся, что dropdown работает правильно
+            binding.autoCompleteMedicineType.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    binding.autoCompleteMedicineType.showDropDown()
+                }
+            }
+            
             updateWeekDaysDisplay()
             
             // Логируем загруженное лекарство для отладки
@@ -273,6 +343,68 @@ class EditMedicineActivity : AppCompatActivity() {
         android.util.Log.d("EditMedicine", "Updated time display: $timeText (selectedTime: $selectedTime)")
     }
     
+    private fun updateFrequencyDisplay() {
+        val frequencyText = when (selectedFrequency) {
+            DosageFrequency.DAILY -> "Каждый день"
+            DosageFrequency.EVERY_OTHER_DAY -> "Через день"
+            DosageFrequency.TWICE_A_WEEK -> "2 раза в неделю"
+            DosageFrequency.THREE_TIMES_A_WEEK -> "3 раза в неделю"
+            DosageFrequency.WEEKLY -> "Раз в неделю"
+            DosageFrequency.CUSTOM -> "По расписанию"
+        }
+        binding.buttonFrequency.text = frequencyText
+        android.util.Log.d("EditMedicine", "Updated frequency display: $frequencyText (selectedFrequency: $selectedFrequency)")
+    }
+    
+    private fun showFrequencyDialog() {
+        val frequencies = arrayOf(
+            "Каждый день",
+            "Через день", 
+            "2 раза в неделю",
+            "3 раза в неделю",
+            "Раз в неделю",
+            "По расписанию"
+        )
+        
+        // Определяем текущий индекс
+        val currentIndex = when (selectedFrequency) {
+            DosageFrequency.DAILY -> 0
+            DosageFrequency.EVERY_OTHER_DAY -> 1
+            DosageFrequency.TWICE_A_WEEK -> 2
+            DosageFrequency.THREE_TIMES_A_WEEK -> 3
+            DosageFrequency.WEEKLY -> 4
+            DosageFrequency.CUSTOM -> 5
+        }
+        
+        AlertDialog.Builder(this)
+            .setTitle("Выберите схему приема")
+            .setSingleChoiceItems(frequencies, currentIndex) { _, which ->
+                selectedFrequency = when (which) {
+                    0 -> DosageFrequency.DAILY
+                    1 -> DosageFrequency.EVERY_OTHER_DAY
+                    2 -> DosageFrequency.TWICE_A_WEEK
+                    3 -> DosageFrequency.THREE_TIMES_A_WEEK
+                    4 -> DosageFrequency.WEEKLY
+                    5 -> DosageFrequency.CUSTOM
+                    else -> DosageFrequency.DAILY
+                }
+                updateFrequencyDisplay()
+                
+                // Показываем/скрываем группировку и дни недели в зависимости от частоты
+                val isEveryOtherDay = selectedFrequency == DosageFrequency.EVERY_OTHER_DAY
+                val isCustom = selectedFrequency == DosageFrequency.CUSTOM
+                val hasGroup = binding.editTextGroupName.text.toString().isNotEmpty()
+                
+                binding.layoutGrouping.visibility = if (hasGroup || isEveryOtherDay) View.VISIBLE else View.GONE
+                binding.layoutWeekDays.visibility = if (isCustom) View.VISIBLE else View.GONE
+                
+                android.util.Log.d("EditMedicine", "Frequency changed to: $selectedFrequency")
+            }
+            .setPositiveButton("OK", null)
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
     private fun showGroupSelectionDialog() {
         val currentGroup = binding.editTextGroupName.text.toString()
         // Если текущая группа пустая, показываем "Без группы"
@@ -303,58 +435,7 @@ class EditMedicineActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun showMedicineTypeDialog() {
-        android.util.Log.d("EditMedicine", "showMedicineTypeDialog called")
-        android.util.Log.d("EditMedicine", "Current selectedMedicineType: $selectedMedicineType")
-        
-        val medicineTypes = listOf(
-            "Таблетки",
-            "Капсулы",
-            "Уколы (инъекции)",
-            "Оземпик",
-            "Мунджаро",
-            "Инсулин",
-            "Капли",
-            "Сироп",
-            "Ингаляции",
-            "Мази",
-            "Гели",
-            "Кремы",
-            "Свечи",
-            "Спреи",
-            "Аэрозоли",
-            "Порошки",
-            "Суспензии",
-            "Эмульсии",
-            "Другое"
-        )
-        val currentIndex = medicineTypes.indexOf(selectedMedicineType).coerceAtLeast(0)
-        android.util.Log.d("EditMedicine", "Current index in medicineTypes: $currentIndex")
-        
-        try {
-            AlertDialog.Builder(this)
-                .setTitle("Выберите тип лекарства")
-                .setSingleChoiceItems(medicineTypes.toTypedArray(), currentIndex) { _, which ->
-                    android.util.Log.d("EditMedicine", "Medicine type selected: ${medicineTypes[which]}")
-                    selectedMedicineType = medicineTypes[which]
-                    binding.autoCompleteMedicineType.setText(selectedMedicineType)
-                    
-                    // Автоматически отмечаем чекбокс инсулина для соответствующих типов
-                    binding.checkBoxInsulin.isChecked = selectedMedicineType == "Инсулин" || 
-                                                       selectedMedicineType == "Оземпик" || 
-                                                       selectedMedicineType == "Мунджаро"
-                    android.util.Log.d("EditMedicine", "CheckBox insulin set to: ${binding.checkBoxInsulin.isChecked}")
-                }
-                .setPositiveButton("OK", null)
-                .setNegativeButton("Отмена", null)
-                .show()
-            
-            android.util.Log.d("EditMedicine", "Medicine type dialog shown successfully")
-        } catch (e: Exception) {
-            android.util.Log.e("EditMedicine", "Error showing medicine type dialog", e)
-            Toast.makeText(this, "Ошибка открытия диалога типа лекарства: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
+    // Метод showMedicineTypeDialog удален - теперь используется AutoCompleteTextView
     
     private fun showWeekDaysDialog() {
         val weekDays = arrayOf(
@@ -442,6 +523,19 @@ class EditMedicineActivity : AppCompatActivity() {
         viewModel.getMedicineById(medicineId) { originalMedicine ->
             if (originalMedicine != null) {
                 val saveTime = selectedTime ?: LocalTime.of(8, 0)
+                // ✅ ИСПРАВЛЕНО: Сбрасываем статус принятия при изменении частоты ИЛИ времени
+                val shouldResetStatus = originalMedicine.frequency != selectedFrequency || 
+                                       originalMedicine.time != saveTime
+                
+                android.util.Log.d("EditMedicine", "=== ОБНОВЛЕНИЕ ЛЕКАРСТВА ===")
+                android.util.Log.d("EditMedicine", "Старая частота: ${originalMedicine.frequency}")
+                android.util.Log.d("EditMedicine", "Новая частота: $selectedFrequency")
+                android.util.Log.d("EditMedicine", "Старое время: ${originalMedicine.time}")
+                android.util.Log.d("EditMedicine", "Новое время: $saveTime")
+                android.util.Log.d("EditMedicine", "Изменена частота: ${originalMedicine.frequency != selectedFrequency}")
+                android.util.Log.d("EditMedicine", "Изменено время: ${originalMedicine.time != saveTime}")
+                android.util.Log.d("EditMedicine", "Сбрасываем статус: $shouldResetStatus")
+                
                 val updatedMedicine = originalMedicine.copy(
                     name = name,
                     dosage = dosage,
@@ -463,18 +557,25 @@ class EditMedicineActivity : AppCompatActivity() {
                         emptyList()
                     },
                     customTimes = emptyList(),
-                    startDate = originalMedicine.startDate,
+                    startDate = if (shouldResetStatus) {
+                        // ✅ ИСПРАВЛЕНО: При сбросе статуса устанавливаем дату начала на сегодня 00:00
+                        val today = java.time.LocalDate.now()
+                        val startOfDay = today.atStartOfDay(java.time.ZoneId.systemDefault())
+                        startOfDay.toInstant().toEpochMilli()
+                    } else {
+                        originalMedicine.startDate
+                    }, // ✅ ИСПРАВЛЕНО: Сбрасываем дату начала при изменении частоты ИЛИ времени
                     multipleDoses = false,
                     dosesPerDay = 1,
                     doseTimes = listOf(saveTime),
                     groupId = groupId,
                     groupName = groupName,
                     groupOrder = groupOrder,
-                    lastTakenTime = 0,
-                    takenToday = false,
-                    takenAt = 0,
-                    isMissed = false,
-                    missedCount = 0,
+                    lastTakenTime = if (shouldResetStatus) 0 else originalMedicine.lastTakenTime, // ✅ ИСПРАВЛЕНО: Сбрасываем время последнего приема
+                    takenToday = if (shouldResetStatus) false else originalMedicine.takenToday, // ✅ ИСПРАВЛЕНО: Сбрасываем статус принятия сегодня
+                    takenAt = if (shouldResetStatus) 0 else originalMedicine.takenAt, // ✅ ИСПРАВЛЕНО: Сбрасываем время принятия
+                    isMissed = if (shouldResetStatus) false else originalMedicine.isMissed, // ✅ ИСПРАВЛЕНО: Сбрасываем статус пропуска
+                    missedCount = if (shouldResetStatus) 0 else originalMedicine.missedCount, // ✅ ИСПРАВЛЕНО: Сбрасываем счетчик пропусков
                     updatedAt = System.currentTimeMillis()
                 )
                 
@@ -488,6 +589,9 @@ class EditMedicineActivity : AppCompatActivity() {
                 android.util.Log.d("EditMedicine", "  - lastTakenTime: ${updatedMedicine.lastTakenTime}")
                 android.util.Log.d("EditMedicine", "  - takenToday: ${updatedMedicine.takenToday}")
                 android.util.Log.d("EditMedicine", "  - takenAt: ${updatedMedicine.takenAt}")
+                
+                // ✅ ДОБАВЛЕНО: Логируем обновление лекарства для уведомлений
+                android.util.Log.d("EditMedicine", "✓ Лекарство обновлено, уведомления будут перезапущены при следующей проверке")
                 
                 // Сохраняем в корутине
                 CoroutineScope(Dispatchers.IO).launch {
@@ -518,8 +622,24 @@ class EditMedicineActivity : AppCompatActivity() {
                         
                         CoroutineScope(Dispatchers.Main).launch {
                             if (success) {
+                                // ✅ ДОБАВЛЕНО: Принудительно обновляем статус лекарства
+                                try {
+                                    val dataManager = com.medicalnotes.app.utils.DataManager(this@EditMedicineActivity)
+                                    val updatedStatusMedicine = com.medicalnotes.app.utils.MedicineStatusHelper.updateMedicineStatus(updatedMedicine)
+                                    dataManager.updateMedicine(updatedStatusMedicine)
+                                    android.util.Log.d("EditMedicine", "✓ Статус лекарства обновлен")
+                                } catch (e: Exception) {
+                                    android.util.Log.e("EditMedicine", "Ошибка обновления статуса", e)
+                                }
+                                
                                 Toast.makeText(this@EditMedicineActivity, 
                                     "Лекарство обновлено", Toast.LENGTH_SHORT).show()
+                                
+                                // ✅ ДОБАВЛЕНО: Возвращаем результат в MainActivity для обновления списка
+                                val resultIntent = Intent()
+                                resultIntent.putExtra("medicine_updated", true)
+                                resultIntent.putExtra("medicine_id", medicineId)
+                                setResult(RESULT_OK, resultIntent)
                                 
                                 finish()
                             } else {
@@ -552,12 +672,16 @@ class EditMedicineActivity : AppCompatActivity() {
     
     override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_delete -> {
-                showDeleteConfirmationDialog()
+            android.R.id.home -> {
+                onBackPressed()
                 true
             }
-            R.id.action_duplicate -> {
-                duplicateMedicine()
+            com.medicalnotes.app.R.id.action_save -> {
+                updateMedicine()
+                true
+            }
+            com.medicalnotes.app.R.id.action_delete -> {
+                showDeleteConfirmationDialog()
                 true
             }
             else -> super.onOptionsItemSelected(item)

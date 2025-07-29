@@ -79,7 +79,7 @@ class MedicineGroupAdapter(
                     )
                     
                     // Красный фон для просроченных групп
-                    binding.cardMedicineGroup.setCardBackgroundColor(
+                    binding.cardMedicine.setCardBackgroundColor(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.medical_red_light)
                     )
                 }
@@ -91,7 +91,7 @@ class MedicineGroupAdapter(
                     )
                     
                     // Обычный фон
-                    binding.cardMedicineGroup.setCardBackgroundColor(
+                    binding.cardMedicine.setCardBackgroundColor(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                     )
                 }

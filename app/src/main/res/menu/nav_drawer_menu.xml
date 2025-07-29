@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_manage_medicines"
+            android:title="Управление лекарствами"
+            android:icon="@drawable/ic_medicine" />
+        
+        <item
+            android:id="@+id/nav_manage_groups"
+            android:title="Управление группами"
+            android:icon="@drawable/ic_group" />
+        
+        <item
+            android:id="@+id/nav_settings"
+            android:title="Настройки"
+            android:icon="@drawable/ic_info" />
+        
+        <item
+            android:id="@+id/nav_elderly_mode"
+            android:title="Режим для пожилых"
+            android:icon="@drawable/ic_additional_info" />
+    </group>
+
+    <item android:title="Инструменты">
+        <menu>
+            <item
+                android:id="@+id/nav_logs"
+                android:title="Логи системы"
+                android:icon="@drawable/ic_notes" />
+            
+            <item
+                android:id="@+id/nav_export_data"
+                android:title="Экспорт данных"
+                android:icon="@drawable/ic_save" />
+            
+            <item
+                android:id="@+id/nav_test_groups"
+                android:title="Тестирование групп"
+                android:icon="@drawable/ic_group" />
+        </menu>
+    </item>
+
+</menu> 

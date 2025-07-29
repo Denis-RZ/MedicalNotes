@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardMedicine"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/medicine_card_background"
+    app:cardUseCompatPadding="true"
+    style="@style/Widget.Material3.CardView.Filled">
+
+    <!-- Градиентный фон карточки -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/medicine_card_gradient" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Заголовок с иконкой и статусом -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="20dp"
+            android:gravity="center_vertical">
+
+            <!-- Иконка лекарства с градиентным фоном -->
+            <FrameLayout
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/medicine_icon_gradient_circle">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_medicine"
+                    app:tint="@color/white" />
+
+            </FrameLayout>
+
+            <!-- Информация о лекарстве -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- Название лекарства -->
+                <TextView
+                    android:id="@+id/textMedicineName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Липитор"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/medicine_text_primary"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="Липитор" />
+
+                <!-- Время приема -->
+                <TextView
+                    android:id="@+id/textMedicineTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="21:05"
+                    android:textSize="18sp"
+                    android:textColor="@color/medicine_accent"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    tools:text="21:05" />
+
+            </LinearLayout>
+
+            <!-- Индикатор активности -->
+            <TextView
+                android:id="@+id/textStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="АКТИВНО"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/status_active_badge"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                tools:text="АКТИВНО" />
+
+        </LinearLayout>
+
+        <!-- Информационные блоки -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp">
+
+            <!-- Дозировка -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/info_block_soft"
+                android:padding="16dp"
+                android:layout_marginBottom="12dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_dosage"
+                    android:layout_marginEnd="12dp"
+                    app:tint="@color/medicine_accent" />
+
+                <TextView
+                    android:id="@+id/textMedicineDosage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="через день в 21:05"
+                    android:textSize="15sp"
+                    android:textColor="@color/medicine_text_secondary"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    tools:text="через день в 21:05" />
+
+            </LinearLayout>
+
+            <!-- Остаток -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/info_block_soft"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_quantity"
+                    android:layout_marginEnd="12dp"
+                    app:tint="@color/medicine_accent" />
+
+                <TextView
+                    android:id="@+id/textMedicineQuantity"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Осталось: 50 таблеток"
+                    android:textSize="15sp"
+                    android:textColor="@color/medicine_text_secondary"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="Осталось: 50 таблеток" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Кнопка подтверждения -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonTakeMedicine"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="ПРИНЯЛ"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:icon="@drawable/ic_check"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconTint="@color/white"
+            app:cornerRadius="16dp"
+            app:elevation="6dp"
+            android:backgroundTint="@color/medicine_success"
+            style="@style/Widget.Material3.Button" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView> 

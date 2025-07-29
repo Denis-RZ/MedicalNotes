@@ -20,6 +20,8 @@ object DosageCalculator {
         android.util.Log.d("DosageCalculator", "  - Дата начала: $startDate")
         android.util.Log.d("DosageCalculator", "  - Группа ID: ${medicine.groupId}")
         android.util.Log.d("DosageCalculator", "  - Частота: ${medicine.frequency}")
+        android.util.Log.d("DosageCalculator", "  - Активно: ${medicine.isActive}")
+        android.util.Log.d("DosageCalculator", "  - Принято сегодня: ${medicine.takenToday}")
         
         // Если дата раньше начала приема
         if (date.isBefore(startDate)) {
@@ -96,6 +98,8 @@ object DosageCalculator {
             android.util.Log.d("DosageCalculator", "Лекарство: ${medicine.name}")
             android.util.Log.d("DosageCalculator", "  - Активно: $isActive")
             android.util.Log.d("DosageCalculator", "  - По расписанию: $shouldTake")
+            android.util.Log.d("DosageCalculator", "  - Принято сегодня: ${medicine.takenToday}")
+            android.util.Log.d("DosageCalculator", "  - Включается в список: ${isActive && shouldTake}")
             isActive && shouldTake
         }
         
@@ -302,17 +306,23 @@ object DosageCalculator {
         android.util.Log.d("DosageCalculator", "=== ГРУППОВАЯ ЛОГИКА ===")
         android.util.Log.d("DosageCalculator", "Лекарство: ${medicine.name}")
         android.util.Log.d("DosageCalculator", "  - Группа ID: ${medicine.groupId}")
+        android.util.Log.d("DosageCalculator", "  - Группа: ${medicine.groupName}")
         android.util.Log.d("DosageCalculator", "  - Порядок в группе: ${medicine.groupOrder}")
         android.util.Log.d("DosageCalculator", "  - Частота: ${medicine.frequency}")
+        android.util.Log.d("DosageCalculator", "  - Дата начала: $startDate")
+        android.util.Log.d("DosageCalculator", "  - Проверяемая дата: $date")
         android.util.Log.d("DosageCalculator", "  - Дней с начала: $daysSinceStart")
         
         // Логика группы "через день"
         if (medicine.frequency == DosageFrequency.EVERY_OTHER_DAY) {
-            // Определяем, какой день группы сегодня
+            // Определяем, какой день группы сегодня (0 или 1)
             val groupDay = (daysSinceStart % 2).toInt()
+            // Лекарство должно приниматься только в свой день группы
             val shouldTake = groupDay == (medicine.groupOrder - 1)
             android.util.Log.d("DosageCalculator", "  - День группы: $groupDay")
+            android.util.Log.d("DosageCalculator", "  - Порядок лекарства: ${medicine.groupOrder}")
             android.util.Log.d("DosageCalculator", "  - Нужно принимать: $shouldTake")
+            android.util.Log.d("DosageCalculator", "  - Логика: groupDay($groupDay) == (groupOrder-1)(${medicine.groupOrder - 1})")
             return shouldTake
         }
         

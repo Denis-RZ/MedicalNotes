@@ -5,19 +5,19 @@
     <item
         android:id="@+id/action_export_groups"
         android:title="Экспорт групп"
-        android:icon="@drawable/ic_save"
+        android:icon="@null"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_import_groups"
         android:title="Импорт групп"
-        android:icon="@drawable/ic_info"
+        android:icon="@null"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_settings"
         android:title="Настройки"
-        android:icon="@drawable/ic_info"
+        android:icon="@null"
         app:showAsAction="never" />
 
 </menu> 

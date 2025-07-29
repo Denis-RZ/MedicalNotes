@@ -48,6 +48,11 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
     }
     
     private fun setupViews() {
+        // Настройка toolbar
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = "Управление лекарствами"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        
         // Настройка RecyclerView для всех лекарств
         medicineAdapter = MedicineAdapter(
             onMedicineClick = { medicine ->

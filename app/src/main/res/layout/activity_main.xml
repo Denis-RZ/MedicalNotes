@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
+
+    <!-- Main Content -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:fitsSystemWindows="true">
 
     <!-- Top App Bar -->
     <com.google.android.material.appbar.AppBarLayout
@@ -20,9 +29,12 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurface"
             app:contentInsetStartWithNavigation="0dp"
-            app:title="@string/app_name"
-            app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-            app:titleTextColor="?attr/colorOnSurface"
+            app:title=""
+            app:subtitle="v1.3 (4)"
+            app:subtitleTextAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            app:subtitleTextColor="?attr/colorOnSurfaceVariant"
+            app:navigationIcon="@drawable/ic_menu"
+            app:navigationIconTint="?attr/colorOnSurface"
             style="@style/Widget.MedicalNotes.Toolbar" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -66,8 +78,8 @@
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
                         android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="@dimen/margin_medium"
-                        android:drawableStart="@drawable/ic_medicine"
-                        android:drawablePadding="@dimen/margin_small"
+                        android:drawableStart="@null"
+                        android:drawablePadding="0dp"
                         android:gravity="center_vertical" />
 
                     <!-- Medicines RecyclerView -->
@@ -99,17 +111,12 @@
                         android:padding="@dimen/padding_large"
                         android:visibility="gone">
 
-                        <ImageView
-                            android:layout_width="64dp"
-                            android:layout_height="64dp"
-                            android:src="@drawable/ic_medicine"
-                            android:alpha="0.5"
-                            android:contentDescription="Нет лекарств" />
+                        <!-- Убрано изображение -->
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Нет лекарств на сегодня"
+                            android:text="Расписание пусто"
                             android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="@dimen/margin_medium" />
@@ -117,7 +124,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Добавьте лекарства в расписание"
+                            android:text="Нажмите + чтобы добавить лекарство"
                             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="@dimen/margin_small" />
@@ -134,12 +141,7 @@
                         android:padding="@dimen/padding_large"
                         android:visibility="gone">
 
-                        <ImageView
-                            android:layout_width="64dp"
-                            android:layout_height="64dp"
-                            android:src="@drawable/ic_info"
-                            android:alpha="0.5"
-                            android:contentDescription="Ошибка загрузки" />
+                        <!-- Убрано изображение -->
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -171,106 +173,6 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- Action Buttons -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="@dimen/margin_medium">
-
-                <!-- Manage Medicines Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonManageMedicines"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="ЛЕКАРСТВА"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                    app:icon="@drawable/ic_medicine"
-                    app:iconGravity="textStart"
-                    app:iconPadding="@dimen/margin_small"
-                    app:iconTint="?attr/colorOnPrimary"
-                    android:minHeight="56dp"
-                    android:layout_marginBottom="@dimen/margin_small"
-                    android:contentDescription="Управление лекарствами"
-                    style="@style/Widget.Material3.Button" />
-
-                <!-- Elderly Mode Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonToggleLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="РЕЖИМ ДЛЯ ПОЖИЛЫХ"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                    app:icon="@drawable/ic_info"
-                    app:iconGravity="textStart"
-                    app:iconPadding="@dimen/margin_small"
-                    app:iconTint="?attr/colorOnSurface"
-                    app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp"
-                    android:minHeight="56dp"
-                    android:layout_marginBottom="@dimen/margin_medium"
-                    android:contentDescription="Переключить режим для пожилых"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
-
-            </LinearLayout>
-
-            <!-- Debug Buttons -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="@dimen/margin_small">
-
-                <!-- Logs Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonToggleLogs"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:text="ЛОГИ"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                    app:icon="@drawable/ic_info"
-                    app:iconSize="16dp"
-                    app:iconTint="?attr/colorOnSurface"
-                    app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp"
-                    android:contentDescription="Показать логи системы"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
-
-                <!-- Export Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonExportData"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:text="ЭКСПОРТ"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                    app:icon="@drawable/ic_save"
-                    app:iconSize="16dp"
-                    app:iconTint="?attr/colorOnSurface"
-                    app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp"
-                    android:layout_marginStart="@dimen/margin_small"
-                    android:contentDescription="Экспорт данных"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
-
-                <!-- Test Groups Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonTestGroups"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:text="ТЕСТ ГРУПП"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                    app:icon="@drawable/ic_group"
-                    app:iconSize="16dp"
-                    app:iconTint="?attr/colorOnPrimary"
-                    android:layout_marginStart="@dimen/margin_small"
-                    android:contentDescription="Тестирование групп лекарств"
-                    style="@style/Widget.Material3.Button" />
-
-            </LinearLayout>
 
             <!-- Logs Section -->
             <LinearLayout
@@ -320,13 +222,29 @@
                     android:layout_height="40dp"
                     android:text="ОЧИСТИТЬ ЛОГИ"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                    app:icon="@drawable/ic_delete"
+                    app:icon="@null"
                     app:iconSize="16dp"
                     app:iconTint="?attr/colorOnSurface"
                     app:strokeColor="?attr/colorOutline"
                     app:strokeWidth="1dp"
                     android:layout_marginTop="@dimen/margin_small"
                     android:contentDescription="Очистить логи системы"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                <!-- Copy Log Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonCopyLog"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="КОПИРОВАТЬ ЛОГ"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    app:icon="@null"
+                    app:iconSize="16dp"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:contentDescription="Копировать логи в буфер обмена"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
 
             </LinearLayout>
@@ -343,83 +261,23 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/margin_large"
         android:contentDescription="Добавить лекарство"
-        app:srcCompat="@drawable/ic_add"
+        app:srcCompat="@android:drawable/ic_input_add"
         app:tint="?attr/colorOnPrimary"
         style="@style/Widget.Material3.FloatingActionButton.Primary" />
 
-    <!-- Bottom Action Bar -->
-    <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bottomAppBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:fabCradleMargin="10dp"
-        app:fabCradleRoundedCornerRadius="10dp"
-        app:fabCradleVerticalOffset="10dp"
-        app:contentInsetStart="0dp"
-        app:contentInsetEnd="0dp"
-        style="@style/Widget.Material3.BottomAppBar">
+    <!-- Убрана нижняя панель - функции перенесены в навигационное меню -->
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="@dimen/padding_medium">
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonManageMedicinesBottom"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Управление"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                app:icon="@drawable/ic_edit"
-                app:iconGravity="textStart"
-                app:iconPadding="@dimen/margin_small"
-                app:iconTint="?attr/colorOnSurface"
-                app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp"
-                android:layout_marginEnd="@dimen/margin_small"
-                android:minHeight="48dp"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
+    <!-- Navigation Drawer -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigationView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="?attr/colorSurface"
+        app:menu="@menu/nav_drawer_menu"
+        app:itemTextColor="?attr/colorOnSurface"
+        app:itemIconTint="?attr/colorOnSurfaceVariant" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonManageGroupsBottom"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Группы"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                app:icon="@drawable/ic_group"
-                app:iconGravity="textStart"
-                app:iconPadding="@dimen/margin_small"
-                app:iconTint="?attr/colorOnSurface"
-                app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp"
-                android:layout_marginStart="@dimen/margin_small"
-                android:layout_marginEnd="@dimen/margin_small"
-                android:minHeight="48dp"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonSettingsBottom"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Настройки"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                app:icon="@drawable/ic_info"
-                app:iconGravity="textStart"
-                app:iconPadding="@dimen/margin_small"
-                app:iconTint="?attr/colorOnSurface"
-                app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp"
-                android:layout_marginStart="@dimen/margin_small"
-                android:minHeight="48dp"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
-
-        </LinearLayout>
-
-    </com.google.android.material.bottomappbar.BottomAppBar>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout> 
+</androidx.drawerlayout.widget.DrawerLayout> 

@@ -13,10 +13,19 @@
     <color name="divider">#BDBDBD</color>
     
     <!-- ===== ЦВЕТА СТАТУСОВ ===== -->
-    <color name="status_taken">#4CAF50</color>     <!-- Принято -->
-    <color name="status_missed">#F44336</color>    <!-- Пропущено -->
-    <color name="status_overdue">#FF9800</color>   <!-- Просрочено -->
-    <color name="status_low_stock">#FF9800</color> <!-- Низкий запас -->
+    <color name="status_taken">#4CAF50</color>     <!-- Принято - приятный зеленый -->
+    <color name="status_missed">#F44336</color>    <!-- Пропущено - мягкий красный -->
+    <color name="status_overdue">#FF9800</color>   <!-- Просрочено - теплый оранжевый -->
+    <color name="status_low_stock">#FF9800</color> <!-- Низкий запас - теплый оранжевый -->
+    
+    <!-- ===== НОВЫЕ ПРИЯТНЫЕ ЦВЕТА ===== -->
+    <color name="soft_blue">#E3F2FD</color>        <!-- Мягкий голубой -->
+    <color name="soft_green">#E8F5E8</color>       <!-- Мягкий зеленый -->
+    <color name="soft_orange">#FFF3E0</color>      <!-- Мягкий оранжевый -->
+    <color name="soft_purple">#F3E5F5</color>      <!-- Мягкий фиолетовый -->
+    <color name="soft_pink">#FCE4EC</color>        <!-- Мягкий розовый -->
+    <color name="warm_gray">#FAFAFA</color>        <!-- Теплый серый -->
+    <color name="cool_gray">#F5F5F5</color>        <!-- Холодный серый -->
     
     <!-- ===== ЦВЕТА ФОНА ===== -->
     <color name="background">#FFFFFF</color>
@@ -83,4 +92,21 @@
     <color name="warning_orange">#FFFF9800</color>
     <color name="success_green">#FF4CAF50</color>
     <color name="info_blue">#FF2196F3</color>
+
+    <!-- ===== СОВРЕМЕННЫЕ ЦВЕТА ДЛЯ МЕДИЦИНСКОГО ПРИЛОЖЕНИЯ ===== -->
+    <color name="medicine_card_background">#FFFFFF</color>
+    <color name="medicine_text_primary">#1A1A1A</color>
+    <color name="medicine_text_secondary">#666666</color>
+    <color name="medicine_accent">#2196F3</color>
+    
+    <!-- ===== ЦВЕТА ДЛЯ ПРОСРОЧЕННЫХ ЛЕКАРСТВ (СРОЧНО!) ===== -->
+    <color name="overdue_red">#E53E3E</color>
+    <color name="overdue_background">#FFF5F5</color>
+    <color name="overdue_border">#FC8181</color>
+    <color name="urgent_button">#FFD93D</color>
+    <color name="medicine_success">#4CAF50</color>
+    <color name="medicine_warning">#FF9800</color>
+    <color name="medicine_error">#F44336</color>
+    <color name="medicine_info_background">#E3F2FD</color>
+    <color name="medicine_success_background">#E8F5E8</color>
 </resources> 

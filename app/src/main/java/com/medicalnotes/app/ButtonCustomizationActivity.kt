@@ -30,6 +30,8 @@ class ButtonCustomizationActivity : AppCompatActivity() {
     }
     
     private fun setupViews() {
+        // Настройка toolbar
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Настройка кнопок"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         

@@ -121,10 +121,10 @@ class MedicineAdapter(
                 }
                 
                 if (medicine.notes.isNotEmpty()) {
-                    textMedicineNotes.text = medicine.notes
-                    textMedicineNotes.visibility = android.view.View.VISIBLE
+                    binding.textMedicineNotes.text = medicine.notes
+                    binding.textMedicineNotes.visibility = android.view.View.VISIBLE
                 } else {
-                    textMedicineNotes.visibility = android.view.View.GONE
+                    binding.textMedicineNotes.visibility = android.view.View.GONE
                 }
                 
                 // Цветовая индикация для инсулина
@@ -149,19 +149,19 @@ class MedicineAdapter(
                     )
                 }
                 
-                buttonTakeMedicine.setOnClickListener {
+                binding.buttonTakeMedicine.setOnClickListener {
                     onMedicineClick(medicine)
                 }
                 
-                buttonSkipMedicine.setOnClickListener {
+                binding.buttonSkipMedicine.setOnClickListener {
                     onSkipClick(medicine)
                 }
                 
-                buttonEditMedicine.setOnClickListener {
+                binding.buttonEditMedicine.setOnClickListener {
                     onEditClick(medicine)
                 }
                 
-                buttonDeleteMedicine.setOnClickListener {
+                binding.buttonDeleteMedicine.setOnClickListener {
                     onDeleteClick(medicine)
                 }
                 
