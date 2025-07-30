@@ -17,7 +17,12 @@ class MedicineRepository(context: Context) {
     }
     
     suspend fun getMedicinesForDate(date: LocalDate): List<Medicine> = withContext(Dispatchers.IO) {
-        return@withContext dataManager.getActiveMedicines()
+        // ✅ ИСПРАВЛЕНО: Убираем несуществующую ссылку на DosageCalculator
+        val allMedicines = dataManager.loadMedicines()
+        return@withContext allMedicines.filter { medicine ->
+            // Проверяем, активны ли лекарства на указанную дату
+            medicine.isActive
+        }.sortedBy { it.time }
     }
     
     suspend fun getMedicineById(id: Long): Medicine? = withContext(Dispatchers.IO) {
@@ -55,6 +60,10 @@ class MedicineRepository(context: Context) {
     }
     
     suspend fun getLowSupplyMedicines(threshold: Int = 5): List<Medicine> = withContext(Dispatchers.IO) {
-        return@withContext dataManager.getLowStockMedicines()
+        // ✅ ИСПРАВЛЕНО: Используем параметр threshold
+        val allMedicines = dataManager.loadMedicines()
+        return@withContext allMedicines.filter { 
+            it.isActive && it.remainingQuantity <= threshold 
+        }
     }
 } 

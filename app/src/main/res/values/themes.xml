@@ -50,22 +50,19 @@
     <!-- Material You theme with dynamic colors -->
     <style name="Theme.MedicalNotes.MaterialYou" parent="Theme.Material3.DayNight">
         <!-- Dynamic colors for Material You -->
-        <item name="colorPrimary">@android:color/system_accent1_600</item>
-        <item name="colorPrimaryContainer">@android:color/system_accent1_100</item>
-        <item name="colorOnPrimary">@android:color/system_accent1_0</item>
-        <item name="colorOnPrimaryContainer">@android:color/system_accent1_900</item>
-        
-        <item name="colorSecondary">@android:color/system_accent2_600</item>
-        <item name="colorSecondaryContainer">@android:color/system_accent2_100</item>
-        <item name="colorOnSecondary">@android:color/system_accent2_0</item>
-        <item name="colorOnSecondaryContainer">@android:color/system_accent2_900</item>
-        
-        <item name="colorSurface">@android:color/system_neutral1_50</item>
-        <item name="colorSurfaceVariant">@android:color/system_neutral1_100</item>
-        <item name="colorOnSurface">@android:color/system_neutral1_900</item>
-        <item name="colorOnSurfaceVariant">@android:color/system_neutral1_700</item>
-        
-        <item name="colorOutline">@android:color/system_neutral1_200</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryContainer">@color/primary_light</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimaryContainer">@color/primary_dark</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryContainer">@color/accent_light</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnSecondaryContainer">@color/accent_dark</item>
+        <item name="colorSurface">@color/background</item>
+        <item name="colorSurfaceVariant">@color/background_secondary</item>
+        <item name="colorOnSurface">@color/primary_text</item>
+        <item name="colorOnSurfaceVariant">@color/secondary_text</item>
+        <item name="colorOutline">@color/divider</item>
         
         <!-- Status bar color. -->
         <item name="android:statusBarColor">@android:color/transparent</item>

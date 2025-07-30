@@ -247,6 +247,38 @@
                     android:contentDescription="Копировать логи в буфер обмена"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
 
+                <!-- Diagnostic Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonDiagnostic"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="🔍 ДИАГНОСТИКА"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    app:icon="@null"
+                    app:iconSize="16dp"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorPrimary"
+                    app:strokeWidth="1dp"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:contentDescription="Запустить диагностику приложения"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                <!-- Fix Issues Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonFixIssues"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="🔧 ИСПРАВИТЬ ПРОБЛЕМЫ"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    app:icon="@null"
+                    app:iconSize="16dp"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorError"
+                    app:strokeWidth="1dp"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:contentDescription="Автоматически исправить проблемы"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
             </LinearLayout>
 
         </LinearLayout>

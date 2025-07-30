@@ -12,8 +12,19 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" 
         tools:ignore="ScopedStorage" />
     
+    <!-- Разрешения для уведомлений и автозапуска -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    
     <!-- Quick Settings Tile -->
-    <uses-permission android:name="android.permission.BIND_QUICK_SETTINGS_TILE" />
+    <!-- <uses-permission android:name="android.permission.BIND_QUICK_SETTINGS_TILE" /> -->
 
     <!-- Совместимость с архитектурами -->
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
@@ -106,6 +117,11 @@
             android:theme="@style/Theme.MedicalNotes.NoActionBar" />
 
         <activity
+            android:name=".CrashReportActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MedicalNotes.NoActionBar" />
+
+        <activity
             android:name=".ButtonCustomizationActivity"
             android:exported="false"
             android:theme="@style/Theme.MedicalNotes.NoActionBar" />
@@ -137,8 +153,39 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.medicalnotes.app.MEDICINE_REMINDER" />
+                <action android:name="ACTION_MEDICINE_TAKEN" />
+                <action android:name="ACTION_MEDICINE_SKIPPED" />
+                <action android:name="com.medicalnotes.app.MEDICINE_TAKEN" />
+                <action android:name="com.medicalnotes.app.LOW_STOCK_ALERT" />
+                <action android:name="com.medicalnotes.app.EMERGENCY_ALERT" />
             </intent-filter>
         </receiver>
+
+        <!-- Ресивер для автозапуска после перезагрузки -->
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Сервис уведомлений -->
+        <service
+            android:name=".service.NotificationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="health" />
+            
+        <service
+            android:name=".service.OverdueCheckService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="health" />
 
     </application>
 

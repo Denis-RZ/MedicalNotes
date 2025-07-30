@@ -8,6 +8,7 @@ import com.medicalnotes.app.models.Medicine
 import com.medicalnotes.app.models.UserPreferences
 import java.io.File
 import java.time.LocalTime
+import android.util.Log
 
 class FileManager {
     
@@ -92,32 +93,45 @@ class FileManager {
     
     // Методы без контекста для обратной совместимости
     fun readUserPreferences(): UserPreferences? {
+        // ✅ ИСПРАВЛЕНО: Добавляем логирование для отслеживания использования
+        Log.w("FileManager", "readUserPreferences() без контекста - используйте версию с контекстом")
         // В реальном приложении здесь нужно передавать контекст
         // Для демонстрации возвращаем null
         return null
     }
     
     fun writeUserPreferences(preferences: UserPreferences) {
+        // ✅ ИСПРАВЛЕНО: Добавляем логирование для отслеживания использования
+        Log.w("FileManager", "writeUserPreferences() без контекста - используйте версию с контекстом")
         // В реальном приложении здесь нужно передавать контекст
     }
     
     // Методы без контекста для использования в репозиториях
     fun readMedicines(): List<Medicine> {
+        // ✅ ИСПРАВЛЕНО: Добавляем логирование для отслеживания использования
+        Log.w("FileManager", "readMedicines() без контекста - используйте версию с контекстом")
         // В реальном приложении здесь нужно передавать контекст
         // Для демонстрации возвращаем пустой список
         return emptyList()
     }
     
     fun writeMedicines(medicines: List<Medicine>) {
+        // ✅ ИСПРАВЛЕНО: Добавляем логирование для отслеживания использования
+        Log.w("FileManager", "writeMedicines() без контекста - используйте версию с контекстом")
         // В реальном приложении здесь нужно передавать контекст
     }
     
     fun readCustomButtons(): List<CustomButton> {
+        // ✅ ИСПРАВЛЕНО: Добавляем логирование для отслеживания использования
+        Log.w("FileManager", "readCustomButtons() без контекста - используйте версию с контекстом")
         // В реальном приложении здесь нужно передавать контекст
+        // Для демонстрации возвращаем пустой список
         return emptyList()
     }
     
     fun writeCustomButtons(buttons: List<CustomButton>) {
+        // ✅ ИСПРАВЛЕНО: Добавляем логирование для отслеживания использования
+        Log.w("FileManager", "writeCustomButtons() без контекста - используйте версию с контекстом")
         // В реальном приложении здесь нужно передавать контекст
     }
 } 

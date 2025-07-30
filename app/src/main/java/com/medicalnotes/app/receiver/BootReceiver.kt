@@ -29,66 +29,89 @@ class BootReceiver : BroadcastReceiver() {
                 // Восстанавливаем будильники
                 restoreMedicineAlarms(context)
             }
+            Intent.ACTION_PACKAGE_REPLACED -> {
+                val packageName = intent.data?.schemeSpecificPart
+                if (packageName == context.packageName) {
+                    android.util.Log.i("BootReceiver", "Package replaced via data, restoring medicine alarms")
+                    // Запускаем сервис уведомлений
+                    com.medicalnotes.app.service.NotificationService.startService(context)
+                    // Восстанавливаем будильники
+                    restoreMedicineAlarms(context)
+                }
+            }
         }
     }
     
     private fun restoreMedicineAlarms(context: Context) {
-        val dataManager = DataManager(context)
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        
-        val activeMedicines = dataManager.getActiveMedicines()
-        
-        activeMedicines.forEach { medicine ->
-            scheduleMedicineAlarm(context, alarmManager, medicine)
+        try {
+            android.util.Log.d("BootReceiver", "Начинаем восстановление уведомлений о лекарствах")
+            
+            // ✅ ИЗМЕНЕНО: Используем новую утилиту для восстановления уведомлений
+            val restorationManager = com.medicalnotes.app.utils.NotificationRestorationManager(context)
+            restorationManager.checkAndRestoreNotifications()
+            
+            android.util.Log.d("BootReceiver", "Восстановление уведомлений завершено")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("BootReceiver", "Ошибка восстановления уведомлений", e)
         }
     }
     
     private fun scheduleMedicineAlarm(context: Context, alarmManager: AlarmManager, medicine: Medicine) {
-        val intent = Intent(context, MedicineAlarmReceiver::class.java).apply {
-            action = "com.medicalnotes.app.MEDICINE_REMINDER"
-            putExtra("medicine_id", medicine.id)
-        }
-        
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            medicine.id.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        
-        // Вычисляем время следующего уведомления
-        val now = LocalTime.now()
-        val medicineTime = medicine.time
-        
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = System.currentTimeMillis()
-        
-        if (medicineTime.isAfter(now)) {
-            // Уведомление сегодня
-            calendar.set(Calendar.HOUR_OF_DAY, medicineTime.hour)
-            calendar.set(Calendar.MINUTE, medicineTime.minute)
-            calendar.set(Calendar.SECOND, 0)
-        } else {
-            // Уведомление завтра
-            calendar.add(Calendar.DAY_OF_YEAR, 1)
-            calendar.set(Calendar.HOUR_OF_DAY, medicineTime.hour)
-            calendar.set(Calendar.MINUTE, medicineTime.minute)
-            calendar.set(Calendar.SECOND, 0)
-        }
-        
-        // Устанавливаем повторяющийся будильник
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
+        try {
+            val intent = Intent(context, MedicineAlarmReceiver::class.java).apply {
+                action = "com.medicalnotes.app.MEDICINE_REMINDER"
+                putExtra("medicine_id", medicine.id)
+            }
+            
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                medicine.id.toInt(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-        } else {
-            alarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
-            )
+            
+            // Вычисляем время следующего уведомления
+            val now = LocalTime.now()
+            val medicineTime = medicine.time
+            
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = System.currentTimeMillis()
+            
+            if (medicineTime.isAfter(now)) {
+                // Уведомление сегодня
+                calendar.set(Calendar.HOUR_OF_DAY, medicineTime.hour)
+                calendar.set(Calendar.MINUTE, medicineTime.minute)
+                calendar.set(Calendar.SECOND, 0)
+                android.util.Log.d("BootReceiver", "Уведомление для ${medicine.name} сегодня в ${medicineTime}")
+            } else {
+                // Уведомление завтра
+                calendar.add(Calendar.DAY_OF_YEAR, 1)
+                calendar.set(Calendar.HOUR_OF_DAY, medicineTime.hour)
+                calendar.set(Calendar.MINUTE, medicineTime.minute)
+                calendar.set(Calendar.SECOND, 0)
+                android.util.Log.d("BootReceiver", "Уведомление для ${medicine.name} завтра в ${medicineTime}")
+            }
+            
+            // Устанавливаем повторяющийся будильник
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+                android.util.Log.d("BootReceiver", "Будильник установлен (setExactAndAllowWhileIdle) для ${medicine.name}")
+            } else {
+                alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+                android.util.Log.d("BootReceiver", "Будильник установлен (setExact) для ${medicine.name}")
+            }
+            
+        } catch (e: Exception) {
+            android.util.Log.e("BootReceiver", "Ошибка установки будильника для ${medicine.name}", e)
         }
     }
 } 

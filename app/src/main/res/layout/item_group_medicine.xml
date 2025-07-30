@@ -141,12 +141,6 @@
                 android:textColor="@color/medicine_text_secondary"
                 android:layout_marginTop="2dp"
                 tools:text="Осталось: 15" />
-                android:text="Осталось: 0 шт"
-                android:textSize="11sp"
-                android:textColor="@color/medicine_text_secondary"
-                android:maxLines="1"
-                android:ellipsize="end"
-                tools:text="Осталось: 15 шт" />
 
         </LinearLayout>
 

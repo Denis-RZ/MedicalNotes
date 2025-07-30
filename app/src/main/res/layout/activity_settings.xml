@@ -418,7 +418,24 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Установлено: 27.12.2024 15:30"
-                    android:textSize="@dimen/text_size_medium" />
+                    android:textSize="@dimen/text_size_medium"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonCrashReport"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Отчет об ошибках"
+                    android:textSize="@dimen/text_size_mobile_medium"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    app:icon="@drawable/ic_info"
+                    app:iconGravity="textStart"
+                    app:iconPadding="@dimen/margin_small"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

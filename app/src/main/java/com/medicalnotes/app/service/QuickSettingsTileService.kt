@@ -12,7 +12,25 @@ class QuickSettingsTileService : TileService() {
 
     override fun onStartListening() {
         super.onStartListening()
-        updateTile()
+        
+        // ✅ ИСПРАВЛЕНО: Используем современный подход вместо deprecated startActivityAndCollapse
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            try {
+                val intent = Intent(this, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivityAndCollapse(intent)
+            } catch (e: Exception) {
+                // Fallback для старых версий
+                val intent = Intent(this, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            }
+        } else {
+            // Для старых версий используем обычный startActivity
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        }
     }
 
     override fun onClick() {

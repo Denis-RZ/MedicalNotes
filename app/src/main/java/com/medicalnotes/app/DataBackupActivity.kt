@@ -42,6 +42,17 @@ class DataBackupActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Настройка обработки кнопки "Назад"
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Логика обработки кнопки "Назад"
+                if (isEnabled) {
+                    finish()
+                }
+            }
+        })
+        
         binding = ActivityDataBackupBinding.inflate(layoutInflater)
         setContentView(binding.root)
         

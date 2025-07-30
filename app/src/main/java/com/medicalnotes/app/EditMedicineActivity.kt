@@ -36,33 +36,59 @@ class EditMedicineActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityEditMedicineBinding.inflate(layoutInflater)
-        setContentView(binding.root)
         
-        viewModel = ViewModelProvider(this)[AddMedicineViewModel::class.java]
-        
-        medicineId = intent.getLongExtra("medicine_id", 0L)
-        android.util.Log.d("EditMedicine", "onCreate: medicineId = $medicineId")
-        
-        if (medicineId == 0L) {
-            android.util.Log.e("EditMedicine", "Invalid medicine ID: $medicineId")
-            Toast.makeText(this, "Ошибка: не указан ID лекарства", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
+        // Настройка обработки кнопки "Назад"
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Логика обработки кнопки "Назад"
+                if (isEnabled) {
+                    finish()
+                }
+            }
+        })
         
         try {
-            setupToolbar()
-            setupListeners()
+            // Инициализация системы логирования
+            com.medicalnotes.app.utils.LogCollector.initialize(this)
+            com.medicalnotes.app.utils.LogCollector.i("EditMedicine", "onCreate started")
             
-            // Добавляем небольшую задержку для инициализации DataManager
-            binding.root.post {
-                loadGroups() // Загружаем группы при инициализации
-                loadMedicine()
+            binding = ActivityEditMedicineBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+            
+            viewModel = ViewModelProvider(this)[AddMedicineViewModel::class.java]
+            
+            medicineId = intent.getLongExtra("medicine_id", 0L)
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "onCreate: medicineId = $medicineId")
+            
+            if (medicineId == 0L) {
+                com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Invalid medicine ID: $medicineId")
+                Toast.makeText(this, "Ошибка: не указан ID лекарства", Toast.LENGTH_SHORT).show()
+                finish()
+                return
+            }
+            
+            try {
+                setupToolbar()
+                setupListeners()
+                
+                // Добавляем небольшую задержку для инициализации DataManager
+                binding.root.post {
+                    try {
+                        loadGroups() // Загружаем группы при инициализации
+                        loadMedicine()
+                    } catch (e: Exception) {
+                        com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error in post initialization", e)
+                        Toast.makeText(this@EditMedicineActivity, "Ошибка загрузки данных", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error in onCreate", e)
+                Toast.makeText(this, "Ошибка инициализации: ${e.message}", Toast.LENGTH_SHORT).show()
+                finish()
             }
         } catch (e: Exception) {
-            android.util.Log.e("EditMedicine", "Error in onCreate", e)
-            Toast.makeText(this, "Ошибка инициализации: ${e.message}", Toast.LENGTH_SHORT).show()
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Critical error in onCreate", e)
+            Toast.makeText(this, "Критическая ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
             finish()
         }
     }
@@ -78,33 +104,33 @@ class EditMedicineActivity : AppCompatActivity() {
     }
     
     private fun setupListeners() {
-        android.util.Log.d("EditMedicine", "Setting up listeners...")
+        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Setting up listeners...")
         
         // Настройка AutoCompleteTextView для типа лекарства
         setupMedicineTypeField()
         
         // Кнопка выбора времени
         binding.buttonTime.setOnClickListener {
-            android.util.Log.d("EditMedicine", "Time button clicked")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Time button clicked")
             showTimePicker()
         }
         
         // Кнопка выбора частоты
         binding.buttonFrequency.setOnClickListener {
-            android.util.Log.d("EditMedicine", "Frequency button clicked")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Frequency button clicked")
             showFrequencyDialog()
         }
         
         // Убираем старые обработчики - теперь используется AutoCompleteTextView
         // binding.autoCompleteMedicineType.setOnClickListener {
-        //     android.util.Log.d("EditMedicine", "Medicine type field clicked")
+        //     com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Medicine type field clicked")
         //     showMedicineTypeDialog()
         // }
         
         // Альтернативный способ обработки клика для AutoCompleteTextView
         // binding.autoCompleteMedicineType.setOnTouchListener { _, event ->
         //     if (event.action == android.view.MotionEvent.ACTION_DOWN) {
-        //         android.util.Log.d("EditMedicine", "Medicine type field touched")
+        //         com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Medicine type field touched")
         //         showMedicineTypeDialog()
         //         return@setOnTouchListener true
         //     }
@@ -112,26 +138,26 @@ class EditMedicineActivity : AppCompatActivity() {
         // }
         
         binding.buttonWeekDays.setOnClickListener {
-            android.util.Log.d("EditMedicine", "Week days button clicked")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Week days button clicked")
             showWeekDaysDialog()
         }
         
         binding.buttonChangeGroup.setOnClickListener {
-            android.util.Log.d("EditMedicine", "Change group button clicked")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Change group button clicked")
             showGroupSelectionDialog()
         }
         
         binding.buttonSave.setOnClickListener {
-            android.util.Log.d("EditMedicine", "Save button clicked")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Save button clicked")
             updateMedicine()
         }
         
         binding.buttonCancel.setOnClickListener {
-            android.util.Log.d("EditMedicine", "Cancel button clicked")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Cancel button clicked")
             finish()
         }
         
-        android.util.Log.d("EditMedicine", "All listeners set up successfully")
+        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "All listeners set up successfully")
     }
     
     private fun setupMedicineTypeField() {
@@ -166,14 +192,14 @@ class EditMedicineActivity : AppCompatActivity() {
         // ✅ ИСПРАВЛЕНО: Обработчик выбора типа лекарства
         binding.autoCompleteMedicineType.setOnItemClickListener { _, _, position, _ ->
             selectedMedicineType = medicineTypes[position]
-            android.util.Log.d("EditMedicine", "Medicine type selected: $selectedMedicineType")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Medicine type selected: $selectedMedicineType")
             
             // Автоматически отмечаем чекбокс инсулина для соответствующих типов
             binding.checkBoxInsulin.isChecked = selectedMedicineType == "Инсулин" || 
                                                selectedMedicineType == "Оземпик" || 
                                                selectedMedicineType == "Мунджаро"
             
-            android.util.Log.d("EditMedicine", "Insulin checkbox set to: ${binding.checkBoxInsulin.isChecked}")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Insulin checkbox set to: ${binding.checkBoxInsulin.isChecked}")
         }
         
         // ✅ ИСПРАВЛЕНО: Обработчики для AutoCompleteTextView
@@ -196,19 +222,19 @@ class EditMedicineActivity : AppCompatActivity() {
                 val newType = s?.toString()?.trim() ?: ""
                 if (newType.isNotEmpty()) {
                     selectedMedicineType = newType
-                    android.util.Log.d("EditMedicine", "Medicine type changed via text input: $selectedMedicineType")
+                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Medicine type changed via text input: $selectedMedicineType")
                 }
             }
         })
         
-        android.util.Log.d("EditMedicine", "Medicine type field setup completed")
+        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Medicine type field setup completed")
     }
     
     private fun loadGroups() {
         try {
-            android.util.Log.d("EditMedicine", "Loading groups...")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Loading groups...")
             viewModel.getAllMedicines { medicines ->
-                android.util.Log.d("EditMedicine", "getAllMedicines callback received, medicines count: ${medicines.size}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "getAllMedicines callback received, medicines count: ${medicines.size}")
                 val existingGroups = mutableSetOf<String>()
                 medicines.forEach { medicine ->
                     if (medicine.groupName.isNotEmpty()) {
@@ -218,13 +244,13 @@ class EditMedicineActivity : AppCompatActivity() {
                 allGroups.clear()
                 allGroups.add("Без группы") // Заменяем пустую строку на понятное описание
                 allGroups.addAll(existingGroups.sorted())
-                android.util.Log.d("EditMedicine", "Groups loaded: $allGroups")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Groups loaded: $allGroups")
                 
                 // ✅ ИСПРАВЛЕНО: Обновляем диалог выбора группы, если он открыт
                 updateGroupSelectionDialog()
             }
         } catch (e: Exception) {
-            android.util.Log.e("EditMedicine", "Error in loadGroups", e)
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error in loadGroups", e)
             // Не завершаем активность, просто логируем ошибку
         }
     }
@@ -233,19 +259,19 @@ class EditMedicineActivity : AppCompatActivity() {
     private fun updateGroupSelectionDialog() {
         // Если диалог открыт, обновляем его данные
         // Это поможет синхронизировать группы в реальном времени
-        android.util.Log.d("EditMedicine", "Groups updated, dialog data refreshed")
+        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Groups updated, dialog data refreshed")
     }
     
     private fun loadMedicine() {
-        android.util.Log.d("EditMedicine", "Loading medicine with ID: $medicineId")
+        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Loading medicine with ID: $medicineId")
         try {
             viewModel.getMedicineById(medicineId) { medicine ->
-                android.util.Log.d("EditMedicine", "getMedicineById callback received, medicine: ${medicine?.name ?: "null"}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "getMedicineById callback received, medicine: ${medicine?.name ?: "null"}")
                 if (medicine != null) {
-                    android.util.Log.d("EditMedicine", "Medicine loaded successfully: ${medicine.name}")
+                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Medicine loaded successfully: ${medicine.name}")
                     populateFields(medicine)
                 } else {
-                    android.util.Log.e("EditMedicine", "Medicine not found with ID: $medicineId")
+                    com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Medicine not found with ID: $medicineId")
                     
                     // Показываем более информативное сообщение
                     AlertDialog.Builder(this)
@@ -259,7 +285,7 @@ class EditMedicineActivity : AppCompatActivity() {
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e("EditMedicine", "Error in loadMedicine", e)
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error in loadMedicine", e)
             Toast.makeText(this, "Ошибка загрузки лекарства: ${e.message}", Toast.LENGTH_SHORT).show()
             finish()
         }
@@ -267,7 +293,7 @@ class EditMedicineActivity : AppCompatActivity() {
     
     private fun populateFields(medicine: Medicine) {
         try {
-            android.util.Log.d("EditMedicine", "Populating fields for medicine: ${medicine.name}")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Populating fields for medicine: ${medicine.name}")
             
             binding.editTextName.setText(medicine.name)
             binding.editTextDosage.setText(medicine.dosage)
@@ -276,10 +302,10 @@ class EditMedicineActivity : AppCompatActivity() {
             binding.checkBoxInsulin.isChecked = medicine.isInsulin
             
             selectedTime = medicine.time
-            android.util.Log.d("EditMedicine", "Setting selectedTime from medicine: ${medicine.time}")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Setting selectedTime from medicine: ${medicine.time}")
             selectedFrequency = medicine.frequency
             selectedMedicineType = medicine.medicineType
-            android.util.Log.d("EditMedicine", "Setting selectedMedicineType from medicine: ${medicine.medicineType}")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Setting selectedMedicineType from medicine: ${medicine.medicineType}")
             selectedDays.clear()
             selectedDays.addAll(medicine.customDays)
             
@@ -302,7 +328,7 @@ class EditMedicineActivity : AppCompatActivity() {
             
             // ✅ ИСПРАВЛЕНО: Правильно устанавливаем тип лекарства
             binding.autoCompleteMedicineType.setText(selectedMedicineType, false)
-            android.util.Log.d("EditMedicine", "Set medicine type in field: $selectedMedicineType")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Set medicine type in field: $selectedMedicineType")
             
             // Убеждаемся, что dropdown работает правильно
             binding.autoCompleteMedicineType.setOnFocusChangeListener { _, hasFocus ->
@@ -314,21 +340,21 @@ class EditMedicineActivity : AppCompatActivity() {
             updateWeekDaysDisplay()
             
             // Логируем загруженное лекарство для отладки
-            android.util.Log.d("EditMedicine", "Fields populated successfully: name=${medicine.name}, dosage=${medicine.dosage}, " +
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Fields populated successfully: name=${medicine.name}, dosage=${medicine.dosage}, " +
                 "remainingQuantity=${medicine.remainingQuantity}, " +
                 "frequency=${medicine.frequency}, groupName=${medicine.groupName}, groupOrder=${medicine.groupOrder}")
                 
         } catch (e: Exception) {
-            android.util.Log.e("EditMedicine", "Error in populateFields", e)
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error in populateFields", e)
             Toast.makeText(this, "Ошибка заполнения полей: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
     
     private fun showTimePicker() {
         val currentTime = selectedTime ?: LocalTime.of(8, 0)
-        android.util.Log.d("EditMedicine", "Opening time picker with current time: $currentTime")
+        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Opening time picker with current time: $currentTime")
         CustomTimePickerDialog(this, currentTime) { time ->
-            android.util.Log.d("EditMedicine", "Time selected: $time")
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Time selected: $time")
             selectedTime = time
             updateTimeDisplay()
             Toast.makeText(this, "Выбрано время: $time", Toast.LENGTH_SHORT).show()
@@ -340,7 +366,7 @@ class EditMedicineActivity : AppCompatActivity() {
         val formatter = DateTimeFormatter.ofPattern("HH:mm")
         val timeText = currentTime.format(formatter)
         binding.buttonTime.text = timeText
-        android.util.Log.d("EditMedicine", "Updated time display: $timeText (selectedTime: $selectedTime)")
+        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Updated time display: $timeText (selectedTime: $selectedTime)")
     }
     
     private fun updateFrequencyDisplay() {
@@ -353,7 +379,7 @@ class EditMedicineActivity : AppCompatActivity() {
             DosageFrequency.CUSTOM -> "По расписанию"
         }
         binding.buttonFrequency.text = frequencyText
-        android.util.Log.d("EditMedicine", "Updated frequency display: $frequencyText (selectedFrequency: $selectedFrequency)")
+        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Updated frequency display: $frequencyText (selectedFrequency: $selectedFrequency)")
     }
     
     private fun showFrequencyDialog() {
@@ -398,7 +424,7 @@ class EditMedicineActivity : AppCompatActivity() {
                 binding.layoutGrouping.visibility = if (hasGroup || isEveryOtherDay) View.VISIBLE else View.GONE
                 binding.layoutWeekDays.visibility = if (isCustom) View.VISIBLE else View.GONE
                 
-                android.util.Log.d("EditMedicine", "Frequency changed to: $selectedFrequency")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Frequency changed to: $selectedFrequency")
             }
             .setPositiveButton("OK", null)
             .setNegativeButton("Отмена", null)
@@ -527,14 +553,14 @@ class EditMedicineActivity : AppCompatActivity() {
                 val shouldResetStatus = originalMedicine.frequency != selectedFrequency || 
                                        originalMedicine.time != saveTime
                 
-                android.util.Log.d("EditMedicine", "=== ОБНОВЛЕНИЕ ЛЕКАРСТВА ===")
-                android.util.Log.d("EditMedicine", "Старая частота: ${originalMedicine.frequency}")
-                android.util.Log.d("EditMedicine", "Новая частота: $selectedFrequency")
-                android.util.Log.d("EditMedicine", "Старое время: ${originalMedicine.time}")
-                android.util.Log.d("EditMedicine", "Новое время: $saveTime")
-                android.util.Log.d("EditMedicine", "Изменена частота: ${originalMedicine.frequency != selectedFrequency}")
-                android.util.Log.d("EditMedicine", "Изменено время: ${originalMedicine.time != saveTime}")
-                android.util.Log.d("EditMedicine", "Сбрасываем статус: $shouldResetStatus")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "=== ОБНОВЛЕНИЕ ЛЕКАРСТВА ===")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Старая частота: ${originalMedicine.frequency}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Новая частота: $selectedFrequency")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Старое время: ${originalMedicine.time}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Новое время: $saveTime")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменена частота: ${originalMedicine.frequency != selectedFrequency}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменено время: ${originalMedicine.time != saveTime}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Сбрасываем статус: $shouldResetStatus")
                 
                 val updatedMedicine = originalMedicine.copy(
                     name = name,
@@ -580,18 +606,38 @@ class EditMedicineActivity : AppCompatActivity() {
                 )
                 
                 // Логируем обновленное лекарство для отладки
-                android.util.Log.d("EditMedicine", "=== ОБНОВЛЕНИЕ ЛЕКАРСТВА ===")
-                android.util.Log.d("EditMedicine", "Название: ${updatedMedicine.name}")
-                android.util.Log.d("EditMedicine", "Время: ${updatedMedicine.time}")
-                android.util.Log.d("EditMedicine", "Частота: ${updatedMedicine.frequency}")
-                android.util.Log.d("EditMedicine", "Количество: ${updatedMedicine.remainingQuantity}")
-                android.util.Log.d("EditMedicine", "СБРОШЕН СТАТУС ПРИНЯТИЯ:")
-                android.util.Log.d("EditMedicine", "  - lastTakenTime: ${updatedMedicine.lastTakenTime}")
-                android.util.Log.d("EditMedicine", "  - takenToday: ${updatedMedicine.takenToday}")
-                android.util.Log.d("EditMedicine", "  - takenAt: ${updatedMedicine.takenAt}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "=== ОБНОВЛЕНИЕ ЛЕКАРСТВА ===")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Название: ${updatedMedicine.name}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Время: ${updatedMedicine.time}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Частота: ${updatedMedicine.frequency}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Количество: ${updatedMedicine.remainingQuantity}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "СБРОШЕН СТАТУС ПРИНЯТИЯ:")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - lastTakenTime: ${updatedMedicine.lastTakenTime}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - takenToday: ${updatedMedicine.takenToday}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - takenAt: ${updatedMedicine.takenAt}")
+                
+                // ✅ ДОБАВЛЕНО: АГРЕССИВНО останавливаем все уведомления для этого лекарства перед обновлением
+                try {
+                    val notificationManager = com.medicalnotes.app.utils.NotificationManager(this@EditMedicineActivity)
+                    
+                    // Сначала обычная остановка
+                    notificationManager.stopAllNotificationsForMedicine(medicineId)
+                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Обычная остановка уведомлений выполнена для лекарства ID: $medicineId")
+                    
+                    // Затем агрессивная отмена
+                    notificationManager.forceCancelAllNotificationsForMedicine(medicineId)
+                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Агрессивная отмена уведомлений выполнена для лекарства ID: $medicineId")
+                    
+                    // И на всякий случай отменяем все уведомления
+                    notificationManager.cancelAllNotifications()
+                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Все уведомления в системе отменены")
+                    
+                } catch (e: Exception) {
+                    com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Ошибка остановки уведомлений", e)
+                }
                 
                 // ✅ ДОБАВЛЕНО: Логируем обновление лекарства для уведомлений
-                android.util.Log.d("EditMedicine", "✓ Лекарство обновлено, уведомления будут перезапущены при следующей проверке")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Лекарство обновлено, уведомления будут перезапущены при следующей проверке")
                 
                 // Сохраняем в корутине
                 CoroutineScope(Dispatchers.IO).launch {
@@ -627,9 +673,9 @@ class EditMedicineActivity : AppCompatActivity() {
                                     val dataManager = com.medicalnotes.app.utils.DataManager(this@EditMedicineActivity)
                                     val updatedStatusMedicine = com.medicalnotes.app.utils.MedicineStatusHelper.updateMedicineStatus(updatedMedicine)
                                     dataManager.updateMedicine(updatedStatusMedicine)
-                                    android.util.Log.d("EditMedicine", "✓ Статус лекарства обновлен")
+                                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Статус лекарства обновлен")
                                 } catch (e: Exception) {
-                                    android.util.Log.e("EditMedicine", "Ошибка обновления статуса", e)
+                                    com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Ошибка обновления статуса", e)
                                 }
                                 
                                 Toast.makeText(this@EditMedicineActivity, 

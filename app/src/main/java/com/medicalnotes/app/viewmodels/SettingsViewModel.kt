@@ -26,8 +26,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _message = MutableLiveData<String>()
     val message: LiveData<String> = _message
     
+    // ✅ ДОБАВЛЕНО: LiveData для UserPreferences
+    private val _userPreferences = MutableLiveData<com.medicalnotes.app.models.UserPreferences>()
+    val userPreferences: LiveData<com.medicalnotes.app.models.UserPreferences> = _userPreferences
+    
     init {
         loadSettings()
+        loadUserPreferences()
         loadDataStatistics()
         loadBackupList()
     }
@@ -36,6 +41,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             val currentSettings = dataManager.getSettings()
             _settings.value = currentSettings
+        }
+    }
+    
+    // ✅ ДОБАВЛЕНО: Загрузка UserPreferences
+    fun loadUserPreferences() {
+        viewModelScope.launch {
+            val preferences = dataManager.loadUserPreferences()
+            _userPreferences.value = preferences
+            android.util.Log.d("SettingsViewModel", "UserPreferences загружены: вибрация=${preferences.enableVibration}, звук=${preferences.enableSound}")
         }
     }
     
@@ -48,6 +62,26 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             } else {
                 _message.value = "Ошибка сохранения настроек"
             }
+        }
+    }
+    
+    // ✅ ДОБАВЛЕНО: Обновление UserPreferences
+    fun updateUserPreferences(
+        enableVibration: Boolean? = null,
+        enableSound: Boolean? = null
+    ) {
+        viewModelScope.launch {
+            val currentPreferences = dataManager.loadUserPreferences()
+            val updatedPreferences = currentPreferences.copy(
+                enableVibration = enableVibration ?: currentPreferences.enableVibration,
+                enableSound = enableSound ?: currentPreferences.enableSound,
+                updatedAt = System.currentTimeMillis()
+            )
+            
+            dataManager.updateUserPreferences(updatedPreferences)
+            _userPreferences.value = updatedPreferences
+            
+            android.util.Log.d("SettingsViewModel", "UserPreferences обновлены: вибрация=${updatedPreferences.enableVibration}, звук=${updatedPreferences.enableSound}")
         }
     }
     

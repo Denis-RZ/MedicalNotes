@@ -56,20 +56,52 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
             "com.medicalnotes.app.MEDICINE_REMINDER" -> {
                 val medicineId = intent.getLongExtra("medicine_id", -1)
                 if (medicineId != -1L) {
+                    android.util.Log.d("MedicineAlarmReceiver", "=== ПОЛУЧЕНО УВЕДОМЛЕНИЕ О ЛЕКАРСТВЕ ===")
+                    android.util.Log.d("MedicineAlarmReceiver", "Лекарство ID: $medicineId")
+                    
                     val dataManager = DataManager(context)
                     val notificationManager = NotificationManager(context)
                     
                     val medicine = dataManager.getMedicineById(medicineId)
                     medicine?.let {
+                        android.util.Log.d("MedicineAlarmReceiver", "Найдено лекарство: ${it.name}")
+                        android.util.Log.d("MedicineAlarmReceiver", "  - Активно: ${it.isActive}")
+                        android.util.Log.d("MedicineAlarmReceiver", "  - Остаток: ${it.remainingQuantity}")
+                        android.util.Log.d("MedicineAlarmReceiver", "  - Время приема: ${it.time}")
+                        
                         if (it.isActive && it.remainingQuantity > 0) {
                             // Проверяем, не было ли лекарство принято недавно
                             val timeSinceLastDose = System.currentTimeMillis() - it.lastTakenTime
                             val oneHourInMillis = 60 * 60 * 1000L
                             
+                            android.util.Log.d("MedicineAlarmReceiver", "Время с последнего приема: ${timeSinceLastDose/1000/60} минут")
+                            
                             if (timeSinceLastDose > oneHourInMillis) {
-                                notificationManager.showMedicineReminder(it)
+                                android.util.Log.d("MedicineAlarmReceiver", "Показываем уведомление для: ${it.name}")
+                                
+                                // ✅ ДОБАВЛЕНО: Принудительно показываем уведомление с карточкой
+                                try {
+                                    notificationManager.showMedicineReminder(it)
+                                    android.util.Log.d("MedicineAlarmReceiver", "✓ Уведомление показано для: ${it.name}")
+                                } catch (e: Exception) {
+                                    android.util.Log.e("MedicineAlarmReceiver", "Ошибка показа уведомления", e)
+                                }
+                                
+                                // ✅ ДОБАВЛЕНО: Планируем следующее уведомление на завтра
+                                try {
+                                    scheduleNextDayNotification(context, it)
+                                    android.util.Log.d("MedicineAlarmReceiver", "✓ Следующее уведомление запланировано для: ${it.name}")
+                                } catch (e: Exception) {
+                                    android.util.Log.e("MedicineAlarmReceiver", "Ошибка планирования следующего уведомления", e)
+                                }
+                            } else {
+                                android.util.Log.d("MedicineAlarmReceiver", "Лекарство принято недавно, уведомление не показываем")
                             }
+                        } else {
+                            android.util.Log.d("MedicineAlarmReceiver", "Лекарство неактивно или закончилось")
                         }
+                    } ?: run {
+                        android.util.Log.e("MedicineAlarmReceiver", "Лекарство с ID $medicineId не найдено")
                     }
                 }
             }
@@ -82,46 +114,51 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                     val notificationManager = NotificationManager(context)
                     val dataManager = DataManager(context)
                     
-                    // ✅ УЛУЧШЕНО: Немедленно останавливаем вибрацию и уведомления
+                    // ✅ ДОБАВЛЕНО: Проверяем актуальность статуса лекарства перед воспроизведением звука
                     try {
-                        android.util.Log.d("🔇 RECEIVER_НАЧАЛО", "Начинаем остановку всех звуков и уведомлений для лекарства ID: $medicineId")
-                        
-                        // Принудительно останавливаем все вибрации и звуки
-                        notificationManager.stopVibration()
-                        android.util.Log.d("🔇 RECEIVER_ЗВУК", "stopVibration() выполнен для лекарства ID: $medicineId")
-                        
-                        // Отменяем конкретное уведомление для этого лекарства
-                        notificationManager.cancelOverdueNotification(medicineId)
-                        android.util.Log.d("🔇 RECEIVER_УВЕДОМЛЕНИЕ", "cancelOverdueNotification() выполнен для лекарства ID: $medicineId")
-                        
-                        // Дополнительно отменяем все уведомления для этого лекарства
-                        notificationManager.cancelMedicineNotification(medicineId)
-                        android.util.Log.d("🔇 RECEIVER_ВСЕ_УВЕДОМЛЕНИЯ", "cancelMedicineNotification() выполнен для лекарства ID: $medicineId")
-                        
-                        // ✅ ДОБАВЛЕНО: Принудительная остановка через AudioManager
-                        try {
-                            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                        val medicine = dataManager.getMedicineById(medicineId)
+                        if (medicine != null) {
+                            val currentStatus = com.medicalnotes.app.utils.MedicineStatusHelper.getMedicineStatus(medicine)
+                            android.util.Log.d("MedicineAlarmReceiver", "Текущий статус лекарства: $currentStatus")
                             
-                            // Временно отключаем звуки уведомлений
-                            val originalVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION)
-                            audioManager.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, 0, 0)
+                            // Если лекарство больше не просрочено, не воспроизводим звук
+                            if (currentStatus != com.medicalnotes.app.utils.MedicineStatus.OVERDUE) {
+                                android.util.Log.d("MedicineAlarmReceiver", "Лекарство больше не просрочено, звук не воспроизводится")
+                                return
+                            }
                             
-                            // Восстанавливаем громкость через 100мс
-                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                                try {
-                                    audioManager.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, originalVolume, 0)
-                                    android.util.Log.d("🔇 RECEIVER_ВОССТАНОВЛЕНИЕ", "Громкость уведомлений восстановлена для лекарства ID: $medicineId")
-                                } catch (e: Exception) {
-                                    android.util.Log.e("🔇 RECEIVER_ОШИБКА", "Ошибка восстановления громкости для лекарства ID: $medicineId", e)
-                                }
-                            }, 100)
+                            // ✅ ДОБАВЛЕНО: Дополнительная проверка - если лекарство было принято недавно
+                            if (medicine.takenToday) {
+                                android.util.Log.d("MedicineAlarmReceiver", "Лекарство уже принято сегодня, звук не воспроизводится")
+                                return
+                            }
                             
-                            android.util.Log.d("🔇 RECEIVER_AUDIOMANAGER", "AudioManager использован для остановки звука лекарства ID: $medicineId")
-                        } catch (e: Exception) {
-                            android.util.Log.e("🔇 RECEIVER_AUDIOMANAGER", "Ошибка использования AudioManager для лекарства ID: $medicineId", e)
+                            // ✅ ДОБАВЛЕНО: Проверяем, не было ли время изменено недавно
+                            val timeSinceUpdate = System.currentTimeMillis() - medicine.updatedAt
+                            val fiveMinutesInMillis = 5 * 60 * 1000L
+                            if (timeSinceUpdate < fiveMinutesInMillis) {
+                                android.util.Log.d("MedicineAlarmReceiver", "Лекарство было обновлено недавно (${timeSinceUpdate}ms назад), звук не воспроизводится")
+                                return
+                            }
                         }
+                    } catch (e: Exception) {
+                        android.util.Log.e("MedicineAlarmReceiver", "Ошибка проверки статуса лекарства", e)
+                    }
+                    
+                    // ✅ ИСПРАВЛЕНО: Более мягкая остановка уведомлений
+                    try {
+                        android.util.Log.d("🔇 RECEIVER_НАЧАЛО", "Начинаем остановку уведомлений для лекарства ID: $medicineId")
                         
-                        android.util.Log.d("🔇 RECEIVER_ЗАВЕРШЕНО", "Все вибрации, звуки и уведомления остановлены для лекарства ID: $medicineId")
+                        // Останавливаем вибрацию
+                        notificationManager.stopVibration()
+                        android.util.Log.d("🔇 RECEIVER_ВИБРАЦИЯ", "stopVibration() выполнен для лекарства ID: $medicineId")
+                        
+                        // Отменяем уведомления для этого лекарства
+                        notificationManager.cancelOverdueNotification(medicineId)
+                        notificationManager.cancelMedicineNotification(medicineId)
+                        android.util.Log.d("🔇 RECEIVER_УВЕДОМЛЕНИЯ", "Уведомления отменены для лекарства ID: $medicineId")
+                        
+                        android.util.Log.d("🔇 RECEIVER_ЗАВЕРШЕНО", "Уведомления остановлены для лекарства ID: $medicineId")
                     } catch (e: Exception) {
                         android.util.Log.e("MedicineAlarmReceiver", "Ошибка остановки уведомлений", e)
                     }
@@ -177,6 +214,52 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                 val notificationManager = NotificationManager(context)
                 notificationManager.showEmergencyAlert(message)
             }
+        }
+    }
+    
+    // ✅ ДОБАВЛЕНО: Планирование следующего уведомления на завтра
+    private fun scheduleNextDayNotification(context: Context, medicine: Medicine) {
+        try {
+            android.util.Log.d("MedicineAlarmReceiver", "Планирование следующего уведомления для: ${medicine.name}")
+            
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            val intent = Intent(context, MedicineAlarmReceiver::class.java).apply {
+                action = "com.medicalnotes.app.MEDICINE_REMINDER"
+                putExtra("medicine_id", medicine.id)
+            }
+            
+            val pendingIntent = android.app.PendingIntent.getBroadcast(
+                context,
+                medicine.id.toInt(),
+                intent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            // Вычисляем время на завтра
+            val calendar = java.util.Calendar.getInstance()
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+            calendar.set(java.util.Calendar.HOUR_OF_DAY, medicine.time.hour)
+            calendar.set(java.util.Calendar.MINUTE, medicine.time.minute)
+            calendar.set(java.util.Calendar.SECOND, 0)
+            
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    android.app.AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.setExact(
+                    android.app.AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            }
+            
+            android.util.Log.d("MedicineAlarmReceiver", "Следующее уведомление запланировано для ${medicine.name} на завтра в ${medicine.time}")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("MedicineAlarmReceiver", "Ошибка планирования следующего уведомления для ${medicine.name}", e)
         }
     }
 } 

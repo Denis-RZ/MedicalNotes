@@ -24,35 +24,9 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 class NotificationManager(private val context: Context) {
-    
-
-    
-    private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    private val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        @Suppress("NewApi")
-        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
-        vibratorManager.defaultVibrator
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        @Suppress("DEPRECATION")
-        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-    } else {
-        @Suppress("DEPRECATION")
-        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-    }
-    private val handler = Handler(Looper.getMainLooper())
-    private var scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(2)
-    
-    // Хранилище активных уведомлений с попытками
-    private val activeNotifications = mutableMapOf<Long, NotificationAttempt>()
-    
-    // ✅ ДОБАВЛЕНО: Хранилище активных звуков для принудительной остановки
-    private val activeRingtones = mutableMapOf<Long, android.media.Ringtone>()
-    
-    // ✅ ДОБАВЛЕНО: Хранилище активных планировщиков для отмены
-    private val activeSchedulers = mutableMapOf<Long, java.util.concurrent.ScheduledFuture<*>>()
-    
-    // ✅ ДОБАВЛЕНО: Глобальное состояние для предотвращения дублирования
     companion object {
+        private const val TAG = "NotificationManager"
+        
         const val CHANNEL_ID_MEDICINE = "medicine_reminders"
         const val CHANNEL_ID_LOW_STOCK = "low_stock_alerts"
         const val CHANNEL_ID_EMERGENCY = "emergency_alerts"
@@ -90,6 +64,31 @@ class NotificationManager(private val context: Context) {
         }
     }
     
+    private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        @Suppress("NewApi")
+        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
+        vibratorManager.defaultVibrator
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        @Suppress("DEPRECATION")
+        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    } else {
+        @Suppress("DEPRECATION")
+        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
+    private val handler = Handler(Looper.getMainLooper())
+    private var scheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(2)
+    private val dataManager = DataManager(context)
+    
+    // Хранилище активных уведомлений с попытками
+    private val activeNotifications = mutableMapOf<Long, NotificationAttempt>()
+    
+    // ✅ ДОБАВЛЕНО: Хранилище активных звуков для принудительной остановки
+    private val activeRingtones = mutableMapOf<Long, android.media.Ringtone>()
+    
+    // ✅ ДОБАВЛЕНО: Хранилище активных планировщиков для отмены
+    private val activeSchedulers = mutableMapOf<Long, java.util.concurrent.ScheduledFuture<*>>()
+    
     data class NotificationAttempt(
         val medicine: Medicine,
         val attemptCount: Int = 0,
@@ -99,6 +98,28 @@ class NotificationManager(private val context: Context) {
     
     init {
         createNotificationChannels()
+    }
+    
+    // ✅ ДОБАВЛЕНО: Метод для получения настроек пользователя
+    private fun getUserPreferences(): com.medicalnotes.app.models.UserPreferences {
+        return try {
+            dataManager.loadUserPreferences()
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationManager", "Ошибка загрузки настроек пользователя", e)
+            com.medicalnotes.app.models.UserPreferences() // Возвращаем настройки по умолчанию
+        }
+    }
+    
+    // ✅ ДОБАВЛЕНО: Метод для проверки, включена ли вибрация
+    private fun isVibrationEnabled(): Boolean {
+        val preferences = getUserPreferences()
+        return preferences.enableVibration
+    }
+    
+    // ✅ ДОБАВЛЕНО: Метод для проверки, включен ли звук
+    private fun isSoundEnabled(): Boolean {
+        val preferences = getUserPreferences()
+        return preferences.enableSound
     }
     
     private fun createNotificationChannels() {
@@ -203,6 +224,11 @@ class NotificationManager(private val context: Context) {
                 vibrationPattern = longArrayOf(0, 1000, 300, 1000, 300, 1000)
                 setBypassDnd(true) // Обходит режим "Не беспокоить"
                 setShowBadge(true) // Показывает значок на иконке приложения
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC // Видимо на экране блокировки
+                // ✅ ИСПРАВЛЕНО: Добавляем проверку API уровня для setAllowBubbles
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    setAllowBubbles(true) // Разрешает показ в виде пузырьков
+                }
             }
             
             notificationManager.createNotificationChannels(listOf(medicineChannel, lowStockChannel, emergencyChannel, overdueChannel, medicineCardChannel))
@@ -298,58 +324,136 @@ class NotificationManager(private val context: Context) {
                 else -> "Время принять лекарство!"
             }
             
-            // Создаем уведомление
+            // ✅ УЛУЧШЕНО: Создаем уведомление с максимальным приоритетом для работы при закрытом приложении
             val notification = NotificationCompat.Builder(context, CHANNEL_ID_MEDICINE_CARD)
                 .setSmallIcon(R.drawable.ic_medicine)
                 .setContentTitle("$urgencyText$attemptText")
                 .setContentText("${medicine.name} - ${medicine.dosage}")
                 .setStyle(NotificationCompat.BigTextStyle().bigText("${medicine.name}\nДозировка: ${medicine.dosage}\nВремя: ${medicine.time}\nПопытка: ${attempt.attemptCount}"))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setPriority(NotificationCompat.PRIORITY_MAX) // Максимальный приоритет
+                .setCategory(NotificationCompat.CATEGORY_ALARM) // Категория будильника для обхода DND
                 .setAutoCancel(true)
-                .setOngoing(true)
+                .setOngoing(true) // Уведомление не исчезает автоматически
                 .setContentIntent(openAppPendingIntent)
                 .addAction(R.drawable.ic_medicine, "✅ Выпил", takenPendingIntent)
                 .addAction(R.drawable.ic_medicine, "⏭ Пропустить", skipPendingIntent)
                 .setCustomBigContentView(customLayout)
                 .setVibrate(vibrationPattern)
                 .setLights(0xFF0000, 1000, 1000) // Красный свет
+                .setDefaults(NotificationCompat.DEFAULT_ALL) // Все звуки и вибрации
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // Видимо на экране блокировки
+                .setFullScreenIntent(openAppPendingIntent, true) // Показывать поверх других приложений
                 .build()
             
-            // Показываем уведомление
+            // ✅ УЛУЧШЕНО: Показываем уведомление с максимальным приоритетом
             val notificationId = (NOTIFICATION_ID_MEDICINE_CARD + medicine.id).toInt()
             notificationManager.notify(notificationId, notification)
             
-            // Запускаем звук и вибрацию
+            // ✅ ДОБАВЛЕНО: Принудительно показываем heads-up уведомление
             try {
-                // Вибрация
-                if (vibrator.hasVibrator()) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        val effect = VibrationEffect.createWaveform(vibrationPattern, 0)
-                        vibrator.vibrate(effect)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        vibrator.vibrate(vibrationPattern, 0)
+                // Показываем основное уведомление
+                notificationManager.notify(notificationId, notification)
+                
+                // Принудительно показываем heads-up уведомление
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    // Для Android 5+ используем специальный метод для heads-up
+                    val headsUpNotification = NotificationCompat.Builder(context, CHANNEL_ID_MEDICINE_CARD)
+                        .setSmallIcon(R.drawable.ic_medicine)
+                        .setContentTitle("$urgencyText$attemptText")
+                        .setContentText("${medicine.name} - ${medicine.dosage}")
+                        .setPriority(NotificationCompat.PRIORITY_MAX)
+                        .setCategory(NotificationCompat.CATEGORY_ALARM)
+                        .setAutoCancel(true)
+                        .setOngoing(true)
+                        .setContentIntent(openAppPendingIntent)
+                        .addAction(R.drawable.ic_medicine, "✅ Выпил", takenPendingIntent)
+                        .addAction(R.drawable.ic_medicine, "⏭ Пропустить", skipPendingIntent)
+                        .setCustomBigContentView(customLayout)
+                        .setVibrate(vibrationPattern)
+                        .setLights(0xFF0000, 1000, 1000)
+                        .setDefaults(NotificationCompat.DEFAULT_ALL)
+                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                        .setFullScreenIntent(openAppPendingIntent, true)
+                        .setStyle(NotificationCompat.BigTextStyle().bigText("${medicine.name}\nДозировка: ${medicine.dosage}\nВремя: ${medicine.time}\nПопытка: ${attempt.attemptCount}"))
+                        .build()
+                    
+                    notificationManager.notify(notificationId, headsUpNotification)
+                }
+                
+                // ✅ ДОБАВЛЕНО: Дополнительное уведомление для Android 11+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    try {
+                        // Создаем дополнительное уведомление для лучшей видимости
+                        val additionalNotification = NotificationCompat.Builder(context, CHANNEL_ID_MEDICINE_CARD)
+                            .setSmallIcon(R.drawable.ic_medicine)
+                            .setContentTitle("${medicine.name} - Время приема!")
+                            .setContentText("Нажмите для быстрого доступа")
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .setContentIntent(openAppPendingIntent)
+                            .build()
+                        
+                        notificationManager.notify((notificationId + 1000), additionalNotification)
+                        android.util.Log.d("NotificationManager", "Дополнительное уведомление показано для: ${medicine.name}")
+                    } catch (e: Exception) {
+                        android.util.Log.e("NotificationManager", "Ошибка показа дополнительного уведомления", e)
                     }
                 }
                 
-                // Звук
-                val ringtone = RingtoneManager.getRingtone(context, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                if (ringtone != null) {
-                    activeRingtones[medicine.id] = ringtone
-                    ringtone.play()
-                    
-                    // Останавливаем звук через 3 секунды
-                    handler.postDelayed({
-                        try {
-                            if (ringtone.isPlaying) {
-                                ringtone.stop()
+                android.util.Log.d("NotificationManager", "Heads-up уведомление показано для: ${medicine.name}")
+                
+                // ✅ ДОБАВЛЕНО: Показываем alert window для максимальной видимости
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        // Для Android 6+ показываем alert window
+                        showAlertWindow(medicine, attempt)
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("NotificationManager", "Ошибка показа alert window", e)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("NotificationManager", "Ошибка показа heads-up уведомления", e)
+            }
+            
+            // ✅ ИСПРАВЛЕНО: Запускаем звук и вибрацию с проверкой настроек пользователя
+            try {
+                // Вибрация - проверяем настройки пользователя
+                if (isVibrationEnabled() && vibrator.hasVibrator()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val effect = VibrationEffect.createWaveform(vibrationPattern, 0)
+                        vibrator.vibrate(effect)
+                        android.util.Log.d("NotificationManager", "✓ Вибрация запущена (настройки: включена)")
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator.vibrate(vibrationPattern, 0)
+                        android.util.Log.d("NotificationManager", "✓ Вибрация запущена (настройки: включена)")
+                    }
+                } else {
+                    android.util.Log.d("NotificationManager", "⚠ Вибрация отключена в настройках пользователя")
+                }
+                
+                // Звук - проверяем настройки пользователя
+                if (isSoundEnabled()) {
+                    val ringtone = RingtoneManager.getRingtone(context, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                    if (ringtone != null) {
+                        activeRingtones[medicine.id] = ringtone
+                        ringtone.play()
+                        android.util.Log.d("NotificationManager", "✓ Звук запущен (настройки: включен)")
+                        
+                        // Останавливаем звук через 3 секунды
+                        handler.postDelayed({
+                            try {
+                                if (ringtone.isPlaying) {
+                                    ringtone.stop()
+                                    android.util.Log.d("NotificationManager", "✓ Звук остановлен")
+                                }
+                                activeRingtones.remove(medicine.id)
+                            } catch (e: Exception) {
+                                android.util.Log.e("NotificationManager", "Ошибка остановки звука", e)
                             }
-                            activeRingtones.remove(medicine.id)
-                        } catch (e: Exception) {
-                            android.util.Log.e("NotificationManager", "Ошибка остановки звука", e)
-                        }
-                    }, 3000)
+                        }, 3000)
+                    }
+                } else {
+                    android.util.Log.d("NotificationManager", "⚠ Звук отключен в настройках пользователя")
                 }
             } catch (e: Exception) {
                 android.util.Log.e("NotificationManager", "Ошибка запуска звука/вибрации", e)
@@ -434,8 +538,8 @@ class NotificationManager(private val context: Context) {
         
         notificationManager.notify(medicine.id.toInt(), notification)
         
-        // Дополнительная вибрация через Vibrator
-        if (vibrator.hasVibrator()) {
+        // ✅ ИСПРАВЛЕНО: Дополнительная вибрация через Vibrator с проверкой настроек
+        if (isVibrationEnabled() && vibrator.hasVibrator()) {
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     val effect = VibrationEffect.createWaveform(vibrationPattern, 0)
@@ -444,35 +548,41 @@ class NotificationManager(private val context: Context) {
                     @Suppress("DEPRECATION")
                     vibrator.vibrate(vibrationPattern, 0) // Изменено с -1 на 0
                 }
-                android.util.Log.d("NotificationManager", "✓ Вибрация запущена (showMedicineNotificationWithRetry)")
+                android.util.Log.d("NotificationManager", "✓ Вибрация запущена (showMedicineNotificationWithRetry, настройки: включена)")
             } catch (e: Exception) {
                 android.util.Log.e("NotificationManager", "Ошибка запуска вибрации", e)
             }
+        } else {
+            android.util.Log.d("NotificationManager", "⚠ Вибрация отключена в настройках пользователя (showMedicineNotificationWithRetry)")
         }
         
-        // ✅ ДОБАВЛЕНО: Короткий звуковой сигнал при включении вибрации
-        try {
-            val ringtone = RingtoneManager.getRingtone(context, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-            if (ringtone != null) {
-                activeRingtones[medicine.id] = ringtone
-                ringtone.play()
-                android.util.Log.d("NotificationManager", "🔊 КОРОТКИЙ ЗВУК ВКЛЮЧЕН (showMedicineNotificationWithRetry): ${medicine.name}")
-                
-                // Останавливаем звук через 2 секунды
-                handler.postDelayed({
-                    try {
-                        if (ringtone.isPlaying) {
-                            ringtone.stop()
-                            android.util.Log.d("NotificationManager", "🔇 КОРОТКИЙ ЗВУК ОСТАНОВЛЕН (showMedicineNotificationWithRetry): ${medicine.name}")
+        // ✅ ИСПРАВЛЕНО: Короткий звуковой сигнал с проверкой настроек
+        if (isSoundEnabled()) {
+            try {
+                val ringtone = RingtoneManager.getRingtone(context, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                if (ringtone != null) {
+                    activeRingtones[medicine.id] = ringtone
+                    ringtone.play()
+                    android.util.Log.d("NotificationManager", "🔊 КОРОТКИЙ ЗВУК ВКЛЮЧЕН (showMedicineNotificationWithRetry): ${medicine.name} (настройки: включен)")
+                    
+                    // Останавливаем звук через 2 секунды
+                    handler.postDelayed({
+                        try {
+                            if (ringtone.isPlaying) {
+                                ringtone.stop()
+                                android.util.Log.d("NotificationManager", "🔇 КОРОТКИЙ ЗВУК ОСТАНОВЛЕН (showMedicineNotificationWithRetry): ${medicine.name}")
+                            }
+                            activeRingtones.remove(medicine.id)
+                        } catch (e: Exception) {
+                            android.util.Log.e("NotificationManager", "Ошибка остановки короткого звука", e)
                         }
-                        activeRingtones.remove(medicine.id)
-                    } catch (e: Exception) {
-                        android.util.Log.e("NotificationManager", "Ошибка остановки короткого звука", e)
-                    }
-                }, 2000) // 2 секунды
+                    }, 2000) // 2 секунды
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("NotificationManager", "Ошибка воспроизведения короткого звука", e)
             }
-        } catch (e: Exception) {
-            android.util.Log.e("NotificationManager", "Ошибка воспроизведения короткого звука", e)
+        } else {
+            android.util.Log.d("NotificationManager", "⚠ Звук отключен в настройках пользователя (showMedicineNotificationWithRetry)")
         }
         
         // Если это 3-я или больше попытка, показываем экстренное уведомление
@@ -1252,11 +1362,7 @@ class NotificationManager(private val context: Context) {
         }
     }
     
-    fun cancelAllNotifications() {
-        notificationManager.cancelAll()
-        activeNotifications.clear()
-        scheduler.shutdown()
-    }
+    // Старый метод удален - заменен на новый с полной функциональностью
 
     fun stopVibration() {
         android.util.Log.d("NotificationManager", "=== ОСТАНОВКА ВИБРАЦИИ ===")
@@ -1360,32 +1466,69 @@ class NotificationManager(private val context: Context) {
                 android.util.Log.e("NotificationManager", "Ошибка логирования в приложение", e)
             }
             
-            // Принудительно останавливаем вибрацию
-            if (vibrator.hasVibrator()) {
-                try {
+            // ✅ УЛУЧШЕНО: Агрессивная остановка вибрации
+            try {
+                if (vibrator.hasVibrator()) {
                     vibrator.cancel()
-                    android.util.Log.d("NotificationManager", "✓ Вибратор остановлен")
+                    android.util.Log.d("NotificationManager", "✓ Вибратор остановлен (первая попытка)")
+                    
+                    // ✅ ДОБАВЛЕНО: Множественные попытки остановки
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        try {
+                            vibrator.cancel()
+                            android.util.Log.d("NotificationManager", "✓ Вибратор остановлен (вторая попытка)")
+                        } catch (e: Exception) {
+                            android.util.Log.e("NotificationManager", "Ошибка второй остановки вибратора", e)
+                        }
+                    }, 50)
+                    
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        try {
+                            vibrator.cancel()
+                            android.util.Log.d("NotificationManager", "✓ Вибратор остановлен (третья попытка)")
+                        } catch (e: Exception) {
+                            android.util.Log.e("NotificationManager", "Ошибка третьей остановки вибратора", e)
+                        }
+                    }, 100)
+                    
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        try {
+                            vibrator.cancel()
+                            android.util.Log.d("NotificationManager", "✓ Вибратор остановлен (четвертая попытка)")
+                        } catch (e: Exception) {
+                            android.util.Log.e("NotificationManager", "Ошибка четвертой остановки вибратора", e)
+                        }
+                    }, 200)
+                    
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        try {
+                            vibrator.cancel()
+                            android.util.Log.d("NotificationManager", "✓ Вибратор остановлен (пятая попытка)")
+                        } catch (e: Exception) {
+                            android.util.Log.e("NotificationManager", "Ошибка пятой остановки вибратора", e)
+                        }
+                    }, 500)
                     
                     // ✅ ДОБАВЛЕНО: Логирование в приложение
                     try {
                         val mainActivity = context as? com.medicalnotes.app.MainActivity
-                        mainActivity?.addLog("🔇 NotificationManager: Вибратор остановлен")
+                        mainActivity?.addLog("🔇 NotificationManager: Вибратор остановлен (множественные попытки)")
                     } catch (e: Exception) {
                         android.util.Log.e("NotificationManager", "Ошибка логирования в приложение", e)
                     }
-                } catch (e: Exception) {
-                    android.util.Log.e("NotificationManager", "Ошибка остановки вибратора", e)
+                } else {
+                    android.util.Log.d("NotificationManager", "⚠ Вибратор недоступен")
+                    
+                    // ✅ ДОБАВЛЕНО: Логирование в приложение
+                    try {
+                        val mainActivity = context as? com.medicalnotes.app.MainActivity
+                        mainActivity?.addLog("⚠ NotificationManager: Вибратор недоступен")
+                    } catch (e: Exception) {
+                        android.util.Log.e("NotificationManager", "Ошибка логирования в приложение", e)
+                    }
                 }
-            } else {
-                android.util.Log.d("NotificationManager", "⚠ Вибратор недоступен")
-                
-                // ✅ ДОБАВЛЕНО: Логирование в приложение
-                try {
-                    val mainActivity = context as? com.medicalnotes.app.MainActivity
-                    mainActivity?.addLog("⚠ NotificationManager: Вибратор недоступен")
-                } catch (e: Exception) {
-                    android.util.Log.e("NotificationManager", "Ошибка логирования в приложение", e)
-                }
+            } catch (e: Exception) {
+                android.util.Log.e("NotificationManager", "Ошибка остановки вибратора", e)
             }
             
             // Останавливаем все активные уведомления
@@ -1547,20 +1690,23 @@ class NotificationManager(private val context: Context) {
                 try {
                     val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
                     val originalVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION)
-                    android.util.Log.d("🔇 AUDIO_MANAGER", "Оригинальная громкость уведомлений: $originalVolume")
                     
-                    // Временно отключаем звук уведомлений
+                    // Временно отключаем звук
                     audioManager.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, 0, 0)
-                    android.util.Log.d("🔇 AUDIO_MANAGER", "Звук уведомлений временно отключен")
                     
-                    // Восстанавливаем через 100мс
+                    // Восстанавливаем через 1 секунду
                     Handler(Looper.getMainLooper()).postDelayed({
-                        audioManager.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, originalVolume, 0)
-                        android.util.Log.d("🔇 AUDIO_MANAGER", "Громкость уведомлений восстановлена: $originalVolume")
-                    }, 100)
+                        try {
+                            audioManager.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, originalVolume, 0)
+                            android.util.Log.d("🔇 AUDIO_MANAGER", "✓ Громкость восстановлена: $originalVolume")
+                        } catch (e: Exception) {
+                            android.util.Log.e("🔇 AUDIO_MANAGER", "Ошибка восстановления громкости", e)
+                        }
+                    }, 1000)
                     
+                    android.util.Log.d("🔇 AUDIO_MANAGER", "✓ Принудительная остановка через AudioManager выполнена")
                 } catch (e: Exception) {
-                    android.util.Log.e("🔇 AUDIO_MANAGER", "Ошибка управления звуком", e)
+                    android.util.Log.e("🔇 AUDIO_MANAGER", "Ошибка AudioManager", e)
                 }
                 
             } catch (e: Exception) {
@@ -1871,5 +2017,486 @@ class NotificationManager(private val context: Context) {
         } catch (e: Exception) {
             android.util.Log.e("NotificationManager", "Ошибка показа подтверждения пропуска", e)
         }
+    }
+
+    /**
+     * ✅ ДОБАВЛЕНО: Останавливает все уведомления для конкретного лекарства
+     */
+    fun stopAllNotificationsForMedicine(medicineId: Long) {
+        try {
+            android.util.Log.d("NotificationManager", "Останавливаем все уведомления для лекарства ID: $medicineId")
+            
+            // Отменяем все типы уведомлений для этого лекарства
+            val medicineNotificationId = (NOTIFICATION_ID_MEDICINE + medicineId).toInt()
+            val overdueNotificationId = (NOTIFICATION_ID_OVERDUE + medicineId).toInt()
+            val cardNotificationId = (NOTIFICATION_ID_MEDICINE_CARD + medicineId).toInt()
+            
+            notificationManager.cancel(medicineNotificationId)
+            notificationManager.cancel(overdueNotificationId)
+            notificationManager.cancel(cardNotificationId)
+            
+            // Останавливаем вибрацию и звук
+            stopVibrationAndSound()
+            
+            // Отменяем планировщики
+            cancelAllAlarmsForMedicine(medicineId)
+            
+            // Удаляем из активных уведомлений
+            activeNotifications.remove(medicineId)
+            activeRingtones.remove(medicineId)
+            activeSchedulers.remove(medicineId)
+            
+            // Помечаем как неактивное
+            markNotificationInactive(medicineId)
+            
+            android.util.Log.d("NotificationManager", "Все уведомления остановлены для лекарства ID: $medicineId")
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationManager", "Ошибка остановки уведомлений для лекарства", e)
+        }
+    }
+
+    /**
+     * ✅ ДОБАВЛЕНО: Отменяет все alarms для конкретного лекарства
+     */
+    fun cancelAllAlarmsForMedicine(medicineId: Long) {
+        try {
+            android.util.Log.d("NotificationManager", "Отменяем все alarms для лекарства ID: $medicineId")
+            
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            
+            // Отменяем все возможные PendingIntent для этого лекарства
+            val intent = Intent(context, MedicineAlarmReceiver::class.java)
+            intent.putExtra("medicine_id", medicineId)
+            
+            // Отменяем разные типы уведомлений
+            val medicinePendingIntent = PendingIntent.getBroadcast(
+                context,
+                (medicineId * 1000 + 1).toInt(),
+                intent,
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            val overduePendingIntent = PendingIntent.getBroadcast(
+                context,
+                (medicineId * 1000 + 2).toInt(),
+                intent,
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            val reminderPendingIntent = PendingIntent.getBroadcast(
+                context,
+                (medicineId * 1000 + 3).toInt(),
+                intent,
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            // Отменяем alarms
+            medicinePendingIntent?.let { alarmManager.cancel(it) }
+            overduePendingIntent?.let { alarmManager.cancel(it) }
+            reminderPendingIntent?.let { alarmManager.cancel(it) }
+            
+            // Отменяем планировщики
+            activeSchedulers[medicineId]?.cancel(true)
+            activeSchedulers.remove(medicineId)
+            
+            android.util.Log.d("NotificationManager", "Все alarms отменены для лекарства ID: $medicineId")
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationManager", "Ошибка отмены alarms для лекарства", e)
+        }
+    }
+
+    /**
+     * ✅ ДОБАВЛЕНО: Останавливает вибрацию и звук
+     */
+    fun stopVibrationAndSound() {
+        try {
+            android.util.Log.d("NotificationManager", "Останавливаем вибрацию и звук")
+            
+            // Останавливаем вибрацию
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.cancel()
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.cancel()
+            }
+            
+            // Останавливаем все активные звуки
+            activeRingtones.values.forEach { ringtone ->
+                try {
+                    if (ringtone.isPlaying) {
+                        ringtone.stop()
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("NotificationManager", "Ошибка остановки звука", e)
+                }
+            }
+            activeRingtones.clear()
+            
+            android.util.Log.d("NotificationManager", "Вибрация и звук остановлены")
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationManager", "Ошибка остановки вибрации и звука", e)
+        }
+    }
+
+    /**
+     * ✅ ДОБАВЛЕНО: Агрессивно отменяет ВСЕ уведомления для конкретного лекарства
+     */
+    fun forceCancelAllNotificationsForMedicine(medicineId: Long) {
+        try {
+            android.util.Log.d("NotificationManager", "🚨 АГРЕССИВНАЯ ОТМЕНА всех уведомлений для лекарства ID: $medicineId")
+            
+            // 1. Отменяем все возможные ID уведомлений
+            val allPossibleIds = listOf(
+                (NOTIFICATION_ID_MEDICINE + medicineId).toInt(),
+                (NOTIFICATION_ID_OVERDUE + medicineId).toInt(),
+                (NOTIFICATION_ID_MEDICINE_CARD + medicineId).toInt(),
+                (NOTIFICATION_ID_EMERGENCY + medicineId).toInt(),
+                (NOTIFICATION_ID_LOW_STOCK + medicineId).toInt(),
+                medicineId.toInt(),
+                (medicineId * 10).toInt(),
+                (medicineId * 100).toInt(),
+                (medicineId * 1000).toInt()
+            )
+            
+            allPossibleIds.forEach { notificationId ->
+                try {
+                    notificationManager.cancel(notificationId)
+                    android.util.Log.d("NotificationManager", "Отменено уведомление ID: $notificationId")
+                } catch (e: Exception) {
+                    android.util.Log.e("NotificationManager", "Ошибка отмены уведомления ID: $notificationId", e)
+                }
+            }
+            
+            // 2. Отменяем все PendingIntent для этого лекарства
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            val intent = Intent(context, MedicineAlarmReceiver::class.java)
+            intent.putExtra("medicine_id", medicineId)
+            
+            // Отменяем все возможные комбинации PendingIntent
+            for (i in 1..10) {
+                try {
+                    val pendingIntent = PendingIntent.getBroadcast(
+                        context,
+                        (medicineId * 1000 + i).toInt(),
+                        intent,
+                        PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    pendingIntent?.let { 
+                        alarmManager.cancel(it)
+                        android.util.Log.d("NotificationManager", "Отменен PendingIntent ID: ${(medicineId * 1000 + i).toInt()}")
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("NotificationManager", "Ошибка отмены PendingIntent $i", e)
+                }
+            }
+            
+            // 3. Останавливаем вибрацию и звук
+            stopVibrationAndSound()
+            
+            // 4. Отменяем все планировщики
+            activeSchedulers[medicineId]?.cancel(true)
+            activeSchedulers.remove(medicineId)
+            
+            // 5. Очищаем все активные уведомления
+            activeNotifications.remove(medicineId)
+            activeRingtones.remove(medicineId)
+            
+            // 6. Помечаем как неактивное
+            markNotificationInactive(medicineId)
+            
+            // 7. Принудительно останавливаем через AudioManager
+            try {
+                val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                val originalVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION)
+                
+                // Временно отключаем звук
+                audioManager.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, 0, 0)
+                
+                // Восстанавливаем через 500мс
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    try {
+                        audioManager.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, originalVolume, 0)
+                    } catch (e: Exception) {
+                        android.util.Log.e("NotificationManager", "Ошибка восстановления громкости", e)
+                    }
+                }, 500)
+                
+                android.util.Log.d("NotificationManager", "Принудительная остановка через AudioManager выполнена")
+            } catch (e: Exception) {
+                android.util.Log.e("NotificationManager", "Ошибка AudioManager", e)
+            }
+            
+            android.util.Log.d("NotificationManager", "🚨 АГРЕССИВНАЯ ОТМЕНА завершена для лекарства ID: $medicineId")
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationManager", "Ошибка агрессивной отмены уведомлений", e)
+        }
+    }
+
+    /**
+     * ✅ ДОБАВЛЕНО: Отменяет ВСЕ уведомления в системе
+     */
+    fun cancelAllNotifications() {
+        try {
+            android.util.Log.d("NotificationManager", "🚨 ОТМЕНА ВСЕХ уведомлений в системе")
+            
+            // Отменяем все уведомления
+            notificationManager.cancelAll()
+            
+            // Останавливаем вибрацию и звук
+            stopVibrationAndSound()
+            
+            // Отменяем все планировщики
+            activeSchedulers.values.forEach { it.cancel(true) }
+            activeSchedulers.clear()
+            
+            // Очищаем все активные уведомления
+            activeNotifications.clear()
+            activeRingtones.clear()
+            
+            // Помечаем все как неактивные
+            clearAllActiveNotifications()
+            
+            android.util.Log.d("NotificationManager", "🚨 ВСЕ уведомления отменены")
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationManager", "Ошибка отмены всех уведомлений", e)
+        }
+    }
+    
+    /**
+     * ✅ УЛУЧШЕНО: Показывает alert window для максимальной видимости
+     */
+    private fun showAlertWindow(medicine: Medicine, attempt: NotificationAttempt) {
+        var alertLayout: android.widget.LinearLayout? = null
+        try {
+            android.util.Log.d("NotificationManager", "Показ alert window для: ${medicine.name}")
+            
+            // ✅ ДОБАВЛЕНО: Проверка разрешений для показа окна поверх всех приложений
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                if (!android.provider.Settings.canDrawOverlays(context)) {
+                    android.util.Log.e("NotificationManager", "Нет разрешения на показ окон поверх других приложений")
+                    
+                    // Показываем уведомление с инструкцией
+                    val intent = Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
+                        data = android.net.Uri.parse("package:${context.packageName}")
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    
+                    try {
+                        context.startActivity(intent)
+                        android.util.Log.d("NotificationManager", "Открыто окно настроек разрешений")
+                    } catch (e: Exception) {
+                        android.util.Log.e("NotificationManager", "Ошибка открытия настроек разрешений", e)
+                    }
+                    
+                    return
+                }
+            }
+            
+            // Создаем WindowManager для показа окна поверх всех приложений
+            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager
+            
+            // Создаем layout для alert window
+            alertLayout = android.widget.LinearLayout(context).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setBackgroundColor(android.graphics.Color.parseColor("#FF4444"))
+                setPadding(32, 32, 32, 32)
+                
+                // Заголовок
+                val titleView = android.widget.TextView(context).apply {
+                    text = "🚨 ВРЕМЯ ПРИНЯТЬ ЛЕКАРСТВО! 🚨"
+                    textSize = 18f
+                    setTextColor(android.graphics.Color.WHITE)
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(0, 0, 0, 16)
+                }
+                addView(titleView)
+                
+                // Название лекарства
+                val medicineView = android.widget.TextView(context).apply {
+                    text = "${medicine.name}"
+                    textSize = 16f
+                    setTextColor(android.graphics.Color.WHITE)
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(0, 0, 0, 8)
+                }
+                addView(medicineView)
+                
+                // Дозировка
+                val dosageView = android.widget.TextView(context).apply {
+                    text = "Дозировка: ${medicine.dosage}"
+                    textSize = 14f
+                    setTextColor(android.graphics.Color.WHITE)
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(0, 0, 0, 8)
+                }
+                addView(dosageView)
+                
+                // Время
+                val timeView = android.widget.TextView(context).apply {
+                    text = "Время: ${medicine.time}"
+                    textSize = 14f
+                    setTextColor(android.graphics.Color.WHITE)
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(0, 0, 0, 16)
+                }
+                addView(timeView)
+                
+                // Кнопки
+                val buttonLayout = android.widget.LinearLayout(context).apply {
+                    orientation = android.widget.LinearLayout.HORIZONTAL
+                    gravity = android.view.Gravity.CENTER
+                    
+                    // Кнопка "Выпил"
+                    val takenButton = android.widget.Button(context).apply {
+                        text = "✅ ВЫПИЛ"
+                        setBackgroundColor(android.graphics.Color.parseColor("#4CAF50"))
+                        setTextColor(android.graphics.Color.WHITE)
+                        setPadding(16, 8, 16, 8)
+                        setOnClickListener {
+                            // Отправляем действие "принял"
+                            val intent = Intent(context, MedicineAlarmReceiver::class.java).apply {
+                                action = "ACTION_MEDICINE_TAKEN"
+                                putExtra("medicine_id", medicine.id)
+                                putExtra("action", "taken")
+                            }
+                            context.sendBroadcast(intent)
+                            
+                            // Закрываем окно
+                            try {
+                                alertLayout?.let { windowManager.removeView(it) }
+                            } catch (e: Exception) {
+                                android.util.Log.e("NotificationManager", "Ошибка закрытия alert window", e)
+                            }
+                        }
+                    }
+                    
+                    // Кнопка "Пропустить"
+                    val skipButton = android.widget.Button(context).apply {
+                        text = "⏭ ПРОПУСТИТЬ"
+                        setBackgroundColor(android.graphics.Color.parseColor("#FF9800"))
+                        setTextColor(android.graphics.Color.WHITE)
+                        setPadding(16, 8, 16, 8)
+                        setOnClickListener {
+                            // Отправляем действие "пропустил"
+                            val intent = Intent(context, MedicineAlarmReceiver::class.java).apply {
+                                action = "ACTION_MEDICINE_SKIPPED"
+                                putExtra("medicine_id", medicine.id)
+                                putExtra("action", "skipped")
+                            }
+                            context.sendBroadcast(intent)
+                            
+                            // Закрываем окно
+                            try {
+                                alertLayout?.let { windowManager.removeView(it) }
+                            } catch (e: Exception) {
+                                android.util.Log.e("NotificationManager", "Ошибка закрытия alert window", e)
+                            }
+                        }
+                    }
+                    
+                    addView(takenButton)
+                    addView(android.widget.Space(context).apply { 
+                        layoutParams = android.widget.LinearLayout.LayoutParams(16, 0) 
+                    })
+                    addView(skipButton)
+                }
+                addView(buttonLayout)
+            }
+            
+            // ✅ УЛУЧШЕНО: Параметры окна для максимальной видимости
+            val layoutParams = android.view.WindowManager.LayoutParams().apply {
+                width = android.view.WindowManager.LayoutParams.MATCH_PARENT
+                height = android.view.WindowManager.LayoutParams.WRAP_CONTENT
+                
+                // ✅ ДОБАВЛЕНО: Правильный тип окна для Android 6+
+                type = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                } else {
+                    android.view.WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+                }
+                
+                // ✅ УЛУЧШЕНО: Флаги для лучшей видимости
+                flags = android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                        android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                        android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                        android.view.WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                        android.view.WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                        android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                
+                format = android.graphics.PixelFormat.TRANSLUCENT
+                gravity = android.view.Gravity.TOP
+                
+                // ✅ ДОБАВЛЕНО: Приоритет для показа поверх всего
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                }
+            }
+            
+            // Показываем окно
+            windowManager.addView(alertLayout, layoutParams)
+            
+            // Автоматически закрываем через 30 секунд
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                try {
+                    alertLayout?.let { windowManager.removeView(it) }
+                } catch (e: Exception) {
+                    android.util.Log.e("NotificationManager", "Ошибка автоматического закрытия alert window", e)
+                }
+            }, 30000)
+            
+            android.util.Log.d("NotificationManager", "Alert window показан для: ${medicine.name}")
+            
+            // ✅ ДОБАВЛЕНО: Логирование в приложение
+            try {
+                val mainActivity = context as? com.medicalnotes.app.MainActivity
+                mainActivity?.addLog("🚨 Alert window показан для: ${medicine.name}")
+            } catch (e: Exception) {
+                android.util.Log.e("NotificationManager", "Ошибка логирования в приложение", e)
+            }
+            
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationManager", "Ошибка показа alert window", e)
+            
+            // ✅ ДОБАВЛЕНО: Альтернативный способ - показываем обычное уведомление
+            try {
+                android.util.Log.d("NotificationManager", "Показываем альтернативное уведомление")
+                
+                // Создаем обычное уведомление с высоким приоритетом
+                val notification = NotificationCompat.Builder(context, "medicine_card_channel")
+                    .setContentTitle("🚨 ВРЕМЯ ПРИНЯТЬ ЛЕКАРСТВО!")
+                    .setContentText("${medicine.name} - ${medicine.dosage}")
+                    .setSmallIcon(R.drawable.ic_medicine)
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
+                    .setCategory(NotificationCompat.CATEGORY_ALARM)
+                    .setDefaults(NotificationCompat.DEFAULT_ALL)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .setAutoCancel(true)
+                    .setOngoing(true)
+                    .build()
+                
+                notificationManager.notify(medicine.id.toInt(), notification)
+                android.util.Log.d("NotificationManager", "Альтернативное уведомление показано")
+                
+                // ✅ ДОБАВЛЕНО: Логирование в приложение
+                try {
+                    val mainActivity = context as? com.medicalnotes.app.MainActivity
+                    mainActivity?.addLog("📱 Альтернативное уведомление показано для: ${medicine.name}")
+                } catch (e2: Exception) {
+                    android.util.Log.e("NotificationManager", "Ошибка логирования в приложение", e2)
+                }
+                
+            } catch (e2: Exception) {
+                android.util.Log.e("NotificationManager", "Ошибка показа альтернативного уведомления", e2)
+            }
+        }
+    }
+
+    private fun showOverlayWindow(medicine: Medicine) {
+        // ✅ ИСПРАВЛЕНО: Убираем неправильно добавленный код
+        // Этот метод должен быть реализован в контексте Activity
+        android.util.Log.d(TAG, "showOverlayWindow called for medicine: ${medicine.name}")
     }
 } 

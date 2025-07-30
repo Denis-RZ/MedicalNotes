@@ -554,6 +554,19 @@ class AddMedicineActivity : AppCompatActivity() {
                 val success = viewModel.insertMedicine(medicine)
                 
                 if (success > 0) {
+                    // ✅ ДОБАВЛЕНО: Планируем уведомление для нового лекарства
+                    try {
+                        android.util.Log.d("AddMedicine", "Планирование уведомления для нового лекарства: ${medicine.name}")
+                        val intent = Intent(this@AddMedicineActivity, com.medicalnotes.app.service.NotificationService::class.java).apply {
+                            action = "SCHEDULE_MEDICINE"
+                            putExtra("medicine_id", success)
+                        }
+                        startService(intent)
+                        android.util.Log.d("AddMedicine", "✓ Уведомление запланировано для лекарства ID: $success")
+                    } catch (e: Exception) {
+                        android.util.Log.e("AddMedicine", "Ошибка планирования уведомления", e)
+                    }
+                    
                     // Если есть связанные лекарства, создаем группу
                     if (selectedRelatedMedicines.isNotEmpty()) {
                         createMedicineGroup(medicine, selectedRelatedMedicines)

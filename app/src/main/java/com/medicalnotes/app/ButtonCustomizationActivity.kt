@@ -19,6 +19,17 @@ class ButtonCustomizationActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Настройка обработки кнопки "Назад"
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Логика обработки кнопки "Назад"
+                if (isEnabled) {
+                    finish()
+                }
+            }
+        })
+        
         binding = ActivityButtonCustomizationBinding.inflate(layoutInflater)
         setContentView(binding.root)
         

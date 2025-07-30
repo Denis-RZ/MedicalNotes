@@ -21,6 +21,17 @@ class SettingsActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Настройка обработки кнопки "Назад"
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Логика обработки кнопки "Назад"
+                if (isEnabled) {
+                    finish()
+                }
+            }
+        })
+        
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
@@ -102,6 +113,10 @@ class SettingsActivity : AppCompatActivity() {
             showClearDataDialog()
         }
         
+        binding.buttonCrashReport.setOnClickListener {
+            CrashReportActivity.start(this)
+        }
+        
         binding.buttonSaveSettings.setOnClickListener {
             saveSettings()
         }
@@ -115,8 +130,6 @@ class SettingsActivity : AppCompatActivity() {
         viewModel.settings.observe(this) { settings ->
             settings?.let {
                 binding.switchNotifications.isChecked = true // Уведомления всегда включены
-                binding.switchVibration.isChecked = true // Вибрация по умолчанию включена
-                binding.switchSound.isChecked = true // Звук по умолчанию включен
                 binding.sliderAdvanceMinutes.value = it.notificationAdvanceMinutes.toFloat()
                 binding.textAdvanceMinutes.text = "${it.notificationAdvanceMinutes} минут"
                 binding.sliderLowStockThreshold.value = it.lowStockThreshold.toFloat()
@@ -126,6 +139,15 @@ class SettingsActivity : AppCompatActivity() {
                 binding.sliderMaxBackups.value = it.maxBackups.toFloat()
                 binding.textMaxBackups.text = "${it.maxBackups} копий"
                 binding.switchHighContrast.isChecked = false // По умолчанию выключен
+            }
+        }
+        
+        // ✅ ИСПРАВЛЕНО: Загружаем настройки вибрации и звука из UserPreferences
+        viewModel.userPreferences.observe(this) { preferences ->
+            preferences?.let {
+                binding.switchVibration.isChecked = it.enableVibration
+                binding.switchSound.isChecked = it.enableSound
+                android.util.Log.d("SettingsActivity", "Настройки загружены: вибрация=${it.enableVibration}, звук=${it.enableSound}")
             }
         }
         
@@ -149,6 +171,14 @@ class SettingsActivity : AppCompatActivity() {
         )
         
         viewModel.updateSettings(settings)
+        
+        // ✅ ИСПРАВЛЕНО: Сохраняем настройки вибрации и звука в UserPreferences
+        viewModel.updateUserPreferences(
+            enableVibration = binding.switchVibration.isChecked,
+            enableSound = binding.switchSound.isChecked
+        )
+        
+        android.util.Log.d("SettingsActivity", "Настройки сохранены: вибрация=${binding.switchVibration.isChecked}, звук=${binding.switchSound.isChecked}")
     }
     
     private fun showBackupRestoreDialog() {
