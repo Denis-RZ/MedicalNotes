@@ -131,6 +131,13 @@
             android:exported="false"
             android:theme="@style/Theme.MedicalNotes.NoActionBar" />
 
+        <activity
+            android:name=".MedicineCardActivity"
+            android:exported="false"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:theme="@style/Theme.Material3.DayNight.Dialog"/>
+
         <!-- Quick Settings Tile Service -->
         <service
             android:name=".service.QuickSettingsTileService"
@@ -155,6 +162,9 @@
                 <action android:name="com.medicalnotes.app.MEDICINE_REMINDER" />
                 <action android:name="ACTION_MEDICINE_TAKEN" />
                 <action android:name="ACTION_MEDICINE_SKIPPED" />
+                <action android:name="ACTION_MEDICINE_SKIP" />
+                <action android:name="ACTION_SNOOZE_10" />
+                <action android:name="ACTION_SHOW_MEDICINE_CARD" />
                 <action android:name="com.medicalnotes.app.MEDICINE_TAKEN" />
                 <action android:name="com.medicalnotes.app.LOW_STOCK_ALERT" />
                 <action android:name="com.medicalnotes.app.EMERGENCY_ALERT" />

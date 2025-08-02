@@ -4,6 +4,7 @@ import com.google.gson.*
 import java.lang.reflect.Type
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 class LocalTimeAdapter : JsonSerializer<LocalTime>, JsonDeserializer<LocalTime> {
     
@@ -14,9 +15,14 @@ class LocalTimeAdapter : JsonSerializer<LocalTime>, JsonDeserializer<LocalTime> 
         typeOfSrc: Type?,
         context: JsonSerializationContext?
     ): JsonElement {
-        val timeString = src?.format(formatter) ?: "00:00"
-        android.util.Log.d("LocalTimeAdapter", "Serializing time: $src -> $timeString")
-        return JsonPrimitive(timeString)
+        return try {
+            val timeString = src?.format(formatter) ?: "00:00"
+            android.util.Log.d("LocalTimeAdapter", "Serializing time: $src -> $timeString")
+            JsonPrimitive(timeString)
+        } catch (e: Exception) {
+            android.util.Log.e("LocalTimeAdapter", "Error serializing time: $src", e)
+            JsonPrimitive("00:00")
+        }
     }
     
     override fun deserialize(
@@ -29,6 +35,9 @@ class LocalTimeAdapter : JsonSerializer<LocalTime>, JsonDeserializer<LocalTime> 
             val parsedTime = LocalTime.parse(timeString, formatter)
             android.util.Log.d("LocalTimeAdapter", "Deserializing time: $timeString -> $parsedTime")
             parsedTime
+        } catch (e: DateTimeParseException) {
+            android.util.Log.e("LocalTimeAdapter", "Invalid time format: ${json?.asString}, using 00:00", e)
+            LocalTime.of(0, 0)
         } catch (e: Exception) {
             android.util.Log.e("LocalTimeAdapter", "Error parsing time: ${json?.asString}", e)
             LocalTime.of(0, 0)

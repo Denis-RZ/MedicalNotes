@@ -376,6 +376,73 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Тестирование уведомлений -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
+            style="@style/Widget.Material3.CardView.Filled">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/margin_medium">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Тестирование уведомлений"
+                    android:textSize="@dimen/text_size_large"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Создает тестовое лекарство на 2 минуты вперед и закрывает приложение для проверки уведомлений"
+                    android:textSize="@dimen/text_size_small"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonTestOverdueMedicine"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Тест просроченного лекарства"
+                    android:textSize="@dimen/text_size_mobile_medium"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    app:icon="@drawable/ic_medicine"
+                    app:iconGravity="textStart"
+                    app:iconPadding="@dimen/margin_small"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp"
+                    android:backgroundTint="@android:color/holo_orange_light"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonStopNotifications"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Остановить вибрацию и звук"
+                    android:textSize="@dimen/text_size_mobile_medium"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    app:icon="@drawable/ic_cancel"
+                    app:iconGravity="textStart"
+                    app:iconPadding="@dimen/margin_small"
+                    app:iconTint="?attr/colorOnSurface"
+                    app:strokeColor="?attr/colorOutline"
+                    app:strokeWidth="1dp"
+                    android:backgroundTint="@android:color/holo_red_light"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Информация о приложении -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

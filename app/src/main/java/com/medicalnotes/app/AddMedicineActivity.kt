@@ -36,6 +36,10 @@ class AddMedicineActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        //  ДОБАВЛЕНО: Уведомляем сервис о начале редактирования
+        com.medicalnotes.app.service.OverdueCheckService.setEditingActive(true)
+        
         binding = ActivityAddMedicineBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
@@ -85,11 +89,11 @@ class AddMedicineActivity : AppCompatActivity() {
         val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, medicineTypes)
         binding.autoCompleteMedicineType.setAdapter(adapter)
         
-        // ✅ ИСПРАВЛЕНО: Правильно устанавливаем значение по умолчанию
+        //  ИСПРАВЛЕНО: Правильно устанавливаем значение по умолчанию
         binding.autoCompleteMedicineType.setText(selectedMedicineType, false)
         android.util.Log.d("AddMedicine", "Set default medicine type: $selectedMedicineType")
         
-        // ✅ ИСПРАВЛЕНО: Обработчик выбора типа лекарства
+        //  ИСПРАВЛЕНО: Обработчик выбора типа лекарства
         binding.autoCompleteMedicineType.setOnItemClickListener { _, _, position, _ ->
             selectedMedicineType = medicineTypes[position]
             android.util.Log.d("AddMedicine", "Medicine type selected: $selectedMedicineType")
@@ -102,7 +106,7 @@ class AddMedicineActivity : AppCompatActivity() {
             android.util.Log.d("AddMedicine", "Insulin checkbox set to: ${binding.checkBoxInsulin.isChecked}")
         }
         
-        // ✅ ИСПРАВЛЕНО: Обработчики для AutoCompleteTextView
+        //  ИСПРАВЛЕНО: Обработчики для AutoCompleteTextView
         binding.autoCompleteMedicineType.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 binding.autoCompleteMedicineType.showDropDown()
@@ -146,20 +150,7 @@ class AddMedicineActivity : AppCompatActivity() {
         }
         
         // Показываем/скрываем группировку и дни недели в зависимости от выбранной частоты
-        binding.buttonFrequency.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?) {
-                val isEveryOtherDay = selectedFrequency == DosageFrequency.EVERY_OTHER_DAY
-                val isCustom = selectedFrequency == DosageFrequency.CUSTOM
-                
-                binding.layoutGrouping.visibility = if (isEveryOtherDay) View.VISIBLE else View.GONE
-                binding.layoutWeekDays.visibility = if (isCustom) View.VISIBLE else View.GONE
-                
-                // Если выбрали "через день", показываем поля группы
-                // Если выбрали "по расписанию", показываем выбор дней недели
-            }
-        })
+        // Убираем неправильный addTextChangedListener для кнопки
         
 
         
@@ -217,18 +208,73 @@ class AddMedicineActivity : AppCompatActivity() {
     }
     
     private fun updateFrequencyDisplay() {
-        val frequencyText = when (selectedFrequency) {
-            DosageFrequency.DAILY -> "Каждый день"
-            DosageFrequency.EVERY_OTHER_DAY -> "Через день"
-            DosageFrequency.TWICE_A_WEEK -> "2 раза в неделю"
-            DosageFrequency.THREE_TIMES_A_WEEK -> "3 раза в неделю"
-            DosageFrequency.WEEKLY -> "Раз в неделю"
-            DosageFrequency.CUSTOM -> "По расписанию"
+        // Проверяем, что Activity все еще активна
+        if (isFinishing || isDestroyed) {
+            android.util.Log.d("AddMedicine", "Activity finishing or destroyed, skipping UI update")
+            return
         }
-        binding.buttonFrequency.text = frequencyText
+        
+        try {
+            val frequencyText = when (selectedFrequency) {
+                DosageFrequency.DAILY -> "Каждый день"
+                DosageFrequency.EVERY_OTHER_DAY -> "Через день"
+                DosageFrequency.TWICE_A_WEEK -> "2 раза в неделю"
+                DosageFrequency.THREE_TIMES_A_WEEK -> "3 раза в неделю"
+                DosageFrequency.WEEKLY -> "Раз в неделю"
+                DosageFrequency.CUSTOM -> "По расписанию"
+            }
+            
+            // Безопасно обновляем текст кнопки
+            try {
+                if (!isFinishing && !isDestroyed) {
+                    binding.buttonFrequency.text = frequencyText
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AddMedicine", "Error updating button text", e)
+            }
+            
+            // Показываем/скрываем группировку и дни недели в зависимости от выбранной частоты
+            val isEveryOtherDay = selectedFrequency == DosageFrequency.EVERY_OTHER_DAY
+            val isCustom = selectedFrequency == DosageFrequency.CUSTOM
+            
+            // Безопасно обновляем видимость элементов
+            try {
+                if (!isFinishing && !isDestroyed) {
+                    binding.layoutGrouping.visibility = if (isEveryOtherDay) View.VISIBLE else View.GONE
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AddMedicine", "Error updating layoutGrouping visibility", e)
+            }
+            
+            try {
+                if (!isFinishing && !isDestroyed) {
+                    binding.layoutWeekDays.visibility = if (isCustom) View.VISIBLE else View.GONE
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AddMedicine", "Error updating layoutWeekDays visibility", e)
+            }
+            
+            android.util.Log.d("AddMedicine", "Frequency display updated: $frequencyText")
+        } catch (e: Exception) {
+            android.util.Log.e("AddMedicine", "Error updating frequency display", e)
+            try {
+                if (!isFinishing && !isDestroyed) {
+                    binding.buttonFrequency.text = "Каждый день"
+                }
+            } catch (e2: Exception) {
+                android.util.Log.e("AddMedicine", "Error setting default button text", e2)
+            }
+            selectedFrequency = DosageFrequency.DAILY
+        }
     }
     
     private fun showFrequencyDialog() {
+        // Проверяем, что Activity все еще активна
+        if (isFinishing || isDestroyed) {
+            android.util.Log.d("AddMedicine", "Activity finishing or destroyed, skipping frequency dialog")
+            return
+        }
+        
         val frequencies = arrayOf(
             "Каждый день",
             "Через день", 
@@ -238,21 +284,35 @@ class AddMedicineActivity : AppCompatActivity() {
             "По расписанию"
         )
         
-        AlertDialog.Builder(this)
-            .setTitle("Выберите схему приема")
-            .setItems(frequencies) { _, which ->
-                selectedFrequency = when (which) {
-                    0 -> DosageFrequency.DAILY
-                    1 -> DosageFrequency.EVERY_OTHER_DAY
-                    2 -> DosageFrequency.TWICE_A_WEEK
-                    3 -> DosageFrequency.THREE_TIMES_A_WEEK
-                    4 -> DosageFrequency.WEEKLY
-                    5 -> DosageFrequency.CUSTOM
-                    else -> DosageFrequency.DAILY
+        try {
+            AlertDialog.Builder(this)
+                .setTitle("Выберите схему приема")
+                .setItems(frequencies) { _, which ->
+                    // Проверяем, что Activity все еще активна перед обновлением
+                    if (!isFinishing && !isDestroyed) {
+                        selectedFrequency = when (which) {
+                            0 -> DosageFrequency.DAILY
+                            1 -> DosageFrequency.EVERY_OTHER_DAY
+                            2 -> DosageFrequency.TWICE_A_WEEK
+                            3 -> DosageFrequency.THREE_TIMES_A_WEEK
+                            4 -> DosageFrequency.WEEKLY
+                            5 -> DosageFrequency.CUSTOM
+                            else -> DosageFrequency.DAILY
+                        }
+                        updateFrequencyDisplay()
+                    }
                 }
-                updateFrequencyDisplay()
-            }
-            .show()
+                .setOnCancelListener {
+                    android.util.Log.d("AddMedicine", "Frequency dialog cancelled")
+                }
+                .setOnDismissListener {
+                    android.util.Log.d("AddMedicine", "Frequency dialog dismissed")
+                }
+                .show()
+        } catch (e: Exception) {
+            android.util.Log.e("AddMedicine", "Error showing frequency dialog", e)
+            Toast.makeText(this, "Ошибка показа диалога", Toast.LENGTH_SHORT).show()
+        }
     }
     
     private fun showGroupSelectionDialog() {
@@ -356,12 +416,32 @@ class AddMedicineActivity : AppCompatActivity() {
     }
     
     private fun updateWeekDaysDisplay() {
-        if (selectedDays.isEmpty()) {
-            binding.buttonWeekDays.text = "Выбрать дни"
-        } else {
-            val dayNames = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
-            val selectedDayNames = selectedDays.sorted().map { dayNames[it - 1] }
-            binding.buttonWeekDays.text = "Дни: ${selectedDayNames.joinToString(", ")}"
+        // Проверяем, что Activity все еще активна
+        if (isFinishing || isDestroyed) {
+            android.util.Log.d("AddMedicine", "Activity finishing or destroyed, skipping week days update")
+            return
+        }
+        
+        try {
+            if (selectedDays.isEmpty()) {
+                if (!isFinishing && !isDestroyed) {
+                    binding.buttonWeekDays.text = "Выбрать дни"
+                }
+            } else {
+                val dayNames = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
+                val selectedDayNames = selectedDays.sorted()
+                    .filter { it in 1..7 } // Фильтруем только валидные дни недели
+                    .map { dayNames[it - 1] }
+                if (!isFinishing && !isDestroyed) {
+                    binding.buttonWeekDays.text = "Дни: ${selectedDayNames.joinToString(", ")}"
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("AddMedicine", "Error updating week days display", e)
+            if (!isFinishing && !isDestroyed) {
+                binding.buttonWeekDays.text = "Выбрать дни"
+            }
+            selectedDays.clear() // Очищаем некорректные данные
         }
     }
     
@@ -505,7 +585,7 @@ class AddMedicineActivity : AppCompatActivity() {
             return
         }
         
-        // ✅ ИСПРАВЛЕНО: Определяем dosageTimes на основе выбранной частоты
+        //  ИСПРАВЛЕНО: Определяем dosageTimes на основе выбранной частоты
         val dosageTimes = when (selectedFrequency) {
             DosageFrequency.DAILY -> listOf(DosageTime.MORNING, DosageTime.AFTERNOON, DosageTime.EVENING)
             DosageFrequency.EVERY_OTHER_DAY -> listOf(DosageTime.MORNING)
@@ -523,45 +603,52 @@ class AddMedicineActivity : AppCompatActivity() {
         android.util.Log.d("AddMedicine", "Группа: ${binding.editTextGroupName.text.toString().trim()}")
         android.util.Log.d("AddMedicine", "Порядок в группе: ${binding.editTextGroupOrder.text.toString().toIntOrNull() ?: 1}")
         
-        // Создаем лекарство
-        val medicine = Medicine(
-            id = 0,
-            name = name,
-            dosage = dosage,
-            quantity = quantity,
-            remainingQuantity = quantity,
-            medicineType = selectedMedicineType,
-            time = selectedTime,
-            notes = notes,
-            isInsulin = isInsulin,
-            isActive = true,
-            takenToday = false,
-            isMissed = false,
-            frequency = selectedFrequency, // ✅ ИСПРАВЛЕНО: Добавляем частоту
-            dosageTimes = dosageTimes, // ✅ ИСПРАВЛЕНО: Добавляем времена приема
-            customDays = selectedDays.toList(),
-            groupName = binding.editTextGroupName.text.toString().trim(),
-            groupOrder = binding.editTextGroupOrder.text.toString().toIntOrNull() ?: 1,
-            multipleDoses = binding.switchMultipleDoses.isChecked,
-            doseTimes = selectedTimes,
-            relatedMedicineIds = selectedRelatedMedicines.map { it.id },
-            isPartOfGroup = selectedRelatedMedicines.isNotEmpty()
-        )
+        // Создаем лекарство с безопасными значениями
+        val medicine = try {
+            Medicine(
+                id = 0,
+                name = name,
+                dosage = dosage.ifEmpty { "1" },
+                quantity = quantity,
+                remainingQuantity = quantity,
+                medicineType = selectedMedicineType.ifEmpty { "Таблетки" },
+                time = selectedTime,
+                notes = notes,
+                isInsulin = isInsulin,
+                isActive = true,
+                takenToday = false,
+                isMissed = false,
+                frequency = selectedFrequency,
+                dosageTimes = dosageTimes,
+                customDays = selectedDays.toList(),
+                groupName = binding.editTextGroupName.text.toString().trim(),
+                groupOrder = binding.editTextGroupOrder.text.toString().toIntOrNull() ?: 1,
+                multipleDoses = binding.switchMultipleDoses.isChecked,
+                doseTimes = selectedTimes.ifEmpty { listOf(selectedTime) },
+                relatedMedicineIds = selectedRelatedMedicines.map { it.id },
+                isPartOfGroup = selectedRelatedMedicines.isNotEmpty()
+            )
+        } catch (e: Exception) {
+            android.util.Log.e("AddMedicine", "Error creating Medicine object", e)
+            hideLoadingState()
+            Toast.makeText(this, "Ошибка создания лекарства: ${e.message}", Toast.LENGTH_SHORT).show()
+            return
+        }
         
         // Сохраняем лекарство
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO + com.medicalnotes.app.utils.CrashReporter.getCoroutineExceptionHandler()).launch {
             try {
+                android.util.Log.d("AddMedicine", "Starting medicine insertion...")
                 val success = viewModel.insertMedicine(medicine)
+                android.util.Log.d("AddMedicine", "Medicine insertion result: $success")
                 
                 if (success > 0) {
-                    // ✅ ДОБАВЛЕНО: Планируем уведомление для нового лекарства
+                    //  ИСПРАВЛЕНО: Планируем уведомление для нового лекарства
                     try {
                         android.util.Log.d("AddMedicine", "Планирование уведомления для нового лекарства: ${medicine.name}")
-                        val intent = Intent(this@AddMedicineActivity, com.medicalnotes.app.service.NotificationService::class.java).apply {
-                            action = "SCHEDULE_MEDICINE"
-                            putExtra("medicine_id", success)
-                        }
-                        startService(intent)
+                        val updatedMedicine = medicine.copy(id = success)
+                        val scheduler = com.medicalnotes.app.utils.NotificationScheduler(this@AddMedicineActivity)
+                        scheduler.scheduleConsideringEdit(updatedMedicine, isEdit = false)
                         android.util.Log.d("AddMedicine", "✓ Уведомление запланировано для лекарства ID: $success")
                     } catch (e: Exception) {
                         android.util.Log.e("AddMedicine", "Ошибка планирования уведомления", e)
@@ -569,7 +656,11 @@ class AddMedicineActivity : AppCompatActivity() {
                     
                     // Если есть связанные лекарства, создаем группу
                     if (selectedRelatedMedicines.isNotEmpty()) {
-                        createMedicineGroup(medicine, selectedRelatedMedicines)
+                        try {
+                            createMedicineGroup(medicine, selectedRelatedMedicines)
+                        } catch (e: Exception) {
+                            android.util.Log.e("AddMedicine", "Ошибка создания группы лекарств", e)
+                        }
                     }
                     
                     CoroutineScope(Dispatchers.Main).launch {
@@ -580,13 +671,14 @@ class AddMedicineActivity : AppCompatActivity() {
                 } else {
                     CoroutineScope(Dispatchers.Main).launch {
                         hideLoadingState()
-                        Toast.makeText(this@AddMedicineActivity, "Ошибка добавления", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@AddMedicineActivity, "Ошибка добавления лекарства", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
+                android.util.Log.e("AddMedicine", "Critical error during medicine insertion", e)
                 CoroutineScope(Dispatchers.Main).launch {
                     hideLoadingState()
-                    Toast.makeText(this@AddMedicineActivity, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@AddMedicineActivity, "Критическая ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -695,5 +787,12 @@ class AddMedicineActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return true
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        //  ДОБАВЛЕНО: Уведомляем сервис об окончании редактирования
+        com.medicalnotes.app.service.OverdueCheckService.setEditingActive(false)
+        android.util.Log.i("AddMedicine", "onDestroy: редактирование завершено")
     }
 } 

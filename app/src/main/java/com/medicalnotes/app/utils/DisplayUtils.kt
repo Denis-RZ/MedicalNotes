@@ -134,13 +134,13 @@ object DisplayUtils {
     }
 
     fun getScreenWidth(context: Context): Int {
-        // ✅ ИСПРАВЛЕНО: Используем параметр context
+        //  ИСПРАВЛЕНО: Используем параметр context
         val displayMetrics = context.resources.displayMetrics
         return displayMetrics.widthPixels
     }
     
     fun getScreenHeight(context: Context): Int {
-        // ✅ ИСПРАВЛЕНО: Используем параметр context
+        //  ИСПРАВЛЕНО: Используем параметр context
         val displayMetrics = context.resources.displayMetrics
         return displayMetrics.heightPixels
     }

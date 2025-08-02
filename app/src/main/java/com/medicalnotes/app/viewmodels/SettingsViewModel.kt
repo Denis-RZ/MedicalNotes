@@ -26,7 +26,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _message = MutableLiveData<String>()
     val message: LiveData<String> = _message
     
-    // ✅ ДОБАВЛЕНО: LiveData для UserPreferences
+    //  ДОБАВЛЕНО: LiveData для UserPreferences
     private val _userPreferences = MutableLiveData<com.medicalnotes.app.models.UserPreferences>()
     val userPreferences: LiveData<com.medicalnotes.app.models.UserPreferences> = _userPreferences
     
@@ -44,7 +44,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Загрузка UserPreferences
+    //  ДОБАВЛЕНО: Загрузка UserPreferences
     fun loadUserPreferences() {
         viewModelScope.launch {
             val preferences = dataManager.loadUserPreferences()
@@ -65,7 +65,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Обновление UserPreferences
+    //  ДОБАВЛЕНО: Обновление UserPreferences
     fun updateUserPreferences(
         enableVibration: Boolean? = null,
         enableSound: Boolean? = null

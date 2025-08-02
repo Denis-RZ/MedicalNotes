@@ -130,7 +130,7 @@ class GroupManagementActivity : AppCompatActivity() {
     }
     
     private fun showAddToGroupDialog(groupName: String) {
-        // ✅ ИСПРАВЛЕНО: Используем параметр groupName для предварительного выбора группы
+        //  ИСПРАВЛЕНО: Используем параметр groupName для предварительного выбора группы
         val medicines = dataManager.loadMedicines().filter { it.groupName.isEmpty() }
         if (medicines.isEmpty()) {
             Toast.makeText(this, "Нет лекарств без группы", Toast.LENGTH_SHORT).show()
@@ -146,7 +146,7 @@ class GroupManagementActivity : AppCompatActivity() {
         val medicineNames = medicines.map { it.name }.toTypedArray()
         val groupNames = groups.toTypedArray()
         
-        // ✅ ИСПРАВЛЕНО: Предварительно выбираем группу, если она передана
+        //  ИСПРАВЛЕНО: Предварительно выбираем группу, если она передана
         val initialGroupIndex = if (groupName.isNotEmpty()) {
             groups.indexOf(groupName).takeIf { it >= 0 } ?: -1
         } else {

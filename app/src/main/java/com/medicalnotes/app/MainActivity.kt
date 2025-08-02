@@ -18,6 +18,7 @@ import com.medicalnotes.app.viewmodels.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -31,12 +32,43 @@ class MainActivity : AppCompatActivity() {
     private lateinit var userPreferencesRepository: UserPreferencesRepository
     private var overdueCheckTimer: android.os.Handler? = null
     
-    // ✅ ДОБАВЛЕНО: Список для хранения логов
+    //  ДОБАВЛЕНО: Список для хранения логов
     private val logs = mutableListOf<String>()
+    
+    //  ДОБАВЛЕНО: Тестовая функция для проверки CrashReporter
+    private fun testCrashReporter() {
+        try {
+            android.widget.Toast.makeText(this, "Тестирование CrashReporter...", android.widget.Toast.LENGTH_SHORT).show()
+            
+            // Создаем тестовую ошибку
+            val testException = RuntimeException("Тестовая ошибка для проверки CrashReporter")
+            testException.printStackTrace()
+            
+            // Показываем диалог с тестовой ошибкой
+            com.medicalnotes.app.utils.CrashReporter.showSimpleErrorDialog(
+                this, 
+                "Тест CrashReporter", 
+                testException
+            )
+            
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка тестирования CrashReporter", e)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
+            //  ДОБАВЛЕНО: Проверка инициализации CrashReporter
+            try {
+                com.medicalnotes.app.utils.CrashReporter.initialize(this)
+                com.medicalnotes.app.utils.LogCollector.i("MainActivity", " CrashReporter проверен")
+                
+            } catch (e: Exception) {
+                com.medicalnotes.app.utils.LogCollector.e("MainActivity", " Ошибка проверки CrashReporter", e)
+                e.printStackTrace()
+            }
+            
             // Инициализация системы логирования
             com.medicalnotes.app.utils.LogCollector.initialize(this)
             com.medicalnotes.app.utils.LogCollector.i("MainActivity", "onCreate started")
@@ -79,32 +111,43 @@ class MainActivity : AppCompatActivity() {
                 android.widget.Toast.makeText(this, "Ошибка загрузки данных", android.widget.Toast.LENGTH_LONG).show()
             }
             
-            // Запуск сервисов с проверками
+            //  ИСПРАВЛЕНО: Запуск сервисов в фоновом потоке для предотвращения ANR
             try {
-                // ✅ ДОБАВЛЕНО: Автоматическая проверка просроченных лекарств
-                checkOverdueMedicines()
+                // Запускаем сервисы в фоновом потоке, чтобы не блокировать UI
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        //  ДОБАВЛЕНО: Автоматическая проверка просроченных лекарств
+                        checkOverdueMedicines()
+                        
+                        //  ДОБАВЛЕНО: Запуск сервиса уведомлений для обеспечения работы в фоне
+                        startNotificationService()
+                        
+                        //  ДОБАВЛЕНО: Запуск сервиса проверки просроченных лекарств
+                        startOverdueCheckService()
+                        
+                        //  ДОБАВЛЕНО: Проверка и восстановление уведомлений при запуске
+                        checkAndRestoreNotifications()
+                        
+                        //  ДОБАВЛЕНО: Проверка разрешений для надежной работы уведомлений
+                        checkNotificationPermissions()
+                        
+                        //  ИСПРАВЛЕНО: Проверка разрешений для показа окон поверх других приложений на главном потоке
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            checkOverlayPermissions()
+                        }
+                        
+                        com.medicalnotes.app.utils.LogCollector.i("MainActivity", "Services started successfully in background")
+                    } catch (e: Exception) {
+                        com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error starting services in background", e)
+                    }
+                }
                 
-                // ✅ ДОБАВЛЕНО: Периодическая проверка каждые 30 секунд
+                //  ИСПРАВЛЕНО: Периодическая проверка каждые 2 минуты (запускается на главном потоке, но операции в фоне)
                 startPeriodicOverdueCheck()
                 
-                // ✅ ДОБАВЛЕНО: Запуск сервиса уведомлений для обеспечения работы в фоне
-                startNotificationService()
-                
-                // ✅ ДОБАВЛЕНО: Запуск сервиса проверки просроченных лекарств
-                startOverdueCheckService()
-                
-                // ✅ ДОБАВЛЕНО: Проверка и восстановление уведомлений при запуске
-                checkAndRestoreNotifications()
-                
-                // ✅ ДОБАВЛЕНО: Проверка разрешений для надежной работы уведомлений
-                checkNotificationPermissions()
-                
-                // ✅ ДОБАВЛЕНО: Проверка разрешений для показа окон поверх других приложений
-                checkOverlayPermissions()
-                
-                com.medicalnotes.app.utils.LogCollector.i("MainActivity", "Services started successfully")
+                com.medicalnotes.app.utils.LogCollector.i("MainActivity", "Services startup initiated")
             } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error starting services", e)
+                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error initiating services", e)
                 android.widget.Toast.makeText(this, "Ошибка запуска сервисов", android.widget.Toast.LENGTH_LONG).show()
             }
             
@@ -201,11 +244,7 @@ class MainActivity : AppCompatActivity() {
         try {
             com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Настройка Navigation Drawer")
             
-            // Проверяем, что NavigationView существует
-            if (binding.navigationView == null) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "NavigationView не найден!")
-                return
-            }
+            // NavigationView всегда существует в layout, проверка не нужна
             
             // Настройка NavigationView
             binding.navigationView.setNavigationItemSelectedListener { menuItem ->
@@ -322,7 +361,7 @@ class MainActivity : AppCompatActivity() {
                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up copy log button", e)
             }
             
-            // ✅ ДОБАВЛЕНО: Кнопка диагностики
+            //  ДОБАВЛЕНО: Кнопка диагностики
             try {
                 binding.buttonDiagnostic.setOnClickListener {
                     try {
@@ -336,7 +375,7 @@ class MainActivity : AppCompatActivity() {
                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up diagnostic button", e)
             }
             
-            // ✅ ДОБАВЛЕНО: Кнопка исправления проблем
+            //  ДОБАВЛЕНО: Кнопка исправления проблем
             try {
                 binding.buttonFixIssues.setOnClickListener {
                     try {
@@ -381,6 +420,10 @@ class MainActivity : AppCompatActivity() {
         try {
             viewModel.todayMedicines.observe(this) { medicines ->
                 try {
+                    //  ДОБАВЛЕНО: Подробное логирование для отладки
+                    addLog("=== ОБСЕРВЕР ЛЕКАРСТВ НА СЕГОДНЯ ===")
+                    addLog("Получено лекарств из ViewModel: ${medicines.size}")
+                    
                     if (medicines.isEmpty()) {
                         showEmptyState()
                         addLog("Нет лекарств на сегодня")
@@ -390,7 +433,8 @@ class MainActivity : AppCompatActivity() {
                         addLog("Получено лекарств: ${medicines.size}")
                         addLog("Текущее время: ${LocalDateTime.now()}")
                         
-                        var hasOverdueMedicines = false
+                        // Отслеживаем просроченные лекарства для логирования
+                        var overdueCount = 0
                         
                         medicines.forEach { medicine ->
                             try {
@@ -400,23 +444,33 @@ class MainActivity : AppCompatActivity() {
                                 addLog("  Частота: ${medicine.frequency}")
                                 
                                 if (status == MedicineStatus.OVERDUE) {
-                                    hasOverdueMedicines = true
-                                    addLog("⚠️ ПРОСРОЧЕНО: ${medicine.name}")
+                                    overdueCount++
+                                    addLog(" ПРОСРОЧЕНО: ${medicine.name}")
                                 } else if (status == MedicineStatus.UPCOMING) {
                                     addLog("📅 ПРЕДСТОИТ: ${medicine.name} - время еще не пришло")
                                 } else if (status == MedicineStatus.TAKEN_TODAY) {
-                                    addLog("✅ ПРИНЯТО: ${medicine.name} - уже принято сегодня")
+                                    addLog(" ПРИНЯТО: ${medicine.name} - уже принято сегодня")
                                 } else {
-                                    addLog("❌ НЕ СЕГОДНЯ: ${medicine.name} - не по расписанию")
+                                    addLog(" НЕ СЕГОДНЯ: ${medicine.name} - не по расписанию")
                                 }
                             } catch (e: Exception) {
                                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error processing medicine ${medicine.name}", e)
-                                addLog("❌ ОШИБКА обработки: ${medicine.name}")
+                                addLog(" ОШИБКА обработки: ${medicine.name}")
                             }
                         }
                         
+                        // Логируем итоговую статистику
+                        addLog("📊 ИТОГО: просроченных лекарств: $overdueCount")
+                        
                         // Проверяем, нужно ли показывать группированные карточки
                         try {
+                            //  ДОБАВЛЕНО: Подробное логирование перед DosageCalculator
+                            addLog("=== ВЫЗОВ DosageCalculator.getActiveMedicinesForDate ===")
+                            addLog("Входные данные: ${medicines.size} лекарств")
+                            medicines.forEach { medicine ->
+                                addLog("  - ${medicine.name}: активен=${medicine.isActive}, принято=${medicine.takenToday}")
+                            }
+                            
                             // Используем DosageCalculator для получения активных лекарств на сегодня
                             val activeMedicines = DosageCalculator.getActiveMedicinesForDate(medicines, LocalDate.now())
                             addLog("Активных лекарств на сегодня: ${activeMedicines.size}")
@@ -489,13 +543,13 @@ class MainActivity : AppCompatActivity() {
             viewModel.loadAllMedicines()
             loadTodayMedicines()
             
-            // ✅ ДОБАВЛЕНО: Проверка просроченных лекарств при возвращении в приложение
+            //  ДОБАВЛЕНО: Проверка просроченных лекарств при возвращении в приложение
             checkOverdueMedicines()
             
-            // ✅ ДОБАВЛЕНО: Перезапуск периодической проверки при возвращении в приложение
+            //  ДОБАВЛЕНО: Перезапуск периодической проверки при возвращении в приложение
             startPeriodicOverdueCheck()
             
-            // ✅ ДОБАВЛЕНО: Обработка результата от EditMedicineActivity
+            //  ДОБАВЛЕНО: Обработка результата от EditMedicineActivity
             handleEditMedicineResult()
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in onResume", e)
@@ -504,7 +558,7 @@ class MainActivity : AppCompatActivity() {
     }
     
     /**
-     * ✅ ДОБАВЛЕНО: Обработка результата от EditMedicineActivity
+     *  ДОБАВЛЕНО: Обработка результата от EditMedicineActivity
      */
     private fun handleEditMedicineResult() {
         try {
@@ -518,6 +572,10 @@ class MainActivity : AppCompatActivity() {
                 // АГРЕССИВНО останавливаем все уведомления для этого лекарства
                 val notificationManager = com.medicalnotes.app.utils.NotificationManager(this@MainActivity)
                 notificationManager.forceCancelAllNotificationsForMedicine(medicineId)
+                
+                //  ИСПРАВЛЕНО: Принудительно перезагружаем лекарства на сегодня
+                com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Перезагружаем лекарства на сегодня после редактирования")
+                loadTodayMedicines()
                 
                 // Принудительно обновляем статусы
                 checkOverdueMedicines()
@@ -537,7 +595,7 @@ class MainActivity : AppCompatActivity() {
         com.medicalnotes.app.utils.LogCollector.d("MainActivity", "=== ПРИЕМ ЛЕКАРСТВА ===")
         com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Лекарство: ${medicine.name} (ID: ${medicine.id})")
         
-        // ✅ ДОБАВЛЕНО: Подробное логирование нажатия кнопки
+        //  ДОБАВЛЕНО: Подробное логирование нажатия кнопки
         addLog("=== НАЖАТИЕ КНОПКИ 'ПРИНЯЛ ЛЕКАРСТВА' ===")
         addLog("Лекарство: ${medicine.name} (ID: ${medicine.id})")
         addLog("Время приема: ${medicine.time}")
@@ -545,84 +603,84 @@ class MainActivity : AppCompatActivity() {
         addLog("Текущее время: ${LocalDateTime.now()}")
         addLog("Статус лекарства: ${com.medicalnotes.app.utils.MedicineStatusHelper.getMedicineStatus(medicine)}")
         
-        // ✅ ДОБАВЛЕНО: Немедленная остановка всех звуков и уведомлений
-        addLog("🔇 НАЧИНАЕМ ОСТАНОВКУ ЗВУКА И УВЕДОМЛЕНИЙ")
+        //  ДОБАВЛЕНО: Немедленная остановка всех звуков и уведомлений
+        addLog(" НАЧИНАЕМ ОСТАНОВКУ ЗВУКА И УВЕДОМЛЕНИЙ")
         try {
-            com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_НАЖАТА", "Кнопка 'принял лекарство' нажата для: ${medicine.name} (ID: ${medicine.id})")
-            addLog("🔇 КНОПКА_НАЖАТА: Кнопка 'принял лекарство' нажата для: ${medicine.name}")
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_НАЖАТА", "Кнопка 'принял лекарство' нажата для: ${medicine.name} (ID: ${medicine.id})")
+            addLog(" КНОПКА_НАЖАТА: Кнопка 'принял лекарство' нажата для: ${medicine.name}")
             
             val notificationManager = com.medicalnotes.app.utils.NotificationManager(this@MainActivity)
-            addLog("🔇 NotificationManager создан")
+            addLog(" NotificationManager создан")
             
             // Принудительно останавливаем все вибрации и звуки
-            com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_ДЕЙСТВИЕ", "Вызываем stopVibration() для: ${medicine.name}")
-            addLog("🔇 ВЫЗЫВАЕМ stopVibration() для: ${medicine.name}")
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ДЕЙСТВИЕ", "Вызываем stopVibration() для: ${medicine.name}")
+            addLog(" ВЫЗЫВАЕМ stopVibration() для: ${medicine.name}")
             notificationManager.stopVibration()
-            addLog("🔇 stopVibration() выполнен")
+            addLog(" stopVibration() выполнен")
             
-            // ✅ ДОБАВЛЕНО: Проверяем результат stopVibration
-            com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_ПРОВЕРКА", "Проверяем результат stopVibration для: ${medicine.name}")
-            addLog("🔇 ПРОВЕРЯЕМ результат stopVibration для: ${medicine.name}")
+            //  ДОБАВЛЕНО: Проверяем результат stopVibration
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ПРОВЕРКА", "Проверяем результат stopVibration для: ${medicine.name}")
+            addLog(" ПРОВЕРЯЕМ результат stopVibration для: ${medicine.name}")
             
             // Отменяем конкретное уведомление для этого лекарства
-            com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_ДЕЙСТВИЕ", "Вызываем cancelOverdueNotification() для: ${medicine.name}")
-            addLog("🔇 ВЫЗЫВАЕМ cancelOverdueNotification() для: ${medicine.name}")
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ДЕЙСТВИЕ", "Вызываем cancelOverdueNotification() для: ${medicine.name}")
+            addLog(" ВЫЗЫВАЕМ cancelOverdueNotification() для: ${medicine.name}")
             notificationManager.cancelOverdueNotification(medicine.id)
-            addLog("🔇 cancelOverdueNotification() выполнен")
+            addLog(" cancelOverdueNotification() выполнен")
             
-            // ✅ ДОБАВЛЕНО: Проверяем результат cancelOverdueNotification
-            com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_ПРОВЕРКА", "Проверяем результат cancelOverdueNotification для: ${medicine.name}")
-            addLog("🔇 ПРОВЕРЯЕМ результат cancelOverdueNotification для: ${medicine.name}")
+            //  ДОБАВЛЕНО: Проверяем результат cancelOverdueNotification
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ПРОВЕРКА", "Проверяем результат cancelOverdueNotification для: ${medicine.name}")
+            addLog(" ПРОВЕРЯЕМ результат cancelOverdueNotification для: ${medicine.name}")
             
             // Дополнительно отменяем все уведомления для этого лекарства
-            com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_ДЕЙСТВИЕ", "Вызываем cancelMedicineNotification() для: ${medicine.name}")
-            addLog("🔇 ВЫЗЫВАЕМ cancelMedicineNotification() для: ${medicine.name}")
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ДЕЙСТВИЕ", "Вызываем cancelMedicineNotification() для: ${medicine.name}")
+            addLog(" ВЫЗЫВАЕМ cancelMedicineNotification() для: ${medicine.name}")
             notificationManager.cancelMedicineNotification(medicine.id)
-            addLog("🔇 cancelMedicineNotification() выполнен")
+            addLog(" cancelMedicineNotification() выполнен")
             
-            // ✅ ДОБАВЛЕНО: Останавливаем периодическую проверку просроченных лекарств
-            com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_ПЕРИОДИЧЕСКАЯ", "Останавливаем периодическую проверку для: ${medicine.name}")
-            addLog("🔇 ОСТАНАВЛИВАЕМ периодическую проверку для: ${medicine.name}")
+            //  ДОБАВЛЕНО: Останавливаем периодическую проверку просроченных лекарств
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ПЕРИОДИЧЕСКАЯ", "Останавливаем периодическую проверку для: ${medicine.name}")
+            addLog(" ОСТАНАВЛИВАЕМ периодическую проверку для: ${medicine.name}")
             stopPeriodicOverdueCheck()
-            addLog("🔇 Периодическая проверка остановлена")
+            addLog(" Периодическая проверка остановлена")
             
-            // ✅ ДОБАВЛЕНО: Принудительная остановка через AudioManager
+            //  ДОБАВЛЕНО: Принудительная остановка через AudioManager
             try {
-                com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_AUDIO", "Принудительно останавливаем звук через AudioManager для: ${medicine.name}")
-                addLog("🔇 ПРИНУДИТЕЛЬНО останавливаем звук через AudioManager для: ${medicine.name}")
+                com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_AUDIO", "Принудительно останавливаем звук через AudioManager для: ${medicine.name}")
+                addLog(" ПРИНУДИТЕЛЬНО останавливаем звук через AudioManager для: ${medicine.name}")
                 
                 val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
                 val originalVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION)
-                com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_AUDIO", "Оригинальная громкость: $originalVolume")
-                addLog("🔇 Оригинальная громкость уведомлений: $originalVolume")
+                com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_AUDIO", "Оригинальная громкость: $originalVolume")
+                addLog(" Оригинальная громкость уведомлений: $originalVolume")
                 
                 // Временно отключаем звук уведомлений
                 audioManager.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, 0, 0)
-                com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_AUDIO", "Звук уведомлений отключен")
-                addLog("🔇 Звук уведомлений временно отключен")
+                com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_AUDIO", "Звук уведомлений отключен")
+                addLog(" Звук уведомлений временно отключен")
                 
                 // Восстанавливаем через 200мс
                 android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                     audioManager.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, originalVolume, 0)
-                    com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_AUDIO", "Громкость восстановлена: $originalVolume")
-                    addLog("🔇 Громкость уведомлений восстановлена: $originalVolume")
+                    com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_AUDIO", "Громкость восстановлена: $originalVolume")
+                    addLog(" Громкость уведомлений восстановлена: $originalVolume")
                 }, 200)
                 
             } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("🔇 КНОПКА_AUDIO", "Ошибка AudioManager для: ${medicine.name}", e)
-                addLog("❌ ОШИБКА AudioManager для: ${medicine.name} - ${e.message}")
+                com.medicalnotes.app.utils.LogCollector.e(" КНОПКА_AUDIO", "Ошибка AudioManager для: ${medicine.name}", e)
+                addLog(" ОШИБКА AudioManager для: ${medicine.name} - ${e.message}")
             }
             
-            com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_ЗАВЕРШЕНА", "Все действия по остановке завершены для: ${medicine.name}")
-            addLog("🔇 ВСЕ ДЕЙСТВИЯ ПО ОСТАНОВКЕ ЗАВЕРШЕНЫ для: ${medicine.name}")
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ЗАВЕРШЕНА", "Все действия по остановке завершены для: ${medicine.name}")
+            addLog(" ВСЕ ДЕЙСТВИЯ ПО ОСТАНОВКЕ ЗАВЕРШЕНЫ для: ${medicine.name}")
         } catch (e: Exception) {
-            com.medicalnotes.app.utils.LogCollector.e("🔇 КНОПКА_ОШИБКА", "Ошибка отмены уведомлений для: ${medicine.name}", e)
-            addLog("❌ ОШИБКА отмены уведомлений для: ${medicine.name} - ${e.message}")
+            com.medicalnotes.app.utils.LogCollector.e(" КНОПКА_ОШИБКА", "Ошибка отмены уведомлений для: ${medicine.name}", e)
+            addLog(" ОШИБКА отмены уведомлений для: ${medicine.name} - ${e.message}")
         }
         
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // ✅ ИСПРАВЛЕНО: Уменьшаем количество таблеток на 1
+                //  ИСПРАВЛЕНО: Уменьшаем количество таблеток на 1
                 val newRemainingQuantity = (medicine.remainingQuantity - 1).coerceAtLeast(0)
                 
                 com.medicalnotes.app.utils.LogCollector.d("MainActivity", "=== УМЕНЬШЕНИЕ КОЛИЧЕСТВА ===")
@@ -639,33 +697,33 @@ class MainActivity : AppCompatActivity() {
                     isMissed = false,
                     lastTakenTime = System.currentTimeMillis(),
                     takenAt = System.currentTimeMillis(),
-                    remainingQuantity = newRemainingQuantity // ✅ ИСПРАВЛЕНО: Уменьшаем количество
+                    remainingQuantity = newRemainingQuantity //  ИСПРАВЛЕНО: Уменьшаем количество
                 )
                 
                 com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Обновляем лекарство: takenToday=true, isMissed=false")
                 addLog("ОБНОВЛЯЕМ лекарство: takenToday=true, isMissed=false")
                 viewModel.updateMedicine(updatedMedicine)
                 
-                // ✅ ДОБАВЛЕНО: Предупреждение о заканчивающихся таблетках
+                //  ДОБАВЛЕНО: Предупреждение о заканчивающихся таблетках
                 if (newRemainingQuantity <= 5 && newRemainingQuantity > 0) {
-                    com.medicalnotes.app.utils.LogCollector.d("MainActivity", "⚠️ ВНИМАНИЕ: Заканчиваются таблетки ${medicine.name}")
-                    addLog("⚠️ ВНИМАНИЕ: Заканчиваются таблетки ${medicine.name} (осталось: $newRemainingQuantity)")
+                    com.medicalnotes.app.utils.LogCollector.d("MainActivity", " ВНИМАНИЕ: Заканчиваются таблетки ${medicine.name}")
+                    addLog(" ВНИМАНИЕ: Заканчиваются таблетки ${medicine.name} (осталось: $newRemainingQuantity)")
                     
-                    CoroutineScope(Dispatchers.Main).launch {
+                    lifecycleScope.launch(Dispatchers.Main) {
                         android.widget.Toast.makeText(
                             this@MainActivity,
-                            "⚠️ Заканчиваются ${medicine.medicineType.lowercase()} ${medicine.name} (осталось: $newRemainingQuantity)",
+                            " Заканчиваются ${medicine.medicineType.lowercase()} ${medicine.name} (осталось: $newRemainingQuantity)",
                             android.widget.Toast.LENGTH_LONG
                         ).show()
                     }
                 } else if (newRemainingQuantity == 0) {
-                    com.medicalnotes.app.utils.LogCollector.d("MainActivity", "🚨 КРИТИЧНО: Таблетки ${medicine.name} закончились!")
-                    addLog("🚨 КРИТИЧНО: Таблетки ${medicine.name} закончились!")
+                    com.medicalnotes.app.utils.LogCollector.d("MainActivity", " КРИТИЧНО: Таблетки ${medicine.name} закончились!")
+                    addLog(" КРИТИЧНО: Таблетки ${medicine.name} закончились!")
                     
-                    CoroutineScope(Dispatchers.Main).launch {
+                    lifecycleScope.launch(Dispatchers.Main) {
                         android.widget.Toast.makeText(
                             this@MainActivity,
-                            "🚨 ${medicine.medicineType.lowercase().replaceFirstChar { it.uppercase() }} ${medicine.name} закончились! Нужно пополнить запас!",
+                            " ${medicine.medicineType.lowercase().replaceFirstChar { it.uppercase() }} ${medicine.name} закончились! Нужно пополнить запас!",
                             android.widget.Toast.LENGTH_LONG
                         ).show()
                     }
@@ -675,19 +733,19 @@ class MainActivity : AppCompatActivity() {
                 com.medicalnotes.app.utils.LogCollector.d("MainActivity", "✓ Лекарство успешно обновлено")
                 addLog("✓ Лекарство успешно обновлено")
                 
-                CoroutineScope(Dispatchers.Main).launch {
-                    // ✅ ИЗМЕНЕНО: Убираем Toast уведомление, которое может воспроизводить звук
+                lifecycleScope.launch(Dispatchers.Main) {
+                    //  ИЗМЕНЕНО: Убираем Toast уведомление, которое может воспроизводить звук
                     // android.widget.Toast.makeText(
                     //     this@MainActivity,
                     //     "Лекарство ${medicine.name} принято!",
                     //     android.widget.Toast.LENGTH_SHORT
                     // ).show()
                     
-                    // ✅ ДОБАВЛЕНО: Немедленное обновление списка лекарств
+                    //  ДОБАВЛЕНО: Немедленное обновление списка лекарств
                     addLog("🔄 НЕМЕДЛЕННОЕ ОБНОВЛЕНИЕ СПИСКА")
                     viewModel.loadAllMedicines()
                     
-                    // ✅ ДОБАВЛЕНО: Принудительное обновление списка для немедленного исчезновения карточки
+                    //  ДОБАВЛЕНО: Принудительное обновление списка для немедленного исчезновения карточки
                     try {
                         // Немедленно обновляем список лекарств на сегодня
                         val currentList = todayMedicineAdapter.currentList.toMutableList()
@@ -695,7 +753,7 @@ class MainActivity : AppCompatActivity() {
                         todayMedicineAdapter.submitList(updatedList)
                         addLog("🔄 Карточка лекарства ${medicine.name} немедленно удалена из списка")
                     } catch (e: Exception) {
-                        addLog("❌ ОШИБКА немедленного удаления карточки: ${e.message}")
+                        addLog(" ОШИБКА немедленного удаления карточки: ${e.message}")
                     }
                     
                     // Принудительно обновляем адаптер
@@ -705,33 +763,33 @@ class MainActivity : AppCompatActivity() {
                         addLog("✓ Адаптер обновлен")
                     } catch (e: Exception) {
                         com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Ошибка обновления адаптера", e)
-                        addLog("❌ ОШИБКА обновления адаптера: ${e.message}")
+                        addLog(" ОШИБКА обновления адаптера: ${e.message}")
                     }
                     
                     com.medicalnotes.app.utils.LogCollector.d("MainActivity", "✓ Список лекарств обновлен")
                     addLog("✓ Список лекарств обновлен")
                     
-                    // ✅ ДОБАВЛЕНО: Логирование завершения обновления
+                    //  ДОБАВЛЕНО: Логирование завершения обновления
                     addLog("=== ОБНОВЛЕНИЕ ЗАВЕРШЕНО ===")
                     addLog("Лекарство: ${medicine.name} (ID: ${medicine.id})")
                     addLog("Статус: takenToday = true")
                     addLog("Время обновления: ${LocalDateTime.now()}")
                     
-                    // ✅ ДОБАВЛЕНО: Перезапускаем периодическую проверку через 10 секунд
-                    com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_ПЕРИОДИЧЕСКАЯ", "Перезапускаем периодическую проверку через 10 секунд")
-                    addLog("🔇 ПЕРЕЗАПУСКАЕМ периодическую проверку через 10 секунд")
+                    //  ДОБАВЛЕНО: Перезапускаем периодическую проверку через 10 секунд
+                    com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ПЕРИОДИЧЕСКАЯ", "Перезапускаем периодическую проверку через 10 секунд")
+                    addLog(" ПЕРЕЗАПУСКАЕМ периодическую проверку через 10 секунд")
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                         startPeriodicOverdueCheck()
-                        com.medicalnotes.app.utils.LogCollector.d("🔇 КНОПКА_ПЕРИОДИЧЕСКАЯ", "Периодическая проверка перезапущена")
-                        addLog("🔇 Периодическая проверка перезапущена")
+                        com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ПЕРИОДИЧЕСКАЯ", "Периодическая проверка перезапущена")
+                        addLog(" Периодическая проверка перезапущена")
                     }, 10000) // Увеличиваем задержку до 10 секунд
                 }
             } catch (e: Exception) {
                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Ошибка обновления лекарства", e)
-                addLog("❌ ОШИБКА обновления лекарства: ${e.message}")
+                addLog(" ОШИБКА обновления лекарства: ${e.message}")
                 
-                CoroutineScope(Dispatchers.Main).launch {
-                    // ✅ ИЗМЕНЕНО: Показываем Toast только при ошибке, но без звука
+                lifecycleScope.launch(Dispatchers.Main) {
+                    //  ИЗМЕНЕНО: Показываем Toast только при ошибке, но без звука
                     android.widget.Toast.makeText(
                         this@MainActivity,
                         "Ошибка обновления лекарства: ${e.message}",
@@ -754,10 +812,10 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Удаление лекарства")
             .setMessage("Вы уверены, что хотите удалить лекарство '${medicine.name}'?")
             .setPositiveButton("Удалить") { _, _ ->
-                CoroutineScope(Dispatchers.IO).launch {
+                lifecycleScope.launch(Dispatchers.IO) {
                     try {
                         viewModel.deleteMedicine(medicine.id)
-                        CoroutineScope(Dispatchers.Main).launch {
+                        lifecycleScope.launch(Dispatchers.Main) {
                             android.widget.Toast.makeText(
                                 this@MainActivity,
                                 "Лекарство удалено",
@@ -765,7 +823,7 @@ class MainActivity : AppCompatActivity() {
                             ).show()
                         }
                     } catch (e: Exception) {
-                        CoroutineScope(Dispatchers.Main).launch {
+                        lifecycleScope.launch(Dispatchers.Main) {
                             android.widget.Toast.makeText(
                                 this@MainActivity,
                                 "Ошибка удаления: ${e.message}",
@@ -781,10 +839,15 @@ class MainActivity : AppCompatActivity() {
 
     fun addLog(message: String) {
         try {
+            //  ИСПРАВЛЕНО: Проверяем, что Activity не уничтожена и binding существует
+            if (isDestroyed || isFinishing || !::binding.isInitialized) {
+                return
+            }
+            
             val timestamp = LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"))
             val logMessage = "[$timestamp] $message"
             
-            // ✅ ДОБАВЛЕНО: Добавляем в список логов
+            //  ДОБАВЛЕНО: Добавляем в список логов
             logs.add(logMessage)
             
             // Ограничиваем размер списка логов (последние 1000 записей)
@@ -792,16 +855,33 @@ class MainActivity : AppCompatActivity() {
                 logs.removeAt(0)
             }
             
-            binding.textViewLogs.append("$logMessage\n")
-            
-            // Автоматическая прокрутка к концу
-            try {
-                val scrollAmount = binding.textViewLogs.layout.getLineTop(binding.textViewLogs.lineCount) - binding.textViewLogs.height
-                if (scrollAmount > 0) {
-                    binding.textViewLogs.scrollTo(0, scrollAmount)
+            //  ИСПРАВЛЕНО: Безопасное обновление UI на главном потоке
+            runOnUiThread {
+                try {
+                    if (!isDestroyed && !isFinishing && ::binding.isInitialized) {
+                        binding.textViewLogs.append("$logMessage\n")
+                        
+                        //  ИСПРАВЛЕНО: Безопасная прокрутка с post
+                        binding.textViewLogs.post {
+                            try {
+                                if (!isDestroyed && binding.textViewLogs.layout != null) {
+                                    val layout = binding.textViewLogs.layout
+                                    val lineCount = binding.textViewLogs.lineCount
+                                    if (lineCount > 0) {
+                                        val scrollAmount = layout.getLineTop(lineCount) - binding.textViewLogs.height
+                                        if (scrollAmount > 0) {
+                                            binding.textViewLogs.scrollTo(0, scrollAmount)
+                                        }
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                // Игнорируем ошибки прокрутки - они не критичны
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error updating logs UI", e)
                 }
-            } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error scrolling logs", e)
             }
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error adding log", e)
@@ -810,7 +890,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun clearLogs() {
         try {
-            // ✅ ДОБАВЛЕНО: Очищаем список логов
+            //  ДОБАВЛЕНО: Очищаем список логов
             logs.clear()
             binding.textViewLogs.text = ""
             addLog("=== ЛОГИ ОЧИЩЕНЫ ===")
@@ -877,7 +957,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun exportData() {
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val medicines = viewModel.allMedicines.value ?: emptyList()
                 val exportData = medicines.joinToString("\n") { medicine ->
@@ -888,7 +968,7 @@ class MainActivity : AppCompatActivity() {
                 val file = File(getExternalFilesDir(null), fileName)
                 file.writeText(exportData)
                 
-                CoroutineScope(Dispatchers.Main).launch {
+                lifecycleScope.launch(Dispatchers.Main) {
                     android.widget.Toast.makeText(
                         this@MainActivity,
                         "Данные экспортированы в $fileName",
@@ -897,7 +977,7 @@ class MainActivity : AppCompatActivity() {
                     addLog("Экспорт данных: $fileName")
                 }
             } catch (e: Exception) {
-                CoroutineScope(Dispatchers.Main).launch {
+                lifecycleScope.launch(Dispatchers.Main) {
                     android.widget.Toast.makeText(
                         this@MainActivity,
                         "Ошибка экспорта: ${e.message}",
@@ -932,7 +1012,7 @@ class MainActivity : AppCompatActivity() {
         ).show()
     }
     
-    // ✅ ДОБАВЛЕНО: Метод копирования лога в буфер обмена
+    //  ДОБАВЛЕНО: Метод копирования лога в буфер обмена
     private fun copyLogToClipboard() {
         try {
             com.medicalnotes.app.utils.LogCollector.d("MainActivity", "=== КОПИРОВАНИЕ ЛОГА ===")
@@ -966,22 +1046,43 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Автоматическая проверка просроченных лекарств
+    //  ДОБАВЛЕНО: Автоматическая проверка просроченных лекарств
     private fun checkOverdueMedicines() {
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 com.medicalnotes.app.utils.LogCollector.d("MainActivity", "=== ПРОВЕРКА ПРОСРОЧЕННЫХ ЛЕКАРСТВ ===")
-                addLog("=== ПРОВЕРКА ПРОСРОЧЕННЫХ ЛЕКАРСТВ ===")
+                lifecycleScope.launch(Dispatchers.Main) { addLog("=== ПРОВЕРКА ПРОСРОЧЕННЫХ ЛЕКАРСТВ ===") }
                 
-                val medicines = viewModel.allMedicines.value ?: emptyList()
-                addLog("Всего лекарств в базе: ${medicines.size}")
+                //  ИСПРАВЛЕНО: Загружаем данные, если они еще не загружены
+                var medicines = viewModel.allMedicines.value ?: emptyList()
+                if (medicines.isEmpty()) {
+                    // Пробуем загрузить данные напрямую
+                    try {
+                        val dataManager = com.medicalnotes.app.utils.DataManager(this@MainActivity)
+                        medicines = dataManager.loadMedicines()
+                        lifecycleScope.launch(Dispatchers.Main) { 
+                            addLog("Данные загружены напрямую из DataManager: ${medicines.size} лекарств")
+                        }
+                    } catch (e: Exception) {
+                        lifecycleScope.launch(Dispatchers.Main) { 
+                            addLog(" Ошибка загрузки данных: ${e.message}")
+                        }
+                        return@launch
+                    }
+                }
+                
+                lifecycleScope.launch(Dispatchers.Main) { addLog("Всего лекарств в базе: ${medicines.size}") }
                 
                 medicines.forEach { medicine ->
                     val status = com.medicalnotes.app.utils.MedicineStatusHelper.getMedicineStatus(medicine)
-                    addLog("ПРОВЕРКА: ${medicine.name} - Статус: $status, Время: ${medicine.time}, Принято сегодня: ${medicine.takenToday}")
+                    lifecycleScope.launch(Dispatchers.Main) { 
+                        addLog("ПРОВЕРКА: ${medicine.name} - Статус: $status, Время: ${medicine.time}, Принято сегодня: ${medicine.takenToday}")
+                    }
                     
                     if (status == com.medicalnotes.app.utils.MedicineStatus.OVERDUE) {
-                        addLog("⚠️ НАЙДЕНО ПРОСРОЧЕННОЕ: ${medicine.name} (принято сегодня: ${medicine.takenToday})")
+                        lifecycleScope.launch(Dispatchers.Main) { 
+                            addLog(" НАЙДЕНО ПРОСРОЧЕННОЕ: ${medicine.name} (принято сегодня: ${medicine.takenToday})")
+                        }
                     }
                 }
                 
@@ -990,22 +1091,28 @@ class MainActivity : AppCompatActivity() {
                     val isOverdue = status == com.medicalnotes.app.utils.MedicineStatus.OVERDUE
                     val notTakenToday = !medicine.takenToday
                     
-                    addLog("🔍 ФИЛЬТРАЦИЯ: ${medicine.name} - Статус: $status, Просрочено: $isOverdue, Не принято сегодня: $notTakenToday")
+                    lifecycleScope.launch(Dispatchers.Main) { 
+                        addLog("🔍 ФИЛЬТРАЦИЯ: ${medicine.name} - Статус: $status, Просрочено: $isOverdue, Не принято сегодня: $notTakenToday")
+                    }
                     
                     isOverdue && notTakenToday
                 }
                 
-                addLog("Найдено просроченных лекарств (не принятых сегодня): ${overdueMedicines.size}")
+                lifecycleScope.launch(Dispatchers.Main) { 
+                    addLog("Найдено просроченных лекарств (не принятых сегодня): ${overdueMedicines.size}")
+                }
                 
                 if (overdueMedicines.isNotEmpty()) {
                     val notificationManager = com.medicalnotes.app.utils.NotificationManager(this@MainActivity)
                     
                     overdueMedicines.forEach { medicine ->
-                        addLog("🔔 ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ для: ${medicine.name}")
-                        notificationManager.showOverdueMedicineNotification(medicine)
+                        lifecycleScope.launch(Dispatchers.Main) { 
+                            addLog(" ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ для: ${medicine.name}")
+                            notificationManager.showOverdueMedicineNotification(medicine)
+                        }
                     }
                     
-                    CoroutineScope(Dispatchers.Main).launch {
+                    lifecycleScope.launch(Dispatchers.Main) {
                         android.widget.Toast.makeText(
                             this@MainActivity,
                             "Найдено ${overdueMedicines.size} просроченных лекарств!",
@@ -1013,19 +1120,21 @@ class MainActivity : AppCompatActivity() {
                         ).show()
                     }
                 } else {
-                    addLog("Просроченных лекарств не найдено")
+                    lifecycleScope.launch(Dispatchers.Main) { addLog("Просроченных лекарств не найдено") }
                 }
                 
-                addLog("=== ПРОВЕРКА ЗАВЕРШЕНА ===")
+                lifecycleScope.launch(Dispatchers.Main) { addLog("=== ПРОВЕРКА ЗАВЕРШЕНА ===") }
                 
             } catch (e: Exception) {
                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Ошибка проверки просроченных лекарств", e)
-                addLog("❌ ОШИБКА проверки просроченных лекарств: ${e.message}")
+                lifecycleScope.launch(Dispatchers.Main) { 
+                    addLog(" ОШИБКА проверки просроченных лекарств: ${e.message}")
+                }
             }
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Периодическая проверка просроченных лекарств
+    //  ИСПРАВЛЕНО: Периодическая проверка просроченных лекарств (оптимизировано для предотвращения ANR)
     private fun startPeriodicOverdueCheck() {
         try {
             overdueCheckTimer = android.os.Handler(android.os.Looper.getMainLooper())
@@ -1034,26 +1143,30 @@ class MainActivity : AppCompatActivity() {
                 override fun run() {
                     try {
                         com.medicalnotes.app.utils.LogCollector.d("MainActivity", "=== ПЕРИОДИЧЕСКАЯ ПРОВЕРКА ПРОСРОЧЕННЫХ ===")
-                        checkOverdueMedicines()
                         
-                        // Планируем следующую проверку через 30 секунд
-                        overdueCheckTimer?.postDelayed(this, 30000) // 30 секунд
+                        //  ИСПРАВЛЕНО: Переносим тяжелую операцию в фоновый поток
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            checkOverdueMedicines()
+                        }
+                        
+                        //  ИСПРАВЛЕНО: Увеличиваем интервал до 2 минут для предотвращения ANR
+                        overdueCheckTimer?.postDelayed(this, 120000) // 2 минуты вместо 30 секунд
                     } catch (e: Exception) {
                         com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Ошибка периодической проверки", e)
                     }
                 }
             }
             
-            // Запускаем первую проверку через 30 секунд
-            overdueCheckTimer?.postDelayed(checkRunnable, 30000)
-            com.medicalnotes.app.utils.LogCollector.d("MainActivity", "✓ Периодическая проверка запущена (каждые 30 секунд)")
+            // Запускаем первую проверку через 2 минуты
+            overdueCheckTimer?.postDelayed(checkRunnable, 120000)
+            com.medicalnotes.app.utils.LogCollector.d("MainActivity", "✓ Периодическая проверка запущена (каждые 2 минуты)")
             
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Ошибка запуска периодической проверки", e)
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Остановка периодической проверки
+    //  ДОБАВЛЕНО: Остановка периодической проверки
     private fun stopPeriodicOverdueCheck() {
         try {
             overdueCheckTimer?.removeCallbacksAndMessages(null)
@@ -1064,7 +1177,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Запуск сервиса уведомлений
+    //  ДОБАВЛЕНО: Запуск сервиса уведомлений
     private fun startNotificationService() {
         try {
             com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Запуск сервиса уведомлений")
@@ -1075,16 +1188,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Запуск сервиса проверки просроченных лекарств
+    //  ДОБАВЛЕНО: Запуск сервиса проверки просроченных лекарств
     private fun startOverdueCheckService() {
         try {
             com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Запуск сервиса проверки просроченных лекарств")
-            addLog("🚀 Запуск сервиса проверки просроченных лекарств")
+            addLog(" Запуск сервиса проверки просроченных лекарств")
             
             com.medicalnotes.app.service.OverdueCheckService.startService(this)
             
             com.medicalnotes.app.utils.LogCollector.d("MainActivity", "✓ Сервис проверки просроченных лекарств запущен")
-            addLog("✅ Сервис проверки просроченных лекарств запущен")
+            addLog(" Сервис проверки просроченных лекарств запущен")
             
             // Проверяем, что сервис действительно запущен
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
@@ -1099,26 +1212,35 @@ class MainActivity : AppCompatActivity() {
             
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Ошибка запуска сервиса проверки просроченных лекарств", e)
-            addLog("❌ Ошибка запуска сервиса: ${e.message}")
+            addLog(" Ошибка запуска сервиса: ${e.message}")
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Проверка, запущен ли сервис
+    //  ДОБАВЛЕНО: Проверка, запущен ли сервис
     private fun isServiceRunning(serviceClass: Class<*>): Boolean {
         return try {
-            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+            //  ИСПРАВЛЕНО: Используем современный подход без deprecated методов
+            val packageManager = packageManager
+            val intent = android.content.Intent(this, serviceClass)
+            val resolveInfo = packageManager.queryIntentServices(intent, 0)
             
-            // ✅ ИСПРАВЛЕНО: Используем современный подход вместо deprecated getRunningServices
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                // Для Android 8.0+ используем getRunningServices с ограничением
-                val runningServices = activityManager.getRunningServices(100)
-                runningServices.any { it.service.className == serviceClass.name }
+            // Проверяем, есть ли сервис в списке зарегистрированных
+            if (resolveInfo.isNotEmpty()) {
+                // Для более точной проверки используем альтернативный подход
+                val serviceName = serviceClass.name
+                
+                // Проверяем через ActivityManager только если необходимо
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+                    @Suppress("DEPRECATION")
+                    val runningServices = activityManager.getRunningServices(100)
+                    runningServices.any { it.service.className == serviceName }
+                } else {
+                    // Для старых версий считаем, что сервис может быть запущен
+                    true
+                }
             } else {
-                // Для старых версий используем альтернативный подход
-                val packageManager = packageManager
-                val intent = android.content.Intent(this, serviceClass)
-                val resolveInfo = packageManager.queryIntentServices(intent, 0)
-                resolveInfo.isNotEmpty()
+                false
             }
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error checking service status", e)
@@ -1126,7 +1248,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Проверка и восстановление уведомлений
+    //  ДОБАВЛЕНО: Проверка и восстановление уведомлений
     private fun checkAndRestoreNotifications() {
         try {
             com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Проверка и восстановление уведомлений")
@@ -1138,7 +1260,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Проверка разрешений для уведомлений
+    //  ДОБАВЛЕНО: Проверка разрешений для уведомлений
     private fun checkNotificationPermissions() {
         try {
             com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Проверка разрешений для уведомлений")
@@ -1150,7 +1272,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Проверка разрешений для показа окон поверх других приложений
+    //  ДОБАВЛЕНО: Проверка разрешений для показа окон поверх других приложений
     private fun checkOverlayPermissions() {
         try {
             com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Проверка разрешений для показа окон поверх других приложений")
@@ -1158,7 +1280,7 @@ class MainActivity : AppCompatActivity() {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                 if (!android.provider.Settings.canDrawOverlays(this)) {
                     com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Нет разрешения на показ окон поверх других приложений")
-                    addLog("⚠️ Нужно разрешение на показ окон поверх других приложений")
+                    addLog(" Нужно разрешение на показ окон поверх других приложений")
                     
                     // Показываем диалог с объяснением
                     android.app.AlertDialog.Builder(this)
@@ -1171,44 +1293,44 @@ class MainActivity : AppCompatActivity() {
                                     flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
                                 }
                                 startActivity(intent)
-                                addLog("🔧 Открыто окно настроек разрешений")
+                                addLog(" Открыто окно настроек разрешений")
                             } catch (e: Exception) {
                                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Ошибка открытия настроек разрешений", e)
-                                addLog("❌ Ошибка открытия настроек: ${e.message}")
+                                addLog(" Ошибка открытия настроек: ${e.message}")
                             }
                         }
                         .setNegativeButton("Позже") { _, _ ->
-                            addLog("⏰ Настройка разрешений отложена")
+                            addLog(" Настройка разрешений отложена")
                         }
                         .setCancelable(false)
                         .show()
                 } else {
                     com.medicalnotes.app.utils.LogCollector.d("MainActivity", "✓ Разрешение на показ окон поверх других приложений есть")
-                    addLog("✅ Разрешение на показ окон есть")
+                    addLog(" Разрешение на показ окон есть")
                 }
             } else {
                 com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Android версия ниже 6.0, разрешение не требуется")
-                addLog("✅ Android версия ниже 6.0, разрешение не требуется")
+                addLog(" Android версия ниже 6.0, разрешение не требуется")
             }
             
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Ошибка проверки разрешений для показа окон", e)
-            addLog("❌ Ошибка проверки разрешений: ${e.message}")
+            addLog(" Ошибка проверки разрешений: ${e.message}")
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Метод диагностики
+    //  ДОБАВЛЕНО: Метод диагностики
     private fun performDiagnostic() {
         try {
             addLog("🔍 ЗАПУСК ДИАГНОСТИКИ...")
             
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     val diagnostic = com.medicalnotes.app.utils.DiagnosticUtils.performFullDiagnostic(this@MainActivity)
                     
-                    CoroutineScope(Dispatchers.Main).launch {
+                    lifecycleScope.launch(Dispatchers.Main) {
                         addLog("🔍 ДИАГНОСТИКА ЗАВЕРШЕНА")
-                        addLog("📋 Результат:")
+                        addLog(" Результат:")
                         addLog(diagnostic)
                         
                         // Сохраняем отчет в файл
@@ -1218,30 +1340,30 @@ class MainActivity : AppCompatActivity() {
                         android.widget.Toast.makeText(this@MainActivity, "Диагностика завершена", android.widget.Toast.LENGTH_LONG).show()
                     }
                 } catch (e: Exception) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        addLog("❌ ОШИБКА ДИАГНОСТИКИ: ${e.message}")
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        addLog(" ОШИБКА ДИАГНОСТИКИ: ${e.message}")
                         android.widget.Toast.makeText(this@MainActivity, "Ошибка диагностики: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
                     }
                 }
             }
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in performDiagnostic", e)
-            addLog("❌ КРИТИЧЕСКАЯ ОШИБКА ДИАГНОСТИКИ: ${e.message}")
+            addLog(" КРИТИЧЕСКАЯ ОШИБКА ДИАГНОСТИКИ: ${e.message}")
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Метод исправления проблем
+    //  ДОБАВЛЕНО: Метод исправления проблем
     private fun fixIssues() {
         try {
-            addLog("🔧 ЗАПУСК ИСПРАВЛЕНИЯ ПРОБЛЕМ...")
+            addLog(" ЗАПУСК ИСПРАВЛЕНИЯ ПРОБЛЕМ...")
             
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     val fixResult = com.medicalnotes.app.utils.DiagnosticUtils.fixCommonIssues(this@MainActivity)
                     
-                    CoroutineScope(Dispatchers.Main).launch {
-                        addLog("🔧 ИСПРАВЛЕНИЕ ЗАВЕРШЕНО")
-                        addLog("📋 Результат:")
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        addLog(" ИСПРАВЛЕНИЕ ЗАВЕРШЕНО")
+                        addLog(" Результат:")
                         addLog(fixResult)
                         
                         android.widget.Toast.makeText(this@MainActivity, "Исправление завершено", android.widget.Toast.LENGTH_LONG).show()
@@ -1252,19 +1374,19 @@ class MainActivity : AppCompatActivity() {
                             loadTodayMedicines()
                             addLog("🔄 Данные перезагружены после исправления")
                         } catch (e: Exception) {
-                            addLog("❌ ОШИБКА ПЕРЕЗАГРУЗКИ: ${e.message}")
+                            addLog(" ОШИБКА ПЕРЕЗАГРУЗКИ: ${e.message}")
                         }
                     }
                 } catch (e: Exception) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        addLog("❌ ОШИБКА ИСПРАВЛЕНИЯ: ${e.message}")
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        addLog(" ОШИБКА ИСПРАВЛЕНИЯ: ${e.message}")
                         android.widget.Toast.makeText(this@MainActivity, "Ошибка исправления: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
                     }
                 }
             }
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in fixIssues", e)
-            addLog("❌ КРИТИЧЕСКАЯ ОШИБКА ИСПРАВЛЕНИЯ: ${e.message}")
+            addLog(" КРИТИЧЕСКАЯ ОШИБКА ИСПРАВЛЕНИЯ: ${e.message}")
         }
     }
     

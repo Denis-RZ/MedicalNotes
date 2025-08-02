@@ -34,6 +34,7 @@ class DataManager(private val context: Context) {
         .registerTypeAdapter(DosageFrequency::class.java, DosageFrequencyAdapter())
         .registerTypeAdapter(DosageTime::class.java, DosageTimeAdapter())
         .setLenient() // Более мягкая обработка JSON
+        .serializeNulls() // Сериализуем null значения
         .create()
     private val configManager = ConfigManager(context)
     private val backupManager = BackupManager(context)
@@ -106,47 +107,86 @@ class DataManager(private val context: Context) {
      */
     private fun migrateMedicinesData(medicines: List<Medicine>): List<Medicine> {
         return try {
-            medicines.map { medicine ->
+            medicines.mapNotNull { medicine ->
                 try {
-                    // Проверяем, есть ли новые поля, если нет - добавляем значения по умолчанию
-                    medicine.copy(
-                        groupId = medicine.groupId ?: null,
-                        groupName = medicine.groupName.ifEmpty { "" },
-                        groupOrder = if (medicine.groupOrder == 0) 0 else medicine.groupOrder,
-                        // Добавляем проверки для предотвращения null pointer exceptions
-                        name = medicine.name.ifEmpty { "Неизвестное лекарство" },
-                        dosage = medicine.dosage.ifEmpty { "1" },
-                        medicineType = medicine.medicineType.ifEmpty { "Таблетки" },
-                        time = medicine.time ?: LocalTime.of(8, 0),
-                        frequency = medicine.frequency ?: DosageFrequency.DAILY,
-                        dosageTimes = medicine.dosageTimes.ifEmpty { listOf(DosageTime.MORNING) },
-                        customDays = medicine.customDays.ifEmpty { emptyList() },
-                        customTimes = medicine.customTimes.ifEmpty { emptyList() },
-                        doseTimes = medicine.doseTimes.ifEmpty { listOf(LocalTime.of(8, 0)) },
-                        relatedMedicineIds = medicine.relatedMedicineIds.ifEmpty { emptyList() }
+                    // Проверяем обязательные поля и создаем безопасную копию
+                    val safeMedicine = medicine.copy(
+                        // Безопасная обработка обязательных полей
+                        id = if (medicine.id <= 0) System.currentTimeMillis() else medicine.id,
+                        name = medicine.name.takeIf { it.isNotBlank() } ?: "Неизвестное лекарство",
+                        dosage = medicine.dosage.takeIf { it.isNotBlank() } ?: "1",
+                        quantity = if (medicine.quantity <= 0) 1 else medicine.quantity,
+                        remainingQuantity = if (medicine.remainingQuantity < 0) medicine.quantity else medicine.remainingQuantity,
+                        medicineType = medicine.medicineType.takeIf { it.isNotBlank() } ?: "Таблетки",
+                        time = medicine.time,
+                        notes = medicine.notes,
+                        
+                        // Безопасная обработка enum полей
+                        frequency = try {
+                            medicine.frequency
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Invalid frequency for medicine ${medicine.name}, using DAILY", e)
+                            DosageFrequency.DAILY
+                        },
+                        dosageTimes = try {
+                            medicine.dosageTimes.takeIf { it.isNotEmpty() } ?: listOf(DosageTime.MORNING)
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Invalid dosageTimes for medicine ${medicine.name}, using MORNING", e)
+                            listOf(DosageTime.MORNING)
+                        },
+                        
+                        // Безопасная обработка списков
+                        customDays = medicine.customDays.filter { it in 1..7 },
+                        customTimes = medicine.customTimes.filterNotNull(),
+                        doseTimes = try {
+                            medicine.doseTimes.filterNotNull().takeIf { it.isNotEmpty() } ?: listOf(LocalTime.of(8, 0))
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Invalid doseTimes for medicine ${medicine.name}, using default", e)
+                            listOf(LocalTime.of(8, 0))
+                        },
+                        relatedMedicineIds = medicine.relatedMedicineIds.filter { it > 0 },
+                        
+                        // Безопасная обработка групповых полей
+                        groupId = medicine.groupId?.takeIf { it > 0 },
+                        groupName = medicine.groupName,
+                        groupOrder = if (medicine.groupOrder < 0) 0 else medicine.groupOrder,
+                        
+                        // Безопасная обработка временных меток
+                        createdAt = if (medicine.createdAt <= 0) System.currentTimeMillis() else medicine.createdAt,
+                        updatedAt = System.currentTimeMillis(),
+                        startDate = if (medicine.startDate <= 0) System.currentTimeMillis() else medicine.startDate,
+                        lastTakenTime = if (medicine.lastTakenTime < 0) 0 else medicine.lastTakenTime,
+                        takenAt = if (medicine.takenAt < 0) 0 else medicine.takenAt,
+                        
+                        // Безопасная обработка boolean полей
+                        isActive = medicine.isActive,
+                        isInsulin = medicine.isInsulin,
+                        isMissed = medicine.isMissed,
+                        takenToday = medicine.takenToday,
+                        shouldTakeToday = medicine.shouldTakeToday,
+                        isOverdue = medicine.isOverdue,
+                        multipleDoses = medicine.multipleDoses,
+                        isPartOfGroup = medicine.isPartOfGroup,
+                        
+                        // Безопасная обработка числовых полей
+                        missedCount = if (medicine.missedCount < 0) 0 else medicine.missedCount,
+                        dosesPerDay = if (medicine.dosesPerDay <= 0) 1 else medicine.dosesPerDay,
+                        
+                        // Безопасная обработка групповых полей времени
+                        timeGroupId = medicine.timeGroupId?.takeIf { it > 0 },
+                        timeGroupName = medicine.timeGroupName,
+                        timeGroupOrder = if (medicine.timeGroupOrder < 0) 0 else medicine.timeGroupOrder
                     )
+                    
+                    Log.d(TAG, "Successfully migrated medicine: ${safeMedicine.name}")
+                    safeMedicine
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error migrating medicine ${medicine.name}", e)
-                    // Возвращаем лекарство с дефолтными значениями для новых полей
-                    medicine.copy(
-                        groupId = null,
-                        groupName = "",
-                        groupOrder = 0,
-                        name = medicine.name.ifEmpty { "Неизвестное лекарство" },
-                        dosage = medicine.dosage.ifEmpty { "1" },
-                        medicineType = medicine.medicineType.ifEmpty { "Таблетки" },
-                        time = LocalTime.of(8, 0),
-                        frequency = DosageFrequency.DAILY,
-                        dosageTimes = listOf(DosageTime.MORNING),
-                        customDays = emptyList(),
-                        customTimes = emptyList(),
-                        doseTimes = listOf(LocalTime.of(8, 0)),
-                        relatedMedicineIds = emptyList()
-                    )
+                    Log.e(TAG, "Error migrating medicine ${medicine.name}, skipping", e)
+                    null // Пропускаем проблемное лекарство
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in migrateMedicinesData", e)
+            Log.e(TAG, "Critical error in migrateMedicinesData", e)
             emptyList()
         }
     }
@@ -155,8 +195,10 @@ class DataManager(private val context: Context) {
     
     fun saveMedicines(medicines: List<Medicine>): Boolean {
         return try {
-            Log.d(TAG, "=== СОХРАНЕНИЕ ЛЕКАРСТВ ===")
-            Log.d(TAG, "Количество лекарств: ${medicines.size}")
+            //  ДОБАВЛЕНО: Синхронизация для предотвращения конфликтов
+            synchronized(this) {
+                Log.d(TAG, "=== СОХРАНЕНИЕ ЛЕКАРСТВ ===")
+                Log.d(TAG, "Количество лекарств: ${medicines.size}")
             
             // Проверяем входные данные
             if (medicines.isEmpty()) {
@@ -180,47 +222,88 @@ class DataManager(private val context: Context) {
             Log.d(TAG, "Saving ${medicines.size} medicines")
             
             // Проверяем каждое лекарство перед сериализацией
-            medicines.forEachIndexed { index, medicine ->
+            val validMedicines = medicines.filterIndexed { index, medicine ->
                 try {
                     Log.d(TAG, "Проверка лекарства $index: ${medicine.name}")
                     Log.d(TAG, "  - ID: ${medicine.id}")
                     Log.d(TAG, "  - Время: ${medicine.time}")
                     Log.d(TAG, "  - Частота: ${medicine.frequency}")
                     Log.d(TAG, "  - DosageTimes: ${medicine.dosageTimes}")
+                    
+                    // Проверяем обязательные поля
+                    if (medicine.name.isBlank()) {
+                        Log.w(TAG, "Medicine $index has blank name, skipping")
+                        return@filterIndexed false
+                    }
+                    if (medicine.id <= 0) {
+                        Log.w(TAG, "Medicine $index has invalid ID: ${medicine.id}, skipping")
+                        return@filterIndexed false
+                    }
+                    if (medicine.quantity <= 0) {
+                        Log.w(TAG, "Medicine $index has invalid quantity: ${medicine.quantity}, skipping")
+                        return@filterIndexed false
+                    }
+                    
+                    true
                 } catch (e: Exception) {
                     Log.e(TAG, "Ошибка проверки лекарства $index", e)
+                    false
                 }
             }
             
-            val json = gson.toJson(medicines)
+            Log.d(TAG, "Valid medicines for saving: ${validMedicines.size}")
+            
+            // Пробуем сериализацию без сжатия сначала
+            val json = try {
+                gson.toJson(validMedicines)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error serializing medicines to JSON", e)
+                // Пробуем сериализовать каждое лекарство отдельно
+                try {
+                    val individualJsons = validMedicines.mapNotNull { medicine ->
+                        try {
+                            gson.toJson(medicine)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error serializing individual medicine: ${medicine.name}", e)
+                            null
+                        }
+                    }
+                    if (individualJsons.isNotEmpty()) {
+                        "[${individualJsons.joinToString(",")}]"
+                    } else {
+                        "[]"
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in fallback serialization", e)
+                    return false
+                }
+            }
+            
             Log.d(TAG, "JSON generated successfully, length: ${json.length}")
-            Log.d(TAG, "JSON sample: ${json.take(500)}...")
             
-            val content = try {
-                if (configManager.getSettings().dataCompression) {
-                    compressData(json)
-                } else {
-                    json
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error compressing data, using uncompressed", e)
-                json
-            }
+            // Сохраняем без сжатия для надежности
+            val content = json
             
-            FileWriter(medicinesFile).use { it.write(content) }
-            Log.d(TAG, "Medicines saved to file successfully")
-            
-            // Автоматическое резервное копирование
             try {
-                if (configManager.getSettings().autoBackup) {
-                    backupManager.createAutoBackup()
+                FileWriter(medicinesFile).use { it.write(content) }
+                Log.d(TAG, "Medicines saved to file successfully")
+                
+                // Автоматическое резервное копирование
+                try {
+                    if (configManager.getSettings().autoBackup) {
+                        backupManager.createAutoBackup()
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error creating auto backup", e)
+                    // Не прерываем сохранение из-за ошибки резервного копирования
                 }
+                
+                true
             } catch (e: Exception) {
-                Log.e(TAG, "Error creating auto backup", e)
-                // Не прерываем сохранение из-за ошибки резервного копирования
+                Log.e(TAG, "Error writing to medicines file", e)
+                false
             }
-            
-            true
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error saving medicines", e)
             e.printStackTrace()
@@ -230,100 +313,128 @@ class DataManager(private val context: Context) {
     
     fun loadMedicines(): List<Medicine> {
         return try {
-            if (!medicinesFile.exists()) {
-                Log.d(TAG, "Medicines file does not exist, returning empty list")
-                return emptyList()
-            }
-            
-            val content = try {
-                FileReader(medicinesFile).readText()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error reading medicines file", e)
-                return emptyList()
-            }
-            
-            if (content.isBlank()) {
-                Log.d(TAG, "Medicines file is empty, returning empty list")
-                return emptyList()
-            }
-            
-            val json = try {
-                if (configManager.getSettings().dataCompression) {
-                    decompressData(content)
-                } else {
-                    content
+            //  ДОБАВЛЕНО: Синхронизация для предотвращения конфликтов
+            synchronized(this) {
+                if (!medicinesFile.exists()) {
+                    Log.d(TAG, "Medicines file does not exist, returning empty list")
+                    return emptyList()
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error decompressing data, trying as plain JSON", e)
-                content
-            }
             
-            val type = object : TypeToken<List<Medicine>>() {}.type
-            val medicines: List<Medicine> = try {
-                gson.fromJson(json, type) ?: emptyList()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error parsing JSON", e)
-                emptyList()
+                val content = try {
+                    FileReader(medicinesFile).readText()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error reading medicines file", e)
+                    return emptyList()
+                }
+                
+                if (content.isBlank()) {
+                    Log.d(TAG, "Medicines file is empty, returning empty list")
+                    return emptyList()
+                }
+                
+                // Используем содержимое файла как JSON
+                val json = content
+                
+                val type = object : TypeToken<List<Medicine>>() {}.type
+                val medicines: List<Medicine> = try {
+                    gson.fromJson(json, type) ?: emptyList()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing JSON", e)
+                    // Пробуем загрузить с резервного файла
+                    try {
+                        val backupFile = File(context.filesDir, "medicines_backup.json")
+                        if (backupFile.exists()) {
+                            Log.d(TAG, "Trying to load from backup file")
+                            val backupContent = backupFile.readText()
+                            val backupMedicines: List<Medicine> = gson.fromJson(backupContent, type) ?: emptyList()
+                            Log.d(TAG, "Successfully loaded from backup: ${backupMedicines.size} medicines")
+                            return migrateMedicinesData(backupMedicines)
+                        } else {
+                            Log.d(TAG, "No backup file found, returning empty list")
+                            return emptyList()
+                        }
+                    } catch (backupException: Exception) {
+                        Log.e(TAG, "Error loading from backup", backupException)
+                        // Если даже резервная копия не работает, очищаем данные
+                        Log.w(TAG, "Clearing corrupted data and starting fresh")
+                        try {
+                            medicinesFile.delete()
+                            Log.i(TAG, "Corrupted medicines file deleted")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error deleting corrupted file", e)
+                        }
+                        return emptyList()
+                    }
+                }
+                
+                // Миграция данных для совместимости со старыми данными
+                return migrateMedicinesData(medicines)
             }
-            
-            // Миграция данных для совместимости со старыми данными
-            return migrateMedicinesData(medicines)
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading medicines", e)
+            Log.e(TAG, "Critical error loading medicines", e)
             // Попробуем загрузить с резервного файла или создать новый
             try {
                 val backupFile = File(context.filesDir, "medicines_backup.json")
                 if (backupFile.exists()) {
-                    Log.d(TAG, "Trying to load from backup file")
+                    Log.d(TAG, "Trying to load from backup file after critical error")
                     val backupContent = backupFile.readText()
                     val type = object : TypeToken<List<Medicine>>() {}.type
                     val backupMedicines: List<Medicine> = gson.fromJson(backupContent, type) ?: emptyList()
                     return migrateMedicinesData(backupMedicines)
                 } else {
-                    Log.d(TAG, "No backup file found, returning empty list")
+                    Log.d(TAG, "No backup file found after critical error, returning empty list")
                     return emptyList()
                 }
             } catch (backupException: Exception) {
-                Log.e(TAG, "Error loading from backup", backupException)
+                Log.e(TAG, "Error loading from backup after critical error", backupException)
                 // Если даже резервная копия не работает, очищаем данные
-                Log.w(TAG, "Clearing corrupted data and starting fresh")
+                Log.w(TAG, "Clearing corrupted data and starting fresh after critical error")
                 try {
                     medicinesFile.delete()
-                    Log.i(TAG, "Corrupted medicines file deleted")
+                    Log.i(TAG, "Corrupted medicines file deleted after critical error")
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error deleting corrupted file", e)
+                    Log.e(TAG, "Error deleting corrupted file after critical error", e)
                 }
-                emptyList()
+                return emptyList()
             }
         }
     }
     
     fun addMedicine(medicine: Medicine): Boolean {
         return try {
-            Log.d(TAG, "=== ДОБАВЛЕНИЕ ЛЕКАРСТВА ===")
-            Log.d(TAG, "Название: ${medicine.name}")
-            Log.d(TAG, "Дозировка: ${medicine.dosage}")
-            Log.d(TAG, "Количество: ${medicine.quantity}")
-            Log.d(TAG, "Тип: ${medicine.medicineType}")
-            Log.d(TAG, "Время: ${medicine.time}")
-            Log.d(TAG, "Частота: ${medicine.frequency}")
-            Log.d(TAG, "DosageTimes: ${medicine.dosageTimes}")
-            Log.d(TAG, "CustomDays: ${medicine.customDays}")
-            Log.d(TAG, "CustomTimes: ${medicine.customTimes}")
-            Log.d(TAG, "MultipleDoses: ${medicine.multipleDoses}")
-            Log.d(TAG, "DoseTimes: ${medicine.doseTimes}")
-            Log.d(TAG, "RelatedMedicineIds: ${medicine.relatedMedicineIds}")
+            // Валидация входных данных
+            if (medicine.name.isBlank()) {
+                Log.e(TAG, "Cannot add medicine with blank name")
+                return false
+            }
+            if (medicine.quantity <= 0) {
+                Log.e(TAG, "Cannot add medicine with invalid quantity: ${medicine.quantity}")
+                return false
+            }
             
             val medicines = loadMedicines().toMutableList()
-            val newMedicine = medicine.copy(id = System.currentTimeMillis())
-            medicines.add(newMedicine)
             
-            // Логируем добавление для отладки
+            val newMedicine = medicine.copy(
+                id = if (medicine.id <= 0) System.currentTimeMillis() else medicine.id,
+                remainingQuantity = if (medicine.remainingQuantity <= 0) medicine.quantity else medicine.remainingQuantity,
+                createdAt = System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis()
+            )
+            
+            // Проверяем, нет ли уже лекарства с таким ID
+            if (medicines.any { it.id == newMedicine.id }) {
+                Log.w(TAG, "Medicine with ID ${newMedicine.id} already exists, generating new ID")
+                val updatedMedicine = newMedicine.copy(id = System.currentTimeMillis())
+                medicines.add(updatedMedicine)
+            } else {
+                medicines.add(newMedicine)
+            }
+            
             Log.d(TAG, "Adding medicine: ${newMedicine.name}")
-            Log.d(TAG, "  Fields: dosageTimes=${newMedicine.dosageTimes}, customDays=${newMedicine.customDays}, customTimes=${newMedicine.customTimes}")
             
             val result = saveMedicines(medicines)
             Log.d(TAG, "Medicine added: ${newMedicine.name}, result: $result")
+            
             result
         } catch (e: Exception) {
             Log.e(TAG, "Error adding medicine: ${medicine.name}", e)
@@ -334,23 +445,45 @@ class DataManager(private val context: Context) {
     
     fun updateMedicine(medicine: Medicine): Boolean {
         return try {
+            // Валидация входных данных
+            if (medicine.id <= 0) {
+                Log.e(TAG, "Cannot update medicine with invalid ID: ${medicine.id}")
+                return false
+            }
+            if (medicine.name.isBlank()) {
+                Log.e(TAG, "Cannot update medicine with blank name")
+                return false
+            }
+            if (medicine.quantity <= 0) {
+                Log.e(TAG, "Cannot update medicine with invalid quantity: ${medicine.quantity}")
+                return false
+            }
+            
             val medicines = loadMedicines().toMutableList()
             val index = medicines.indexOfFirst { it.id == medicine.id }
-            if (index != -1) {
-                val originalMedicine = medicines[index]
-                medicines[index] = medicine.copy(updatedAt = System.currentTimeMillis())
-                
-                // Логируем обновление для отладки
-                Log.d(TAG, "Updating medicine: ${medicine.name}")
-                Log.d(TAG, "  Original: dosageTimes=${originalMedicine.dosageTimes}, customDays=${originalMedicine.customDays}, customTimes=${originalMedicine.customTimes}")
-                Log.d(TAG, "  Updated: dosageTimes=${medicine.dosageTimes}, customDays=${medicine.customDays}, customTimes=${medicine.customTimes}")
-                
-                return saveMedicines(medicines)
+            
+            if (index == -1) {
+                Log.w(TAG, "Medicine not found for update: ${medicine.name} (ID: ${medicine.id})")
+                return false
             }
-            Log.w(TAG, "Medicine not found for update: ${medicine.name}")
-            false
+            
+            val originalMedicine = medicines[index]
+            val updatedMedicine = medicine.copy(
+                updatedAt = System.currentTimeMillis(),
+                startDate = System.currentTimeMillis(), // Обновляем дату начала при редактировании
+                remainingQuantity = if (medicine.remainingQuantity < 0) medicine.quantity else medicine.remainingQuantity
+            )
+            
+            medicines[index] = updatedMedicine
+            
+            Log.d(TAG, "Updating medicine: ${medicine.name}")
+            Log.d(TAG, "  Original time: ${originalMedicine.time}")
+            Log.d(TAG, "  Updated time: ${medicine.time}")
+            
+            return saveMedicines(medicines)
         } catch (e: Exception) {
             Log.e(TAG, "Error updating medicine: ${medicine.name}", e)
+            e.printStackTrace()
             false
         }
     }
@@ -447,6 +580,16 @@ class DataManager(private val context: Context) {
         }
     }
     
+    fun getNextGroupOrder(): Int {
+        return try {
+            val medicines = loadMedicines()
+            medicines.mapNotNull { it.groupOrder }.maxOrNull()?.plus(1) ?: 1
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting next group order", e)
+            1
+        }
+    }
+    
     fun decrementMedicineQuantity(medicineId: Long): Boolean {
         return try {
             val medicines = loadMedicines().toMutableList()
@@ -485,6 +628,36 @@ class DataManager(private val context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "Error marking medicine as skipped: ID=$medicineId", e)
             false
+        }
+    }
+    
+    // ==================== ОТЛАДОЧНЫЕ МЕТОДЫ ====================
+    
+    fun debugSaveMedicines(medicines: List<Medicine>): String {
+        return try {
+            Log.d(TAG, "=== DEBUG SAVE MEDICINES ===")
+            Log.d(TAG, "Количество лекарств: ${medicines.size}")
+            medicines.forEachIndexed { i, med ->
+                Log.d(TAG, "  Лекарство $i: ID=${med.id}, name=${med.name}, time=${med.time}")
+            }
+            
+            val json = gson.toJson(medicines)
+            Log.d(TAG, "JSON результат: $json")
+            
+            // Проверяем время в JSON
+            if (json.contains("\"time\":")) {
+                val timePattern = "\"time\":\"([^\"]+)\"".toRegex()
+                val timeMatches = timePattern.findAll(json)
+                Log.d(TAG, "Времена в JSON:")
+                timeMatches.forEach { match ->
+                    Log.d(TAG, "  Время: ${match.groupValues[1]}")
+                }
+            }
+            
+            json
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка в debugSaveMedicines", e)
+            "ERROR: ${e.message}"
         }
     }
     

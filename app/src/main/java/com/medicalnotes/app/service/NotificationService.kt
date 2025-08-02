@@ -84,7 +84,7 @@ class NotificationService : Service() {
                 startForeground()
                 scheduleAllMedicines()
                 
-                // ✅ ДОБАВЛЕНО: Запускаем сервис проверки просроченных лекарств
+                //  ДОБАВЛЕНО: Запускаем сервис проверки просроченных лекарств
                 try {
                     com.medicalnotes.app.service.OverdueCheckService.startService(this)
                     android.util.Log.d("NotificationService", "Сервис проверки просроченных лекарств запущен")

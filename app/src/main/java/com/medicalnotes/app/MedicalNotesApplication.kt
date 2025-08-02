@@ -13,7 +13,7 @@ class MedicalNotesApplication : Application() {
         super.onCreate()
         instance = this
         
-        // ✅ ДОБАВЛЕНО: Инициализация системы сбора логов
+        //  ДОБАВЛЕНО: Инициализация системы сбора логов
         try {
             android.util.Log.d("MedicalNotesApplication", "Инициализация LogCollector")
             com.medicalnotes.app.utils.LogCollector.initialize(this)
@@ -22,7 +22,7 @@ class MedicalNotesApplication : Application() {
             android.util.Log.e("MedicalNotesApplication", "Ошибка инициализации LogCollector", e)
         }
         
-        // ✅ ДОБАВЛЕНО: Инициализация системы отслеживания крашей
+        //  ДОБАВЛЕНО: Инициализация системы отслеживания крашей
         try {
             android.util.Log.d("MedicalNotesApplication", "Инициализация CrashReporter")
             com.medicalnotes.app.utils.CrashReporter.initialize(this)
@@ -31,7 +31,7 @@ class MedicalNotesApplication : Application() {
             android.util.Log.e("MedicalNotesApplication", "Ошибка инициализации CrashReporter", e)
         }
         
-        // ✅ ДОБАВЛЕНО: Автоматический запуск сервиса уведомлений
+        //  ДОБАВЛЕНО: Автоматический запуск сервиса уведомлений
         try {
             android.util.Log.d("MedicalNotesApplication", "Запуск сервиса уведомлений при инициализации приложения")
             com.medicalnotes.app.service.NotificationService.startService(this)
@@ -40,7 +40,7 @@ class MedicalNotesApplication : Application() {
             android.util.Log.e("MedicalNotesApplication", "Ошибка запуска сервиса уведомлений", e)
         }
         
-        // ✅ ДОБАВЛЕНО: Автоматический запуск сервиса проверки просроченных лекарств
+        //  ДОБАВЛЕНО: Автоматический запуск сервиса проверки просроченных лекарств
         try {
             android.util.Log.d("MedicalNotesApplication", "Запуск сервиса проверки просроченных лекарств при инициализации приложения")
             com.medicalnotes.app.service.OverdueCheckService.startService(this)
@@ -49,7 +49,7 @@ class MedicalNotesApplication : Application() {
             android.util.Log.e("MedicalNotesApplication", "Ошибка запуска сервиса проверки просроченных лекарств", e)
         }
         
-        // ✅ ДОБАВЛЕНО: Проверка и восстановление уведомлений при инициализации
+        //  ДОБАВЛЕНО: Проверка и восстановление уведомлений при инициализации
         try {
             android.util.Log.d("MedicalNotesApplication", "Проверка и восстановление уведомлений при инициализации")
             val restorationManager = com.medicalnotes.app.utils.NotificationRestorationManager(this)

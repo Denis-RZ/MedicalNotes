@@ -85,12 +85,16 @@ object MedicineStatusHelper {
         val now = LocalTime.now()
         val medicineTime = medicine.time
         
+        // ДОБАВЛЕНО: Буфер времени 15 минут
+        val bufferMinutes = 15L
+        val overdueTime = medicineTime.plusMinutes(bufferMinutes)
+        
         android.util.Log.d("MedicineStatusHelper", "  - Текущее время: $now")
         android.util.Log.d("MedicineStatusHelper", "  - Время приема: $medicineTime")
-        android.util.Log.d("MedicineStatusHelper", "  - Текущее время после времени приема: ${now.isAfter(medicineTime)}")
-        android.util.Log.d("MedicineStatusHelper", "  - Текущее время равно времени приема: ${now.equals(medicineTime)}")
+        android.util.Log.d("MedicineStatusHelper", "  - Время с буфером: $overdueTime")
+        android.util.Log.d("MedicineStatusHelper", "  - Текущее время после времени с буфером: ${now.isAfter(overdueTime)}")
         
-        val isOverdue = now.isAfter(medicineTime) || now.equals(medicineTime)
+        val isOverdue = now.isAfter(overdueTime)
         android.util.Log.d("MedicineStatusHelper", "  - ПРОСРОЧЕНО: $isOverdue")
         
         return isOverdue

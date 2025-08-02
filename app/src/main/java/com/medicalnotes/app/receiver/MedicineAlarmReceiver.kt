@@ -79,7 +79,7 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                             if (timeSinceLastDose > oneHourInMillis) {
                                 android.util.Log.d("MedicineAlarmReceiver", "Показываем уведомление для: ${it.name}")
                                 
-                                // ✅ ДОБАВЛЕНО: Принудительно показываем уведомление с карточкой
+                                //  ДОБАВЛЕНО: Принудительно показываем уведомление с карточкой
                                 try {
                                     notificationManager.showMedicineReminder(it)
                                     android.util.Log.d("MedicineAlarmReceiver", "✓ Уведомление показано для: ${it.name}")
@@ -87,7 +87,7 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                                     android.util.Log.e("MedicineAlarmReceiver", "Ошибка показа уведомления", e)
                                 }
                                 
-                                // ✅ ДОБАВЛЕНО: Планируем следующее уведомление на завтра
+                                //  ДОБАВЛЕНО: Планируем следующее уведомление на завтра
                                 try {
                                     scheduleNextDayNotification(context, it)
                                     android.util.Log.d("MedicineAlarmReceiver", "✓ Следующее уведомление запланировано для: ${it.name}")
@@ -114,7 +114,7 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                     val notificationManager = NotificationManager(context)
                     val dataManager = DataManager(context)
                     
-                    // ✅ ДОБАВЛЕНО: Проверяем актуальность статуса лекарства перед воспроизведением звука
+                    //  ДОБАВЛЕНО: Проверяем актуальность статуса лекарства перед воспроизведением звука
                     try {
                         val medicine = dataManager.getMedicineById(medicineId)
                         if (medicine != null) {
@@ -127,13 +127,13 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                                 return
                             }
                             
-                            // ✅ ДОБАВЛЕНО: Дополнительная проверка - если лекарство было принято недавно
+                            //  ДОБАВЛЕНО: Дополнительная проверка - если лекарство было принято недавно
                             if (medicine.takenToday) {
                                 android.util.Log.d("MedicineAlarmReceiver", "Лекарство уже принято сегодня, звук не воспроизводится")
                                 return
                             }
                             
-                            // ✅ ДОБАВЛЕНО: Проверяем, не было ли время изменено недавно
+                            //  ДОБАВЛЕНО: Проверяем, не было ли время изменено недавно
                             val timeSinceUpdate = System.currentTimeMillis() - medicine.updatedAt
                             val fiveMinutesInMillis = 5 * 60 * 1000L
                             if (timeSinceUpdate < fiveMinutesInMillis) {
@@ -145,20 +145,20 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                         android.util.Log.e("MedicineAlarmReceiver", "Ошибка проверки статуса лекарства", e)
                     }
                     
-                    // ✅ ИСПРАВЛЕНО: Более мягкая остановка уведомлений
+                    //  ИСПРАВЛЕНО: Более мягкая остановка уведомлений
                     try {
-                        android.util.Log.d("🔇 RECEIVER_НАЧАЛО", "Начинаем остановку уведомлений для лекарства ID: $medicineId")
+                        android.util.Log.d(" RECEIVER_НАЧАЛО", "Начинаем остановку уведомлений для лекарства ID: $medicineId")
                         
                         // Останавливаем вибрацию
                         notificationManager.stopVibration()
-                        android.util.Log.d("🔇 RECEIVER_ВИБРАЦИЯ", "stopVibration() выполнен для лекарства ID: $medicineId")
+                        android.util.Log.d(" RECEIVER_ВИБРАЦИЯ", "stopVibration() выполнен для лекарства ID: $medicineId")
                         
                         // Отменяем уведомления для этого лекарства
                         notificationManager.cancelOverdueNotification(medicineId)
                         notificationManager.cancelMedicineNotification(medicineId)
-                        android.util.Log.d("🔇 RECEIVER_УВЕДОМЛЕНИЯ", "Уведомления отменены для лекарства ID: $medicineId")
+                        android.util.Log.d(" RECEIVER_УВЕДОМЛЕНИЯ", "Уведомления отменены для лекарства ID: $medicineId")
                         
-                        android.util.Log.d("🔇 RECEIVER_ЗАВЕРШЕНО", "Уведомления остановлены для лекарства ID: $medicineId")
+                        android.util.Log.d(" RECEIVER_ЗАВЕРШЕНО", "Уведомления остановлены для лекарства ID: $medicineId")
                     } catch (e: Exception) {
                         android.util.Log.e("MedicineAlarmReceiver", "Ошибка остановки уведомлений", e)
                     }
@@ -182,7 +182,7 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                         android.util.Log.e("MedicineAlarmReceiver", "Ошибка показа подтверждения", e)
                     }
                     
-                    // ✅ ИЗМЕНЕНО: Убираем Toast уведомление, которое может воспроизводить звук
+                    //  ИЗМЕНЕНО: Убираем Toast уведомление, которое может воспроизводить звук
                     // try {
                     //     android.widget.Toast.makeText(
                     //         context,
@@ -214,10 +214,51 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                 val notificationManager = NotificationManager(context)
                 notificationManager.showEmergencyAlert(message)
             }
+            "ACTION_SHOW_MEDICINE_CARD" -> {
+                val id = intent.getLongExtra("medicine_id", -1)
+                val isOverdue = intent.getBooleanExtra("overdue", false)
+                if (id != -1L) {
+                    val dm = com.medicalnotes.app.utils.DataManager(context)
+                    val med = dm.loadMedicines().firstOrNull { it.id == id }
+                    if (med != null) {
+                        // Отменяем предыдущую карточку для этого лекарства
+                        com.medicalnotes.app.utils.NotificationManager(context).cancelMedicineCardNotification(id)
+                        // Показываем новую карточку с учетом статуса просрочки
+                        com.medicalnotes.app.utils.NotificationManager(context).showMedicineCardNotification(med, isOverdue)
+                    }
+                }
+            }
+            "ACTION_SNOOZE_10" -> {
+                val id = intent.getLongExtra("medicine_id", -1)
+                if (id != -1L) {
+                    val i = android.content.Intent(context, com.medicalnotes.app.receiver.MedicineAlarmReceiver::class.java).apply {
+                        action = "ACTION_SHOW_MEDICINE_CARD"; putExtra("medicine_id", id)
+                    }
+                    val pi = android.app.PendingIntent.getBroadcast(
+                        context, id.toInt(), i,
+                        android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                    )
+                    val am = context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+                    val t = System.currentTimeMillis() + 10*60*1000
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                        am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, t, pi)
+                    } else {
+                        am.setExact(android.app.AlarmManager.RTC_WAKEUP, t, pi)
+                    }
+                    com.medicalnotes.app.utils.NotificationManager(context).cancelMedicineCardNotification(id)
+                }
+            }
+            "ACTION_MEDICINE_SKIP" -> {
+                val id = intent.getLongExtra("medicine_id", -1)
+                if (id != -1L) {
+                    com.medicalnotes.app.utils.DataManager(context).markMedicineAsSkipped(id)
+                    com.medicalnotes.app.utils.NotificationManager(context).cancelMedicineCardNotification(id)
+                }
+            }
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Планирование следующего уведомления на завтра
+    //  ДОБАВЛЕНО: Планирование следующего уведомления на завтра
     private fun scheduleNextDayNotification(context: Context, medicine: Medicine) {
         try {
             android.util.Log.d("MedicineAlarmReceiver", "Планирование следующего уведомления для: ${medicine.name}")

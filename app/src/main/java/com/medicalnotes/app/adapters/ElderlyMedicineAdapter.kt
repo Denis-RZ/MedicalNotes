@@ -38,9 +38,9 @@ class ElderlyMedicineAdapter(
             // Время приема
             val timeText = if (medicine.multipleDoses && medicine.doseTimes.isNotEmpty()) {
                 val times = medicine.doseTimes.map { it.format(DateTimeFormatter.ofPattern("HH:mm")) }
-                "⏰ ${times.joinToString(", ")}"
+                " ${times.joinToString(", ")}"
             } else {
-                "⏰ ${medicine.time.format(DateTimeFormatter.ofPattern("HH:mm"))}"
+                " ${medicine.time.format(DateTimeFormatter.ofPattern("HH:mm"))}"
             }
             binding.textMedicineTime.text = timeText
 
@@ -93,10 +93,10 @@ class ElderlyMedicineAdapter(
 
             // Изменяем текст кнопки в зависимости от статуса
             if (medicine.takenToday) {
-                binding.buttonTakeMedicine.text = "✅ ПРИНЯТО"
+                binding.buttonTakeMedicine.text = " ПРИНЯТО"
                 binding.buttonTakeMedicine.isEnabled = false
             } else {
-                binding.buttonTakeMedicine.text = "✅ ПРИНЯТЬ ЛЕКАРСТВО"
+                binding.buttonTakeMedicine.text = " ПРИНЯТЬ ЛЕКАРСТВО"
                 binding.buttonTakeMedicine.isEnabled = true
             }
         }

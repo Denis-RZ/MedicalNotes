@@ -117,6 +117,14 @@ class SettingsActivity : AppCompatActivity() {
             CrashReportActivity.start(this)
         }
         
+        binding.buttonTestOverdueMedicine.setOnClickListener {
+            testOverdueMedicine()
+        }
+        
+        binding.buttonStopNotifications.setOnClickListener {
+            stopAllNotifications()
+        }
+        
         binding.buttonSaveSettings.setOnClickListener {
             saveSettings()
         }
@@ -142,7 +150,7 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
         
-        // ✅ ИСПРАВЛЕНО: Загружаем настройки вибрации и звука из UserPreferences
+        //  ИСПРАВЛЕНО: Загружаем настройки вибрации и звука из UserPreferences
         viewModel.userPreferences.observe(this) { preferences ->
             preferences?.let {
                 binding.switchVibration.isChecked = it.enableVibration
@@ -172,7 +180,7 @@ class SettingsActivity : AppCompatActivity() {
         
         viewModel.updateSettings(settings)
         
-        // ✅ ИСПРАВЛЕНО: Сохраняем настройки вибрации и звука в UserPreferences
+        //  ИСПРАВЛЕНО: Сохраняем настройки вибрации и звука в UserPreferences
         viewModel.updateUserPreferences(
             enableVibration = binding.switchVibration.isChecked,
             enableSound = binding.switchSound.isChecked
@@ -266,8 +274,124 @@ class SettingsActivity : AppCompatActivity() {
             .show()
     }
     
+    /**
+     * ДОБАВЛЕНО: Тестирование просроченного лекарства
+     */
+    private fun testOverdueMedicine() {
+        try {
+            android.util.Log.d("SettingsActivity", "=== ТЕСТИРОВАНИЕ ПРОСРОЧЕННОГО ЛЕКАРСТВА ===")
+            
+            // Показываем диалог подтверждения
+            AlertDialog.Builder(this)
+                .setTitle("Тест просроченного лекарства")
+                .setMessage("Создать тестовое лекарство на 2 минуты вперед и закрыть приложение?\n\nЧерез 2 минуты появится уведомление с вибрацией и звуком.")
+                .setPositiveButton("Создать и закрыть") { _, _ ->
+                    createTestMedicineAndClose()
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
+                
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsActivity", "Ошибка тестирования просроченного лекарства", e)
+            Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+    
+    /**
+     * ДОБАВЛЕНО: Создание тестового лекарства и закрытие приложения
+     */
+    private fun createTestMedicineAndClose() {
+        try {
+            android.util.Log.d("SettingsActivity", "Создание тестового лекарства...")
+            
+            // Создаем тестовое лекарство
+            val notificationManager = com.medicalnotes.app.utils.NotificationManager(this)
+            val testMedicine = notificationManager.createTestOverdueMedicine(this)
+            
+            // Показываем подтверждение
+            Toast.makeText(this, 
+                "Тестовое лекарство создано!\nВремя приема: ${testMedicine.time}\nПриложение закроется через 3 секунды...", 
+                Toast.LENGTH_LONG
+            ).show()
+            
+            android.util.Log.d("SettingsActivity", "Тестовое лекарство создано: ${testMedicine.name} на ${testMedicine.time}")
+            
+            // Закрываем приложение через 3 секунды
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                try {
+                    android.util.Log.d("SettingsActivity", "Закрытие приложения...")
+                    
+                    // Закрываем все Activity
+                    finishAffinity()
+                    
+                    // Принудительно завершаем процесс (опционально)
+                    android.os.Process.killProcess(android.os.Process.myPid())
+                    
+                } catch (e: Exception) {
+                    android.util.Log.e("SettingsActivity", "Ошибка закрытия приложения", e)
+                }
+            }, 3000) // 3 секунды
+            
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsActivity", "Ошибка создания тестового лекарства", e)
+            Toast.makeText(this, "Ошибка создания тестового лекарства: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+    
+    /**
+     * ДОБАВЛЕНО: Принудительная остановка всех уведомлений
+     */
+    private fun stopAllNotifications() {
+        try {
+            android.util.Log.d("SettingsActivity", "=== ПРИНУДИТЕЛЬНАЯ ОСТАНОВКА УВЕДОМЛЕНИЙ ===")
+            
+            // Показываем диалог подтверждения
+            AlertDialog.Builder(this)
+                .setTitle("Остановить уведомления")
+                .setMessage("Принудительно остановить все вибрации, звуки и уведомления?\n\nЭто может быть полезно, если стандартные кнопки на карточке лекарства не работают.")
+                .setPositiveButton("Остановить все") { _, _ ->
+                    forceStopAllNotifications()
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
+                
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsActivity", "Ошибка остановки уведомлений", e)
+            Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+    
+    /**
+     * ДОБАВЛЕНО: Принудительная остановка всех уведомлений
+     */
+    private fun forceStopAllNotifications() {
+        try {
+            android.util.Log.d("SettingsActivity", "Принудительная остановка уведомлений...")
+            
+            // Останавливаем все уведомления
+            val notificationManager = com.medicalnotes.app.utils.NotificationManager(this)
+            notificationManager.forceStopAllNotifications()
+            
+            // Показываем подтверждение
+            Toast.makeText(this, "Все уведомления, вибрации и звуки остановлены!", Toast.LENGTH_LONG).show()
+            
+            android.util.Log.d("SettingsActivity", "✓ Принудительная остановка завершена")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsActivity", "Ошибка принудительной остановки", e)
+            Toast.makeText(this, "Ошибка остановки: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        // Используем современный подход вместо устаревшего onBackPressed()
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            // Для Android 12+ используем onBackPressedDispatcher
+            onBackPressedDispatcher.onBackPressed()
+        } else {
+            // Для старых версий используем finish()
+            finish()
+        }
         return true
     }
 } 

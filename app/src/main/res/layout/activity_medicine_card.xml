@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:padding="24dp"
+    android:background="@android:color/white"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+
+    <TextView android:id="@+id/title"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textStyle="bold" android:textSize="20sp"
+        android:text="Время принять лекарство"/>
+
+    <TextView android:id="@+id/subtitle"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:paddingTop="8dp" android:text="Название / время"/>
+
+    <LinearLayout android:orientation="horizontal"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:gravity="end" android:paddingTop="16dp">
+
+        <Button android:id="@+id/btnSnooze"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Отложить 10 мин"/>
+
+        <Button android:id="@+id/btnSkip"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginStart="8dp" android:text="Пропустить"/>
+
+        <Button android:id="@+id/btnTaken"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginStart="8dp" android:text="Принял"/>
+    </LinearLayout>
+</LinearLayout> 

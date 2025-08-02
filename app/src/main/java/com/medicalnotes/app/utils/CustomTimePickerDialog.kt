@@ -35,12 +35,12 @@ class CustomTimePickerDialog(
 
     private fun setupViews() {
         // Настраиваем ползунки
-        binding.findViewById<SeekBar>(R.id.seekBarHours).apply {
+        findViewById<SeekBar>(R.id.seekBarHours).apply {
             progress = selectedHours
             max = 23
         }
         
-        binding.findViewById<SeekBar>(R.id.seekBarMinutes).apply {
+        findViewById<SeekBar>(R.id.seekBarMinutes).apply {
             progress = selectedMinutes
             max = 59
         }
@@ -48,7 +48,7 @@ class CustomTimePickerDialog(
 
     private fun setupListeners() {
         // Ползунок часов
-        binding.findViewById<SeekBar>(R.id.seekBarHours).setOnSeekBarChangeListener(
+        findViewById<SeekBar>(R.id.seekBarHours).setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                     selectedHours = progress
@@ -60,7 +60,7 @@ class CustomTimePickerDialog(
         )
 
         // Ползунок минут
-        binding.findViewById<SeekBar>(R.id.seekBarMinutes).setOnSeekBarChangeListener(
+        findViewById<SeekBar>(R.id.seekBarMinutes).setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                     selectedMinutes = progress
@@ -72,12 +72,12 @@ class CustomTimePickerDialog(
         )
 
         // Кнопка отмены
-        binding.findViewById<android.widget.Button>(R.id.buttonCancel).setOnClickListener {
+        findViewById<android.widget.Button>(R.id.buttonCancel).setOnClickListener {
             dismiss()
         }
 
         // Кнопка ОК
-        binding.findViewById<android.widget.Button>(R.id.buttonOk).setOnClickListener {
+        findViewById<android.widget.Button>(R.id.buttonOk).setOnClickListener {
             val selectedTime = LocalTime.of(selectedHours, selectedMinutes)
             onTimeSelected(selectedTime)
             dismiss()
@@ -86,16 +86,16 @@ class CustomTimePickerDialog(
 
     private fun updateTimeDisplay() {
         // Обновляем отображение часов
-        binding.findViewById<TextView>(R.id.textHours).text = selectedHours.toString()
+        findViewById<TextView>(R.id.textHours).text = selectedHours.toString()
         
         // Обновляем отображение минут с ведущим нулем
-        binding.findViewById<TextView>(R.id.textMinutes).text = 
+        findViewById<TextView>(R.id.textMinutes).text = 
             String.format("%02d", selectedMinutes)
         
         // Обновляем общее время
         val selectedTime = LocalTime.of(selectedHours, selectedMinutes)
         val formatter = DateTimeFormatter.ofPattern("HH:mm")
-        binding.findViewById<TextView>(R.id.textSelectedTime).text = 
+        findViewById<TextView>(R.id.textSelectedTime).text = 
             selectedTime.format(formatter)
     }
 } 

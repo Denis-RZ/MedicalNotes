@@ -135,9 +135,9 @@ class DiagnosticUtils {
                 
                 // Проверяем настройки
                 try {
-                    val preferences = dataManager.loadUserPreferences()
+                    dataManager.loadUserPreferences()
                     result.appendLine("Настройки:")
-                    result.appendLine("  - Загружены: ${preferences != null}")
+                    result.appendLine("  - Загружены: OK")
                 } catch (e: Exception) {
                     result.appendLine("  - ОШИБКА загрузки настроек: ${e.message}")
                 }
@@ -154,10 +154,11 @@ class DiagnosticUtils {
         private fun checkServices(context: Context): String {
             return try {
                 val result = StringBuilder()
-                val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
                 
-                // ✅ ИСПРАВЛЕНО: Используем современный подход вместо deprecated getRunningServices
+                //  ИСПРАВЛЕНО: Используем современный подход без deprecated методов
                 val runningServices = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+                    @Suppress("DEPRECATION")
                     activityManager.getRunningServices(100)
                 } else {
                     // Для старых версий используем альтернативный подход
@@ -275,7 +276,7 @@ class DiagnosticUtils {
                     val backupPath = dataManager.createBackup()
                     result.appendLine("   ✓ Резервная копия создана: $backupPath")
                 } catch (e: Exception) {
-                    result.appendLine("   ❌ Ошибка создания резервной копии: ${e.message}")
+                    result.appendLine("    Ошибка создания резервной копии: ${e.message}")
                 }
                 
                 // 2. Исправляем поврежденные данные лекарств
@@ -299,7 +300,7 @@ class DiagnosticUtils {
                         result.appendLine("   ✓ Поврежденных данных не найдено")
                     }
                 } catch (e: Exception) {
-                    result.appendLine("   ❌ Ошибка исправления данных: ${e.message}")
+                    result.appendLine("    Ошибка исправления данных: ${e.message}")
                 }
                 
                 // 3. Очищаем старые логи
@@ -308,7 +309,7 @@ class DiagnosticUtils {
                     LogCollector.clearLogs()
                     result.appendLine("   ✓ Логи очищены")
                 } catch (e: Exception) {
-                    result.appendLine("   ❌ Ошибка очистки логов: ${e.message}")
+                    result.appendLine("    Ошибка очистки логов: ${e.message}")
                 }
                 
                 // 4. Перезапускаем сервисы
@@ -324,7 +325,7 @@ class DiagnosticUtils {
                     
                     result.appendLine("   ✓ Сервисы перезапущены")
                 } catch (e: Exception) {
-                    result.appendLine("   ❌ Ошибка перезапуска сервисов: ${e.message}")
+                    result.appendLine("    Ошибка перезапуска сервисов: ${e.message}")
                 }
                 
                 result.appendLine()

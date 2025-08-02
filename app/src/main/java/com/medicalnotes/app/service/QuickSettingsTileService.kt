@@ -13,7 +13,7 @@ class QuickSettingsTileService : TileService() {
     override fun onStartListening() {
         super.onStartListening()
         
-        // ✅ ИСПРАВЛЕНО: Используем современный подход вместо deprecated startActivityAndCollapse
+        //  ИСПРАВЛЕНО: Используем современный подход вместо deprecated startActivityAndCollapse
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             try {
                 val intent = Intent(this, MainActivity::class.java)

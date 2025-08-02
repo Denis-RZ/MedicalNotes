@@ -44,8 +44,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val today = LocalDate.now()
             android.util.Log.d("MainViewModel", "Сегодняшняя дата: $today")
             
+            android.util.Log.d("MainViewModel", "=== ВЫЗОВ DosageCalculator.getActiveMedicinesForDate ===")
             val todayMedicines = DosageCalculator.getActiveMedicinesForDate(allMedicines, today)
             android.util.Log.d("MainViewModel", "Лекарств на сегодня: ${todayMedicines.size}")
+            
+            //  ДОБАВЛЕНО: Подробное логирование для отладки
+            if (todayMedicines.isEmpty()) {
+                android.util.Log.d("MainViewModel", " СПИСОК ПУСТОЙ - проверяем каждое лекарство:")
+                allMedicines.forEach { medicine ->
+                    android.util.Log.d("MainViewModel", "Проверяем: ${medicine.name}")
+                    android.util.Log.d("MainViewModel", "  - isActive: ${medicine.isActive}")
+                    android.util.Log.d("MainViewModel", "  - shouldTakeMedicine: ${DosageCalculator.shouldTakeMedicine(medicine, today)}")
+                    android.util.Log.d("MainViewModel", "  - takenToday: ${medicine.takenToday}")
+                    android.util.Log.d("MainViewModel", "  - lastTakenTime: ${medicine.lastTakenTime}")
+                    android.util.Log.d("MainViewModel", "  - startDate: ${medicine.startDate}")
+                    android.util.Log.d("MainViewModel", "  - frequency: ${medicine.frequency}")
+                }
+            }
             
             todayMedicines.forEach { medicine ->
                 android.util.Log.d("MainViewModel", "Сегодня: ${medicine.name}")

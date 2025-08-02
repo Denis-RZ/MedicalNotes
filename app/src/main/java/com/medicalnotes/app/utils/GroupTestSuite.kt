@@ -48,21 +48,21 @@ object GroupTestSuite {
         testMedicines.forEach { medicine ->
             // Проверка 1: Если есть группа, должен быть порядок
             if (medicine.groupName.isNotEmpty() && medicine.groupOrder <= 0) {
-                addLog("❌ ОШИБКА: Лекарство '${medicine.name}' имеет группу '${medicine.groupName}' но порядок ${medicine.groupOrder}")
+                addLog(" ОШИБКА: Лекарство '${medicine.name}' имеет группу '${medicine.groupName}' но порядок ${medicine.groupOrder}")
             }
             
             // Проверка 2: Если нет группы, порядок должен быть 0
             if (medicine.groupName.isEmpty() && medicine.groupOrder > 0) {
-                addLog("❌ ОШИБКА: Лекарство '${medicine.name}' не имеет группы но порядок ${medicine.groupOrder}")
+                addLog(" ОШИБКА: Лекарство '${medicine.name}' не имеет группы но порядок ${medicine.groupOrder}")
             }
             
             // Проверка 3: Порядок должен быть положительным
             if (medicine.groupOrder < 0) {
-                addLog("❌ ОШИБКА: Лекарство '${medicine.name}' имеет отрицательный порядок ${medicine.groupOrder}")
+                addLog(" ОШИБКА: Лекарство '${medicine.name}' имеет отрицательный порядок ${medicine.groupOrder}")
             }
         }
         
-        addLog("✅ Тест целостности данных завершен")
+        addLog(" Тест целостности данных завершен")
     }
     
     /**
@@ -83,7 +83,7 @@ object GroupTestSuite {
                 val expectedOrders = (1..medicines.size).toList()
                 
                 if (orders != expectedOrders) {
-                    addLog("❌ ОШИБКА: Нарушена последовательность в группе '$groupName'")
+                    addLog(" ОШИБКА: Нарушена последовательность в группе '$groupName'")
                     addLog("   Ожидалось: $expectedOrders")
                     addLog("   Фактически: $orders")
                 }
@@ -93,18 +93,18 @@ object GroupTestSuite {
                 val duplicates = orderCounts.filter { it.value.size > 1 }
                 
                 if (duplicates.isNotEmpty()) {
-                    addLog("❌ ОШИБКА: Дубликаты порядка в группе '$groupName': ${duplicates.keys}")
+                    addLog(" ОШИБКА: Дубликаты порядка в группе '$groupName': ${duplicates.keys}")
                 }
                 
                 // Проверка 3: Максимальный порядок не превышает количество лекарств
                 val maxOrder = medicines.maxOfOrNull { it.groupOrder } ?: 0
                 if (maxOrder > medicines.size) {
-                    addLog("❌ ОШИБКА: Максимальный порядок $maxOrder превышает количество лекарств ${medicines.size}")
+                    addLog(" ОШИБКА: Максимальный порядок $maxOrder превышает количество лекарств ${medicines.size}")
                 }
             }
         }
         
-        addLog("✅ Тест логики упорядочивания завершен")
+        addLog(" Тест логики упорядочивания завершен")
     }
     
     /**
@@ -124,17 +124,17 @@ object GroupTestSuite {
             }
             
             if (medicine.groupName.isNotEmpty() && displayName.isEmpty()) {
-                addLog("❌ ОШИБКА: Неправильное отображение группы для '${medicine.name}'")
+                addLog(" ОШИБКА: Неправильное отображение группы для '${medicine.name}'")
             }
             
             // Проверка 2: Корректность отображения времени
             val timeDisplay = medicine.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
             if (timeDisplay.isEmpty()) {
-                addLog("❌ ОШИБКА: Пустое отображение времени для '${medicine.name}'")
+                addLog(" ОШИБКА: Пустое отображение времени для '${medicine.name}'")
             }
         }
         
-        addLog("✅ Тест логики отображения завершен")
+        addLog(" Тест логики отображения завершен")
     }
     
     /**
@@ -154,7 +154,7 @@ object GroupTestSuite {
                 val groupNames = medicines.map { it.groupName }.distinct()
                 
                 if (groupNames.size == 1 && groupNames[0].isNotEmpty()) {
-                    addLog("⚠️ ВНИМАНИЕ: Все лекарства в $time в одной группе '${groupNames[0]}'")
+                    addLog(" ВНИМАНИЕ: Все лекарства в $time в одной группе '${groupNames[0]}'")
                 }
                 
                 // Проверка 2: Конфликты порядка в одном времени
@@ -165,7 +165,7 @@ object GroupTestSuite {
                         if (groupMedicines.size > 1) {
                             val orders = groupMedicines.map { it.groupOrder }
                             if (orders.distinct().size != orders.size) {
-                                addLog("❌ ОШИБКА: Дубликаты порядка в группе '$groupName' в $time")
+                                addLog(" ОШИБКА: Дубликаты порядка в группе '$groupName' в $time")
                             }
                         }
                     }
@@ -173,7 +173,7 @@ object GroupTestSuite {
             }
         }
         
-        addLog("✅ Тест конфликтов времени завершен")
+        addLog(" Тест конфликтов времени завершен")
     }
     
     /**
@@ -197,7 +197,7 @@ object GroupTestSuite {
         )
         
         if (emptyGroupMedicine.groupName.isEmpty() && emptyGroupMedicine.groupOrder > 0) {
-            addLog("❌ ОШИБКА: Лекарство без группы имеет порядок > 0")
+            addLog(" ОШИБКА: Лекарство без группы имеет порядок > 0")
         }
         
         // Тест 2: Некорректные названия групп
@@ -217,7 +217,7 @@ object GroupTestSuite {
             )
             
             if (medicine.groupName.trim().isEmpty() && medicine.groupOrder > 0) {
-                addLog("❌ ОШИБКА: Лекарство с пустым названием группы имеет порядок > 0")
+                addLog(" ОШИБКА: Лекарство с пустым названием группы имеет порядок > 0")
             }
         }
         
@@ -237,10 +237,10 @@ object GroupTestSuite {
         )
         
         if (longGroupMedicine.groupName.length > 50) {
-            addLog("⚠️ ВНИМАНИЕ: Очень длинное название группы (${longGroupMedicine.groupName.length} символов)")
+            addLog(" ВНИМАНИЕ: Очень длинное название группы (${longGroupMedicine.groupName.length} символов)")
         }
         
-        addLog("✅ Тест валидации завершен")
+        addLog(" Тест валидации завершен")
     }
     
     /**
@@ -264,7 +264,7 @@ object GroupTestSuite {
         )
         
         if (largeOrderMedicine.groupOrder > 1000) {
-            addLog("⚠️ ВНИМАНИЕ: Очень большой порядок в группе: ${largeOrderMedicine.groupOrder}")
+            addLog(" ВНИМАНИЕ: Очень большой порядок в группе: ${largeOrderMedicine.groupOrder}")
         }
         
         // Тест 2: Специальные символы в названиях групп
@@ -284,7 +284,7 @@ object GroupTestSuite {
             )
             
             if (medicine.groupName != groupName) {
-                addLog("❌ ОШИБКА: Название группы изменено: '$groupName' -> '${medicine.groupName}'")
+                addLog(" ОШИБКА: Название группы изменено: '$groupName' -> '${medicine.groupName}'")
             }
         }
         
@@ -299,12 +299,12 @@ object GroupTestSuite {
             if (medicines.size > 1) {
                 val groups = medicines.map { it.groupName }.distinct()
                 if (groups.size > 1) {
-                    addLog("⚠️ ВНИМАНИЕ: Лекарство '$name' в разных группах: $groups")
+                    addLog(" ВНИМАНИЕ: Лекарство '$name' в разных группах: $groups")
                 }
             }
         }
         
-        addLog("✅ Тест граничных случаев завершен")
+        addLog(" Тест граничных случаев завершен")
     }
     
     private fun addLog(message: String) {

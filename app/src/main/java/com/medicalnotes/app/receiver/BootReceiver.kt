@@ -46,9 +46,17 @@ class BootReceiver : BroadcastReceiver() {
         try {
             android.util.Log.d("BootReceiver", "Начинаем восстановление уведомлений о лекарствах")
             
-            // ✅ ИЗМЕНЕНО: Используем новую утилиту для восстановления уведомлений
+            //  ИЗМЕНЕНО: Используем новую утилиту для восстановления уведомлений
             val restorationManager = com.medicalnotes.app.utils.NotificationRestorationManager(context)
             restorationManager.checkAndRestoreNotifications()
+            
+            // Перепланировать все будильники карточек
+            try { 
+                com.medicalnotes.app.utils.NotificationScheduler(context).scheduleAll() 
+                android.util.Log.d("BootReceiver", "Карточки лекарств перепланированы")
+            } catch (e: Exception) {
+                android.util.Log.e("BootReceiver", "Ошибка перепланирования карточек", e)
+            }
             
             android.util.Log.d("BootReceiver", "Восстановление уведомлений завершено")
             

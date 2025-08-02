@@ -14,36 +14,25 @@ object DosageCalculator {
     fun shouldTakeMedicine(medicine: Medicine, date: LocalDate): Boolean {
         val startDate = LocalDate.ofEpochDay(medicine.startDate / (24 * 60 * 60 * 1000))
         
-        android.util.Log.d("DosageCalculator", "=== ПРОВЕРКА ЛЕКАРСТВА ===")
-        android.util.Log.d("DosageCalculator", "Лекарство: ${medicine.name}")
-        android.util.Log.d("DosageCalculator", "  - Дата: $date")
-        android.util.Log.d("DosageCalculator", "  - Дата начала: $startDate")
-        android.util.Log.d("DosageCalculator", "  - Группа ID: ${medicine.groupId}")
-        android.util.Log.d("DosageCalculator", "  - Частота: ${medicine.frequency}")
-        android.util.Log.d("DosageCalculator", "  - Активно: ${medicine.isActive}")
-        android.util.Log.d("DosageCalculator", "  - Принято сегодня: ${medicine.takenToday}")
+        //  ИСПРАВЛЕНО: Убрано избыточное логирование для предотвращения ANR
+        android.util.Log.d("DosageCalculator", "Проверка: ${medicine.name} для даты $date")
         
         // Если дата раньше начала приема
         if (date.isBefore(startDate)) {
-            android.util.Log.d("DosageCalculator", "  - Результат: false (дата раньше начала)")
             return false
         }
         
         // Если лекарство в группе, используем логику группы
         if (medicine.groupId != null) {
-            android.util.Log.d("DosageCalculator", "  - Используем групповую логику")
             return shouldTakeMedicineInGroup(medicine, date)
         }
         
         // Обычная логика для лекарств не в группе
-        val result = when (medicine.frequency) {
+        return when (medicine.frequency) {
             DosageFrequency.DAILY -> true
             DosageFrequency.EVERY_OTHER_DAY -> {
                 val daysSinceStart = ChronoUnit.DAYS.between(startDate, date)
-                val shouldTake = daysSinceStart % 2L == 0L
-                android.util.Log.d("DosageCalculator", "  - Дней с начала: $daysSinceStart")
-                android.util.Log.d("DosageCalculator", "  - Через день: $shouldTake")
-                shouldTake
+                daysSinceStart % 2L == 0L
             }
             DosageFrequency.TWICE_A_WEEK -> {
                 val daysSinceStart = ChronoUnit.DAYS.between(startDate, date)
@@ -62,9 +51,6 @@ object DosageCalculator {
                 medicine.customDays.contains(dayOfWeek)
             }
         }
-        
-        android.util.Log.d("DosageCalculator", "  - Результат: $result")
-        return result
     }
     
 
@@ -88,45 +74,60 @@ object DosageCalculator {
      * Получает все активные лекарства для указанной даты
      */
     fun getActiveMedicinesForDate(medicines: List<Medicine>, date: LocalDate): List<Medicine> {
-        android.util.Log.d("DosageCalculator", "=== ФИЛЬТРАЦИЯ ЛЕКАРСТВ ===")
-        android.util.Log.d("DosageCalculator", "Дата: $date")
-        android.util.Log.d("DosageCalculator", "Всего лекарств: ${medicines.size}")
+        //  ИСПРАВЛЕНО: Убрано избыточное логирование для предотвращения ANR
+        android.util.Log.d("DosageCalculator", "Фильтрация лекарств: ${medicines.size} лекарств для даты $date")
         
+        android.util.Log.d("DosageCalculator", "=== ФИЛЬТРАЦИЯ АКТИВНЫХ ЛЕКАРСТВ ===")
         val activeMedicines = medicines.filter { medicine ->
             val isActive = medicine.isActive
             val shouldTake = shouldTakeMedicine(medicine, date)
+            val isActiveAndShouldTake = isActive && shouldTake
+            
             android.util.Log.d("DosageCalculator", "Лекарство: ${medicine.name}")
-            android.util.Log.d("DosageCalculator", "  - Активно: $isActive")
-            android.util.Log.d("DosageCalculator", "  - По расписанию: $shouldTake")
-            android.util.Log.d("DosageCalculator", "  - Принято сегодня: ${medicine.takenToday}")
-            android.util.Log.d("DosageCalculator", "  - Включается в список: ${isActive && shouldTake}")
-            isActive && shouldTake
+            android.util.Log.d("DosageCalculator", "  - isActive: $isActive")
+            android.util.Log.d("DosageCalculator", "  - shouldTake: $shouldTake")
+            android.util.Log.d("DosageCalculator", "  - isActiveAndShouldTake: $isActiveAndShouldTake")
+            
+            isActiveAndShouldTake
         }
         
-        android.util.Log.d("DosageCalculator", "Активных по расписанию: ${activeMedicines.size}")
+        android.util.Log.d("DosageCalculator", "Активных лекарств: ${activeMedicines.size}")
         
         val notTakenToday = activeMedicines.filter { medicine ->
+            //  ИСПРАВЛЕНО: Используем takenToday вместо lastTakenTime для более точной проверки
             // Проверяем, было ли лекарство принято сегодня
-            val lastTakenDate = if (medicine.lastTakenTime > 0) {
-                java.time.LocalDate.ofEpochDay(medicine.lastTakenTime / (24 * 60 * 60 * 1000))
+            val wasTakenToday = if (medicine.takenToday) {
+                // Если takenToday = true, проверяем дату последнего приема
+                val lastTakenDate = if (medicine.lastTakenTime > 0) {
+                    java.time.LocalDate.ofEpochDay(medicine.lastTakenTime / (24 * 60 * 60 * 1000))
+                } else {
+                    // Если lastTakenTime = 0, но takenToday = true, значит лекарство было принято сегодня
+                    // но время последнего приема сброшено (например, при редактировании)
+                    // В этом случае считаем, что лекарство НЕ было принято сегодня
+                    java.time.LocalDate.MIN
+                }
+                lastTakenDate == date
             } else {
-                java.time.LocalDate.MIN
+                false
             }
             
-            val notTaken = lastTakenDate != date
-            android.util.Log.d("DosageCalculator", "Лекарство: ${medicine.name}")
-            android.util.Log.d("DosageCalculator", "  - Последний прием: $lastTakenDate")
-            android.util.Log.d("DosageCalculator", "  - Не принято сегодня: $notTaken")
-            notTaken
+            !wasTakenToday
         }
         
-        android.util.Log.d("DosageCalculator", "Не принятых сегодня: ${notTakenToday.size}")
+        android.util.Log.d("DosageCalculator", "Результат: ${notTakenToday.size} лекарств не принято сегодня")
+        
+        //  ДОБАВЛЕНО: Подробное логирование для отладки
+        activeMedicines.forEach { medicine ->
+            android.util.Log.d("DosageCalculator", "Лекарство: ${medicine.name}")
+            android.util.Log.d("DosageCalculator", "  - takenToday: ${medicine.takenToday}")
+            android.util.Log.d("DosageCalculator", "  - lastTakenTime: ${medicine.lastTakenTime}")
+            android.util.Log.d("DosageCalculator", "  - В списке 'на сегодня': ${notTakenToday.contains(medicine)}")
+        }
         
         return notTakenToday.map { medicine ->
             // Проверяем статус лекарства для отображения
             val status = getMedicineStatus(medicine, date)
             val isOverdue = status == MedicineStatus.OVERDUE
-            android.util.Log.d("DosageCalculator", "Финальное лекарство: ${medicine.name}, статус: $status")
             medicine.copy(isOverdue = isOverdue)
         }
     }
@@ -315,14 +316,29 @@ object DosageCalculator {
         
         // Логика группы "через день"
         if (medicine.frequency == DosageFrequency.EVERY_OTHER_DAY) {
-            // Определяем, какой день группы сегодня (0 или 1)
+            // ИСПРАВЛЕНО: Универсальная логика для группы "через день" с любым количеством лекарств
+            
+            // Определяем, какой день группы сегодня (0, 1, 2, 3...)
             val groupDay = (daysSinceStart % 2).toInt()
-            // Лекарство должно приниматься только в свой день группы
-            val shouldTake = groupDay == (medicine.groupOrder - 1)
+            
+            // Для группы "через день" с любым количеством лекарств:
+            // - Лекарство с groupOrder = 1 принимается в дни 0, 2, 4, 6... (четные дни)
+            // - Лекарство с groupOrder = 2 принимается в дни 1, 3, 5, 7... (нечетные дни)
+            // - Лекарство с groupOrder = 3 принимается в дни 0, 2, 4, 6... (четные дни)
+            // - Лекарство с groupOrder = 4 принимается в дни 1, 3, 5, 7... (нечетные дни)
+            // И так далее...
+            
+            val shouldTake = when {
+                medicine.groupOrder <= 0 -> false  // Неизвестный порядок
+                medicine.groupOrder % 2 == 1 -> groupDay == 0  // Нечетные порядки (1,3,5...) в четные дни
+                medicine.groupOrder % 2 == 0 -> groupDay == 1  // Четные порядки (2,4,6...) в нечетные дни
+                else -> false
+            }
+            
             android.util.Log.d("DosageCalculator", "  - День группы: $groupDay")
             android.util.Log.d("DosageCalculator", "  - Порядок лекарства: ${medicine.groupOrder}")
             android.util.Log.d("DosageCalculator", "  - Нужно принимать: $shouldTake")
-            android.util.Log.d("DosageCalculator", "  - Логика: groupDay($groupDay) == (groupOrder-1)(${medicine.groupOrder - 1})")
+            android.util.Log.d("DosageCalculator", "  - Логика: groupOrder=${medicine.groupOrder} (${if (medicine.groupOrder % 2 == 1) "нечетный" else "четный"}), groupDay=$groupDay")
             return shouldTake
         }
         

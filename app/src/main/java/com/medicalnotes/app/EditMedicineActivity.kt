@@ -37,6 +37,9 @@ class EditMedicineActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        //  ДОБАВЛЕНО: Уведомляем сервис о начале редактирования
+        com.medicalnotes.app.service.OverdueCheckService.setEditingActive(true)
+        
         // Настройка обработки кнопки "Назад"
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -189,7 +192,7 @@ class EditMedicineActivity : AppCompatActivity() {
         // НЕ устанавливаем значение по умолчанию здесь - оно будет установлено в populateFields()
         // binding.autoCompleteMedicineType.setText(selectedMedicineType, true)
         
-        // ✅ ИСПРАВЛЕНО: Обработчик выбора типа лекарства
+        //  ИСПРАВЛЕНО: Обработчик выбора типа лекарства
         binding.autoCompleteMedicineType.setOnItemClickListener { _, _, position, _ ->
             selectedMedicineType = medicineTypes[position]
             com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Medicine type selected: $selectedMedicineType")
@@ -202,7 +205,7 @@ class EditMedicineActivity : AppCompatActivity() {
             com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Insulin checkbox set to: ${binding.checkBoxInsulin.isChecked}")
         }
         
-        // ✅ ИСПРАВЛЕНО: Обработчики для AutoCompleteTextView
+        //  ИСПРАВЛЕНО: Обработчики для AutoCompleteTextView
         binding.autoCompleteMedicineType.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 binding.autoCompleteMedicineType.showDropDown()
@@ -246,7 +249,7 @@ class EditMedicineActivity : AppCompatActivity() {
                 allGroups.addAll(existingGroups.sorted())
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Groups loaded: $allGroups")
                 
-                // ✅ ИСПРАВЛЕНО: Обновляем диалог выбора группы, если он открыт
+                //  ИСПРАВЛЕНО: Обновляем диалог выбора группы, если он открыт
                 updateGroupSelectionDialog()
             }
         } catch (e: Exception) {
@@ -255,7 +258,7 @@ class EditMedicineActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ ДОБАВЛЕНО: Функция для обновления диалога выбора группы
+    //  ДОБАВЛЕНО: Функция для обновления диалога выбора группы
     private fun updateGroupSelectionDialog() {
         // Если диалог открыт, обновляем его данные
         // Это поможет синхронизировать группы в реальном времени
@@ -326,7 +329,7 @@ class EditMedicineActivity : AppCompatActivity() {
             updateTimeDisplay()
             updateFrequencyDisplay()
             
-            // ✅ ИСПРАВЛЕНО: Правильно устанавливаем тип лекарства
+            //  ИСПРАВЛЕНО: Правильно устанавливаем тип лекарства
             binding.autoCompleteMedicineType.setText(selectedMedicineType, false)
             com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Set medicine type in field: $selectedMedicineType")
             
@@ -370,65 +373,88 @@ class EditMedicineActivity : AppCompatActivity() {
     }
     
     private fun updateFrequencyDisplay() {
-        val frequencyText = when (selectedFrequency) {
-            DosageFrequency.DAILY -> "Каждый день"
-            DosageFrequency.EVERY_OTHER_DAY -> "Через день"
-            DosageFrequency.TWICE_A_WEEK -> "2 раза в неделю"
-            DosageFrequency.THREE_TIMES_A_WEEK -> "3 раза в неделю"
-            DosageFrequency.WEEKLY -> "Раз в неделю"
-            DosageFrequency.CUSTOM -> "По расписанию"
+        try {
+            val frequencyText = when (selectedFrequency) {
+                DosageFrequency.DAILY -> "Каждый день"
+                DosageFrequency.EVERY_OTHER_DAY -> "Через день"
+                DosageFrequency.TWICE_A_WEEK -> "2 раза в неделю"
+                DosageFrequency.THREE_TIMES_A_WEEK -> "3 раза в неделю"
+                DosageFrequency.WEEKLY -> "Раз в неделю"
+                DosageFrequency.CUSTOM -> "По расписанию"
+            }
+            binding.buttonFrequency.text = frequencyText
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Updated frequency display: $frequencyText (selectedFrequency: $selectedFrequency)")
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error updating frequency display", e)
+            binding.buttonFrequency.text = "Каждый день"
+            selectedFrequency = DosageFrequency.DAILY
         }
-        binding.buttonFrequency.text = frequencyText
-        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Updated frequency display: $frequencyText (selectedFrequency: $selectedFrequency)")
     }
     
     private fun showFrequencyDialog() {
-        val frequencies = arrayOf(
-            "Каждый день",
-            "Через день", 
-            "2 раза в неделю",
-            "3 раза в неделю",
-            "Раз в неделю",
-            "По расписанию"
-        )
-        
-        // Определяем текущий индекс
-        val currentIndex = when (selectedFrequency) {
-            DosageFrequency.DAILY -> 0
-            DosageFrequency.EVERY_OTHER_DAY -> 1
-            DosageFrequency.TWICE_A_WEEK -> 2
-            DosageFrequency.THREE_TIMES_A_WEEK -> 3
-            DosageFrequency.WEEKLY -> 4
-            DosageFrequency.CUSTOM -> 5
-        }
-        
-        AlertDialog.Builder(this)
-            .setTitle("Выберите схему приема")
-            .setSingleChoiceItems(frequencies, currentIndex) { _, which ->
-                selectedFrequency = when (which) {
-                    0 -> DosageFrequency.DAILY
-                    1 -> DosageFrequency.EVERY_OTHER_DAY
-                    2 -> DosageFrequency.TWICE_A_WEEK
-                    3 -> DosageFrequency.THREE_TIMES_A_WEEK
-                    4 -> DosageFrequency.WEEKLY
-                    5 -> DosageFrequency.CUSTOM
-                    else -> DosageFrequency.DAILY
-                }
-                updateFrequencyDisplay()
-                
-                // Показываем/скрываем группировку и дни недели в зависимости от частоты
-                val isEveryOtherDay = selectedFrequency == DosageFrequency.EVERY_OTHER_DAY
-                val isCustom = selectedFrequency == DosageFrequency.CUSTOM
-                val hasGroup = binding.editTextGroupName.text.toString().isNotEmpty()
-                
-                binding.layoutGrouping.visibility = if (hasGroup || isEveryOtherDay) View.VISIBLE else View.GONE
-                binding.layoutWeekDays.visibility = if (isCustom) View.VISIBLE else View.GONE
-                
-                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Frequency changed to: $selectedFrequency")
+        try {
+            val frequencies = arrayOf(
+                "Каждый день",
+                "Через день", 
+                "2 раза в неделю",
+                "3 раза в неделю",
+                "Раз в неделю",
+                "По расписанию"
+            )
+            
+            val currentIndex = when (selectedFrequency) {
+                DosageFrequency.DAILY -> 0
+                DosageFrequency.EVERY_OTHER_DAY -> 1
+                DosageFrequency.TWICE_A_WEEK -> 2
+                DosageFrequency.THREE_TIMES_A_WEEK -> 3
+                DosageFrequency.WEEKLY -> 4
+                DosageFrequency.CUSTOM -> 5
             }
-            .setPositiveButton("OK", null)
-            .setNegativeButton("Отмена", null)
-            .show()
+            
+            AlertDialog.Builder(this)
+                .setTitle("Выберите схему приема")
+                .setSingleChoiceItems(frequencies, currentIndex) { _, which ->
+                    try {
+                        selectedFrequency = when (which) {
+                            0 -> DosageFrequency.DAILY
+                            1 -> DosageFrequency.EVERY_OTHER_DAY
+                            2 -> DosageFrequency.TWICE_A_WEEK
+                            3 -> DosageFrequency.THREE_TIMES_A_WEEK
+                            4 -> DosageFrequency.WEEKLY
+                            5 -> DosageFrequency.CUSTOM
+                            else -> DosageFrequency.DAILY
+                        }
+                        updateFrequencyDisplay()
+                        
+                        // Показываем/скрываем группировку и дни недели в зависимости от частоты
+                        val isEveryOtherDay = selectedFrequency == DosageFrequency.EVERY_OTHER_DAY
+                        val isCustom = selectedFrequency == DosageFrequency.CUSTOM
+                        val hasGroup = binding.editTextGroupName.text.toString().isNotEmpty()
+                        
+                        binding.layoutGrouping.visibility = if (hasGroup || isEveryOtherDay) View.VISIBLE else View.GONE
+                        binding.layoutWeekDays.visibility = if (isCustom) View.VISIBLE else View.GONE
+                        
+                        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Frequency changed to: $selectedFrequency")
+                    } catch (e: Exception) {
+                        com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error selecting frequency", e)
+                        selectedFrequency = DosageFrequency.DAILY
+                        updateFrequencyDisplay()
+                        Toast.makeText(this, "Ошибка выбора частоты", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .setPositiveButton("OK", null)
+                .setNegativeButton("Отмена", null)
+                .setOnCancelListener {
+                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Frequency dialog cancelled")
+                }
+                .setOnDismissListener {
+                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Frequency dialog dismissed")
+                }
+                .show()
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error showing frequency dialog", e)
+            Toast.makeText(this, "Ошибка показа диалога частоты", Toast.LENGTH_SHORT).show()
+        }
     }
     
     private fun showGroupSelectionDialog() {
@@ -549,9 +575,24 @@ class EditMedicineActivity : AppCompatActivity() {
         viewModel.getMedicineById(medicineId) { originalMedicine ->
             if (originalMedicine != null) {
                 val saveTime = selectedTime ?: LocalTime.of(8, 0)
-                // ✅ ИСПРАВЛЕНО: Сбрасываем статус принятия при изменении частоты ИЛИ времени
+                val currentTime = LocalTime.now()
+                
+                //  ИСПРАВЛЕНО: Сбрасываем статус принятия в следующих случаях:
+                // 1. Изменена частота приема
+                // 2. Изменено время приема И новое время уже прошло
+                // 3. Лекарство было принято сегодня, но новое время приема уже прошло
                 val shouldResetStatus = originalMedicine.frequency != selectedFrequency || 
-                                       originalMedicine.time != saveTime
+                                       (originalMedicine.time != saveTime && saveTime.isBefore(currentTime)) ||
+                                       (originalMedicine.takenToday && saveTime.isBefore(currentTime))
+                
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "=== АНАЛИЗ СБРОСА СТАТУСА ===")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Текущее время: $currentTime")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Новое время приема: $saveTime")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Лекарство принято сегодня: ${originalMedicine.takenToday}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Новое время уже прошло: ${saveTime.isBefore(currentTime)}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменена частота: ${originalMedicine.frequency != selectedFrequency}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменено время И прошло: ${originalMedicine.time != saveTime && saveTime.isBefore(currentTime)}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Сбрасываем статус: $shouldResetStatus")
                 
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "=== ОБНОВЛЕНИЕ ЛЕКАРСТВА ===")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Старая частота: ${originalMedicine.frequency}")
@@ -584,24 +625,24 @@ class EditMedicineActivity : AppCompatActivity() {
                     },
                     customTimes = emptyList(),
                     startDate = if (shouldResetStatus) {
-                        // ✅ ИСПРАВЛЕНО: При сбросе статуса устанавливаем дату начала на сегодня 00:00
+                        //  ИСПРАВЛЕНО: При сбросе статуса устанавливаем дату начала на сегодня 00:00
                         val today = java.time.LocalDate.now()
                         val startOfDay = today.atStartOfDay(java.time.ZoneId.systemDefault())
                         startOfDay.toInstant().toEpochMilli()
                     } else {
                         originalMedicine.startDate
-                    }, // ✅ ИСПРАВЛЕНО: Сбрасываем дату начала при изменении частоты ИЛИ времени
+                    }, //  ИСПРАВЛЕНО: Сбрасываем дату начала при изменении частоты ИЛИ времени
                     multipleDoses = false,
                     dosesPerDay = 1,
                     doseTimes = listOf(saveTime),
                     groupId = groupId,
                     groupName = groupName,
                     groupOrder = groupOrder,
-                    lastTakenTime = if (shouldResetStatus) 0 else originalMedicine.lastTakenTime, // ✅ ИСПРАВЛЕНО: Сбрасываем время последнего приема
-                    takenToday = if (shouldResetStatus) false else originalMedicine.takenToday, // ✅ ИСПРАВЛЕНО: Сбрасываем статус принятия сегодня
-                    takenAt = if (shouldResetStatus) 0 else originalMedicine.takenAt, // ✅ ИСПРАВЛЕНО: Сбрасываем время принятия
-                    isMissed = if (shouldResetStatus) false else originalMedicine.isMissed, // ✅ ИСПРАВЛЕНО: Сбрасываем статус пропуска
-                    missedCount = if (shouldResetStatus) 0 else originalMedicine.missedCount, // ✅ ИСПРАВЛЕНО: Сбрасываем счетчик пропусков
+                    lastTakenTime = if (shouldResetStatus) 0 else originalMedicine.lastTakenTime, //  ИСПРАВЛЕНО: Сбрасываем время последнего приема
+                    takenToday = if (shouldResetStatus) false else originalMedicine.takenToday, //  ИСПРАВЛЕНО: Сбрасываем статус принятия сегодня
+                    takenAt = if (shouldResetStatus) 0 else originalMedicine.takenAt, //  ИСПРАВЛЕНО: Сбрасываем время принятия
+                    isMissed = if (shouldResetStatus) false else originalMedicine.isMissed, //  ИСПРАВЛЕНО: Сбрасываем статус пропуска
+                    missedCount = if (shouldResetStatus) 0 else originalMedicine.missedCount, //  ИСПРАВЛЕНО: Сбрасываем счетчик пропусков
                     updatedAt = System.currentTimeMillis()
                 )
                 
@@ -611,64 +652,60 @@ class EditMedicineActivity : AppCompatActivity() {
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Время: ${updatedMedicine.time}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Частота: ${updatedMedicine.frequency}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Количество: ${updatedMedicine.remainingQuantity}")
-                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "СБРОШЕН СТАТУС ПРИНЯТИЯ:")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "СТАТУС ПРИНЯТИЯ:")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - lastTakenTime: ${updatedMedicine.lastTakenTime}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - takenToday: ${updatedMedicine.takenToday}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - takenAt: ${updatedMedicine.takenAt}")
                 
-                // ✅ ДОБАВЛЕНО: АГРЕССИВНО останавливаем все уведомления для этого лекарства перед обновлением
+                //  ИСПРАВЛЕНО: Отменяем старый будильник и планируем новый
                 try {
-                    val notificationManager = com.medicalnotes.app.utils.NotificationManager(this@EditMedicineActivity)
-                    
-                    // Сначала обычная остановка
-                    notificationManager.stopAllNotificationsForMedicine(medicineId)
-                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Обычная остановка уведомлений выполнена для лекарства ID: $medicineId")
-                    
-                    // Затем агрессивная отмена
-                    notificationManager.forceCancelAllNotificationsForMedicine(medicineId)
-                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Агрессивная отмена уведомлений выполнена для лекарства ID: $medicineId")
-                    
-                    // И на всякий случай отменяем все уведомления
-                    notificationManager.cancelAllNotifications()
-                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Все уведомления в системе отменены")
-                    
+                    val scheduler = com.medicalnotes.app.utils.NotificationScheduler(this@EditMedicineActivity)
+                    scheduler.rescheduleOnEdit(updatedMedicine)
+                    com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Уведомление перепланировано для лекарства ID: $medicineId")
                 } catch (e: Exception) {
-                    com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Ошибка остановки уведомлений", e)
+                    com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Ошибка перепланирования уведомления", e)
                 }
                 
-                // ✅ ДОБАВЛЕНО: Логируем обновление лекарства для уведомлений
-                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "✓ Лекарство обновлено, уведомления будут перезапущены при следующей проверке")
-                
                 // Сохраняем в корутине
-                CoroutineScope(Dispatchers.IO).launch {
+                CoroutineScope(Dispatchers.IO + com.medicalnotes.app.utils.CrashReporter.getCoroutineExceptionHandler()).launch {
                     try {
+                        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Starting medicine update...")
                         val success = viewModel.updateMedicine(updatedMedicine)
+                        com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Medicine update result: $success")
                         
                         // Синхронизируем группы, если лекарство добавлено в группу
                         if (success && groupName.isNotEmpty()) {
-                            viewModel.getAllMedicines { allMedicines ->
-                                val groupMedicines = allMedicines.filter { 
-                                    it.groupName == groupName && it.id != updatedMedicine.id 
-                                }
-                                
-                                // Обновляем порядок других лекарств в группе
-                                groupMedicines.forEachIndexed { index, medicine ->
-                                    val newOrder = index + 1
-                                    if (newOrder >= groupOrder) {
-                                        val updatedGroupMedicine = medicine.copy(
-                                            groupOrder = newOrder + 1
-                                        )
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            viewModel.updateMedicine(updatedGroupMedicine)
+                            try {
+                                viewModel.getAllMedicines { allMedicines ->
+                                    val groupMedicines = allMedicines.filter { 
+                                        it.groupName == groupName && it.id != updatedMedicine.id 
+                                    }
+                                    
+                                    // Обновляем порядок других лекарств в группе
+                                    groupMedicines.forEachIndexed { index, medicine ->
+                                        val newOrder = index + 1
+                                        if (newOrder >= groupOrder) {
+                                            val updatedGroupMedicine = medicine.copy(
+                                                groupOrder = newOrder + 1
+                                            )
+                                            CoroutineScope(Dispatchers.IO + com.medicalnotes.app.utils.CrashReporter.getCoroutineExceptionHandler()).launch {
+                                                try {
+                                                    viewModel.updateMedicine(updatedGroupMedicine)
+                                                } catch (e: Exception) {
+                                                    com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error updating group medicine", e)
+                                                }
+                                            }
                                         }
                                     }
                                 }
+                            } catch (e: Exception) {
+                                com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error syncing group medicines", e)
                             }
                         }
                         
                         CoroutineScope(Dispatchers.Main).launch {
                             if (success) {
-                                // ✅ ДОБАВЛЕНО: Принудительно обновляем статус лекарства
+                                //  ДОБАВЛЕНО: Принудительно обновляем статус лекарства
                                 try {
                                     val dataManager = com.medicalnotes.app.utils.DataManager(this@EditMedicineActivity)
                                     val updatedStatusMedicine = com.medicalnotes.app.utils.MedicineStatusHelper.updateMedicineStatus(updatedMedicine)
@@ -681,7 +718,7 @@ class EditMedicineActivity : AppCompatActivity() {
                                 Toast.makeText(this@EditMedicineActivity, 
                                     "Лекарство обновлено", Toast.LENGTH_SHORT).show()
                                 
-                                // ✅ ДОБАВЛЕНО: Возвращаем результат в MainActivity для обновления списка
+                                //  ДОБАВЛЕНО: Возвращаем результат в MainActivity для обновления списка
                                 val resultIntent = Intent()
                                 resultIntent.putExtra("medicine_updated", true)
                                 resultIntent.putExtra("medicine_id", medicineId)
@@ -690,13 +727,14 @@ class EditMedicineActivity : AppCompatActivity() {
                                 finish()
                             } else {
                                 Toast.makeText(this@EditMedicineActivity, 
-                                    "Ошибка обновления", Toast.LENGTH_SHORT).show()
+                                    "Ошибка обновления лекарства", Toast.LENGTH_SHORT).show()
                             }
                         }
                     } catch (e: Exception) {
+                        com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Critical error during medicine update", e)
                         CoroutineScope(Dispatchers.Main).launch {
                             Toast.makeText(this@EditMedicineActivity, 
-                                "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                                "Критическая ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -710,6 +748,13 @@ class EditMedicineActivity : AppCompatActivity() {
         finish()
         return true
     }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        //  ДОБАВЛЕНО: Уведомляем сервис об окончании редактирования
+        com.medicalnotes.app.service.OverdueCheckService.setEditingActive(false)
+        com.medicalnotes.app.utils.LogCollector.i("EditMedicine", "onDestroy: редактирование завершено")
+    }
 
     override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
         menuInflater.inflate(R.menu.menu_edit_medicine, menu)
@@ -719,7 +764,7 @@ class EditMedicineActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                onBackPressed()
+                onBackPressedDispatcher.onBackPressed()
                 true
             }
             com.medicalnotes.app.R.id.action_save -> {
@@ -748,7 +793,7 @@ class EditMedicineActivity : AppCompatActivity() {
     private fun deleteMedicine() {
         viewModel.getMedicineById(medicineId) { medicine ->
             if (medicine != null) {
-                CoroutineScope(Dispatchers.IO).launch {
+                CoroutineScope(Dispatchers.IO + com.medicalnotes.app.utils.CrashReporter.getCoroutineExceptionHandler()).launch {
                     try {
                         val success = viewModel.deleteMedicine(medicine)
                         CoroutineScope(Dispatchers.Main).launch {
@@ -780,7 +825,7 @@ class EditMedicineActivity : AppCompatActivity() {
                     remainingQuantity = originalMedicine.quantity // Сбрасываем остаток к исходному количеству
                 )
                 
-                CoroutineScope(Dispatchers.IO).launch {
+                CoroutineScope(Dispatchers.IO + com.medicalnotes.app.utils.CrashReporter.getCoroutineExceptionHandler()).launch {
                     try {
                         val success = viewModel.addMedicine(duplicatedMedicine)
                         CoroutineScope(Dispatchers.Main).launch {

@@ -11,9 +11,14 @@ class DosageFrequencyAdapter : JsonSerializer<DosageFrequency>, JsonDeserializer
         typeOfSrc: Type?,
         context: JsonSerializationContext?
     ): JsonElement {
-        val enumString = src?.name ?: DosageFrequency.DAILY.name
-        android.util.Log.d("DosageFrequencyAdapter", "Serializing frequency: $src -> $enumString")
-        return JsonPrimitive(enumString)
+        return try {
+            val enumString = src?.name ?: DosageFrequency.DAILY.name
+            android.util.Log.d("DosageFrequencyAdapter", "Serializing frequency: $src -> $enumString")
+            JsonPrimitive(enumString)
+        } catch (e: Exception) {
+            android.util.Log.e("DosageFrequencyAdapter", "Error serializing frequency: $src", e)
+            JsonPrimitive(DosageFrequency.DAILY.name)
+        }
     }
     
     override fun deserialize(
@@ -26,6 +31,9 @@ class DosageFrequencyAdapter : JsonSerializer<DosageFrequency>, JsonDeserializer
             val parsedEnum = DosageFrequency.valueOf(enumString)
             android.util.Log.d("DosageFrequencyAdapter", "Deserializing frequency: $enumString -> $parsedEnum")
             parsedEnum
+        } catch (e: IllegalArgumentException) {
+            android.util.Log.e("DosageFrequencyAdapter", "Invalid frequency value: ${json?.asString}, using DAILY", e)
+            DosageFrequency.DAILY
         } catch (e: Exception) {
             android.util.Log.e("DosageFrequencyAdapter", "Error parsing frequency: ${json?.asString}", e)
             DosageFrequency.DAILY
