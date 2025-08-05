@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/notification_padding"
+    android:background="@color/notification_background_light">
+
+    <!-- Header with icon and title -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="@dimen/notification_spacing_medium">
+
+        <!-- Medicine icon with background -->
+        <FrameLayout
+            android:id="@+id/notification_icon_container"
+            android:layout_width="@dimen/notification_icon_background_size"
+            android:layout_height="@dimen/notification_icon_background_size"
+            android:layout_marginEnd="@dimen/notification_icon_margin"
+            android:background="@drawable/notification_icon_background">
+
+            <ImageView
+                android:id="@+id/notification_icon"
+                android:layout_width="@dimen/notification_icon_size"
+                android:layout_height="@dimen/notification_icon_size"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_pill"
+                android:tint="@color/white" />
+
+        </FrameLayout>
+
+        <!-- Title and status -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/notification_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/take_medicine"
+                android:textSize="@dimen/notification_text_title"
+                android:textStyle="bold"
+                android:textColor="@color/notification_text_primary_light"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginBottom="@dimen/notification_spacing_small" />
+
+            <TextView
+                android:id="@+id/notification_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/active"
+                android:textSize="@dimen/notification_text_caption"
+                android:textStyle="bold"
+                android:textColor="@color/notification_status_active"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Medicine card -->
+    <LinearLayout
+        android:id="@+id/notification_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/notification_card_background"
+        android:padding="@dimen/notification_card_padding"
+        android:layout_marginBottom="@dimen/notification_spacing_medium">
+
+        <!-- Medicine name -->
+        <TextView
+            android:id="@+id/medicine_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/medicine_name_placeholder"
+            android:textSize="@dimen/notification_text_body"
+            android:textStyle="normal"
+            android:textColor="@color/notification_text_primary_light"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:layout_marginBottom="@dimen/notification_spacing_small" />
+
+        <!-- Medicine details -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/notification_spacing_small">
+
+            <!-- Dosage -->
+            <TextView
+                android:id="@+id/medicine_dosage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/dosage_format"
+                android:textSize="@dimen/notification_text_caption"
+                android:textStyle="normal"
+                android:textColor="@color/notification_text_secondary_light"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Time -->
+            <TextView
+                android:id="@+id/medicine_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="08:00"
+                android:textSize="@dimen/notification_text_body"
+                android:textStyle="bold"
+                android:textColor="@color/notification_accent_primary"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+        <!-- Additional info (shown in expanded view) -->
+        <LinearLayout
+            android:id="@+id/additional_info_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/notification_divider_height"
+                android:background="@color/notification_divider_light"
+                android:layout_marginVertical="@dimen/notification_divider_margin" />
+
+            <!-- Remaining quantity -->
+            <TextView
+                android:id="@+id/medicine_remaining"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/remaining_format"
+                android:textSize="@dimen/notification_text_caption"
+                android:textStyle="normal"
+                android:textColor="@color/notification_text_secondary_light"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginBottom="@dimen/notification_spacing_small" />
+
+            <!-- Group info -->
+            <TextView
+                android:id="@+id/medicine_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/group_format"
+                android:textSize="@dimen/notification_text_caption"
+                android:textStyle="normal"
+                android:textColor="@color/notification_text_secondary_light"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Action buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Taken button -->
+        <Button
+            android:id="@+id/button_taken"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/notification_button_height"
+            android:layout_weight="1"
+            android:text="✅ Принял"
+            android:textSize="@dimen/notification_text_button"
+            android:textColor="@color/notification_button_success"
+            android:background="@drawable/notification_button_background"
+            android:layout_marginEnd="@dimen/notification_button_margin"
+            android:minWidth="@dimen/notification_button_min_width" />
+
+        <!-- Snooze button -->
+        <Button
+            android:id="@+id/button_snooze"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/notification_button_height"
+            android:layout_weight="1"
+            android:text="⏰ Отложить"
+            android:textSize="@dimen/notification_text_button"
+            android:textColor="@color/notification_button_warning"
+            android:background="@drawable/notification_button_background"
+            android:layout_marginEnd="@dimen/notification_button_margin"
+            android:minWidth="@dimen/notification_button_min_width" />
+
+        <!-- Skip button -->
+        <Button
+            android:id="@+id/button_skip"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/notification_button_height"
+            android:layout_weight="1"
+            android:text="⏭ Пропустить"
+            android:textSize="@dimen/notification_text_button"
+            android:textColor="@color/notification_button_secondary"
+            android:background="@drawable/notification_button_background"
+            android:minWidth="@dimen/notification_button_min_width" />
+
+    </LinearLayout>
+
+</LinearLayout> 

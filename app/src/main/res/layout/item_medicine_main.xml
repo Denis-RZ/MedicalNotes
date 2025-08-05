@@ -62,7 +62,7 @@
                     android:id="@+id/textMedicineName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Название лекарства"
+                    android:text="@string/medicine_name_placeholder"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/medicine_text_primary"
@@ -107,7 +107,7 @@
                     android:id="@+id/textStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="АКТИВНО"
+                    android:text="@string/active_status"
                     android:textSize="9sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"
@@ -150,7 +150,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Дозировка"
+                    android:text="@string/dosage_label"
                     android:textSize="11sp"
                     android:textColor="@color/medicine_text_secondary"
                     android:maxLines="2"
@@ -180,12 +180,88 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Осталось: 0 таблеток"
+                    android:text="@string/remaining_tablets_format"
                     android:textSize="11sp"
                     android:textColor="@color/medicine_text_secondary"
                     android:maxLines="1"
                     android:ellipsize="end"
                     tools:text="Осталось: 15 таблеток" />
+
+            </LinearLayout>
+
+            <!-- DEBUG: Групповая информация (только для отладки) -->
+            <LinearLayout
+                android:id="@+id/debugGroupInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/debug_info_background"
+                android:padding="8dp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🔍 DEBUG INFO"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/debug_text"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/debugGroupId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Group ID: null"
+                    android:textSize="9sp"
+                    android:textColor="@color/debug_text"
+                    android:layout_marginBottom="2dp" />
+
+                <TextView
+                    android:id="@+id/debugGroupName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Group Name: "
+                    android:textSize="9sp"
+                    android:textColor="@color/debug_text"
+                    android:layout_marginBottom="2dp" />
+
+                <TextView
+                    android:id="@+id/debugGroupOrder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Group Order: 0"
+                    android:textSize="9sp"
+                    android:textColor="@color/debug_text"
+                    android:layout_marginBottom="2dp" />
+
+                <TextView
+                    android:id="@+id/debugGroupStartDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Group Start: null"
+                    android:textSize="9sp"
+                    android:textColor="@color/debug_text"
+                    android:layout_marginBottom="2dp" />
+
+                <TextView
+                    android:id="@+id/debugGroupFrequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Group Freq: null"
+                    android:textSize="9sp"
+                    android:textColor="@color/debug_text"
+                    android:layout_marginBottom="2dp" />
+
+                <TextView
+                    android:id="@+id/debugIsValidGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Valid Group: false"
+                    android:textSize="9sp"
+                    android:textColor="@color/debug_text" />
 
             </LinearLayout>
 
@@ -196,7 +272,7 @@
             android:id="@+id/textMedicineNotes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Заметки"
+            android:text="@string/notes_label"
             android:textSize="10sp"
             android:textColor="@color/medicine_text_secondary"
             android:layout_marginBottom="12dp"
@@ -211,7 +287,7 @@
             android:id="@+id/textMissedStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ПРОСРОЧЕНО"
+            android:text="@string/overdue_status"
             android:textSize="9sp"
             android:textStyle="bold"
             android:textColor="@color/white"
@@ -229,7 +305,7 @@
             android:id="@+id/buttonTakeMedicine"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="ПРИНЯТЬ"
+            android:text="@string/take_action"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/overdue_red"
@@ -241,6 +317,8 @@
             app:elevation="6dp"
             android:background="@drawable/urgent_button_background"
             style="@style/Widget.Material3.Button" />
+
+
 
     </LinearLayout>
 

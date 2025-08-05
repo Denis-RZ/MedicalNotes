@@ -243,10 +243,24 @@ class NotificationService : Service() {
         try {
             android.util.Log.d("NotificationService", "Планирование всех уведомлений")
             
-            val activeMedicines = dataManager.getActiveMedicines()
-            android.util.Log.d("NotificationService", "Найдено активных лекарств: ${activeMedicines.size}")
+            // ИСПРАВЛЕНО: Используем ту же логику, что и "Лекарства на сегодня"
+            val allMedicines = dataManager.loadMedicines()
+            val today = java.time.LocalDate.now()
+            val todayMedicines = com.medicalnotes.app.utils.DosageCalculator.getActiveMedicinesForDate(allMedicines, today)
             
-            activeMedicines.forEach { medicine ->
+            android.util.Log.d("NotificationService", "Всего лекарств в базе: ${allMedicines.size}")
+            android.util.Log.d("NotificationService", "Лекарств на сегодня (для уведомлений): ${todayMedicines.size}")
+            
+            // Подробное логирование для отладки
+            todayMedicines.forEach { medicine ->
+                android.util.Log.d("NotificationService", "Планируем уведомление для: ${medicine.name}")
+                android.util.Log.d("NotificationService", "  - Время: ${medicine.time}")
+                android.util.Log.d("NotificationService", "  - Частота: ${medicine.frequency}")
+                android.util.Log.d("NotificationService", "  - Группа: ${medicine.groupName}")
+                android.util.Log.d("NotificationService", "  - Порядок в группе: ${medicine.groupOrder}")
+            }
+            
+            todayMedicines.forEach { medicine ->
                 scheduleMedicineAlarm(medicine)
             }
             
@@ -298,12 +312,17 @@ class NotificationService : Service() {
         try {
             android.util.Log.d("NotificationService", "=== ПРОВЕРКА И ВОССТАНОВЛЕНИЕ УВЕДОМЛЕНИЙ ===")
             
-            val activeMedicines = dataManager.getActiveMedicines()
-            android.util.Log.d("NotificationService", "Найдено активных лекарств: ${activeMedicines.size}")
+            // ИСПРАВЛЕНО: Используем ту же логику, что и "Лекарства на сегодня"
+            val allMedicines = dataManager.loadMedicines()
+            val today = java.time.LocalDate.now()
+            val todayMedicines = com.medicalnotes.app.utils.DosageCalculator.getActiveMedicinesForDate(allMedicines, today)
+            
+            android.util.Log.d("NotificationService", "Всего лекарств в базе: ${allMedicines.size}")
+            android.util.Log.d("NotificationService", "Лекарств на сегодня (для восстановления): ${todayMedicines.size}")
             
             var restoredCount = 0
             
-            activeMedicines.forEach { medicine ->
+            todayMedicines.forEach { medicine ->
                 // Проверяем, есть ли уже запланированное уведомление
                 val intent = Intent(this, MedicineAlarmReceiver::class.java).apply {
                     action = "com.medicalnotes.app.MEDICINE_REMINDER"

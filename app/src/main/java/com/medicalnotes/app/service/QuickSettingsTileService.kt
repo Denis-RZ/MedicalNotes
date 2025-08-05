@@ -46,8 +46,8 @@ class QuickSettingsTileService : TileService() {
     private fun updateTile() {
         qsTile?.apply {
             state = Tile.STATE_ACTIVE
-            label = "Медицинские заметки"
-            contentDescription = "Открыть приложение для управления лекарствами"
+            label = getString(com.medicalnotes.app.R.string.app_name)
+            contentDescription = getString(com.medicalnotes.app.R.string.quick_settings_tile_description)
             updateTile()
         }
     }

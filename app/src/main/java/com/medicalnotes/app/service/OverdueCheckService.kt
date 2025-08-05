@@ -361,67 +361,17 @@ class OverdueCheckService : Service() {
             // НЕ отключаем медиа, систему и звонки - оставляем для других приложений
             android.util.Log.d("OverdueCheckService", "✓ Медиа, система и звонки оставлены включенными")
             
-            //  УЛУЧШЕНО: Более агрессивная остановка вибрации
+            // ИСПРАВЛЕНО: Простая остановка вибрации без множественных попыток
             if (vibrator.hasVibrator()) {
                 vibrator.cancel()
-                android.util.Log.d("OverdueCheckService", "✓ Вибрация остановлена (первая попытка)")
-                
-                // Дополнительная остановка через небольшие интервалы
-                handler.postDelayed({
-                    try {
-                        vibrator.cancel()
-                        android.util.Log.d("OverdueCheckService", "✓ Вибрация остановлена (вторая попытка)")
-                    } catch (e: Exception) {
-                        android.util.Log.e("OverdueCheckService", "Ошибка второй остановки вибрации", e)
-                    }
-                }, 100)
-                
-                handler.postDelayed({
-                    try {
-                        vibrator.cancel()
-                        android.util.Log.d("OverdueCheckService", "✓ Вибрация остановлена (третья попытка)")
-                    } catch (e: Exception) {
-                        android.util.Log.e("OverdueCheckService", "Ошибка третьей остановки вибрации", e)
-                    }
-                }, 500)
-                
-                handler.postDelayed({
-                    try {
-                        vibrator.cancel()
-                        android.util.Log.d("OverdueCheckService", "✓ Вибрация остановлена (четвертая попытка)")
-                    } catch (e: Exception) {
-                        android.util.Log.e("OverdueCheckService", "Ошибка четвертой остановки вибрации", e)
-                    }
-                }, 1000)
+                android.util.Log.d("OverdueCheckService", "✓ Вибрация остановлена")
             }
             
             // Принудительно останавливаем все активные уведомления
             notificationManager.cancelAllNotifications()
             android.util.Log.d("OverdueCheckService", "✓ Все уведомления отменены")
             
-            //  ДОБАВЛЕНО: Принудительная остановка через AudioManager
-            try {
-                val originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
-                
-                // Временно отключаем звук
-                audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, 0)
-                
-                // Восстанавливаем через 2 секунды
-                handler.postDelayed({
-                    try {
-                        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, originalVolume, 0)
-                        android.util.Log.d("OverdueCheckService", "✓ Громкость восстановлена: $originalVolume")
-                    } catch (e: Exception) {
-                        android.util.Log.e("OverdueCheckService", "Ошибка восстановления громкости", e)
-                    }
-                }, 2000)
-                
-                android.util.Log.d("OverdueCheckService", "✓ Принудительная остановка через AudioManager выполнена")
-            } catch (e: Exception) {
-                android.util.Log.e("OverdueCheckService", "Ошибка AudioManager", e)
-            }
-            
-            android.util.Log.d("OverdueCheckService", " ЗВУК И ВИБРАЦИЯ ПОЛНОСТЬЮ ОТКЛЮЧЕНЫ")
+            android.util.Log.d("OverdueCheckService", " ЗВУК И ВИБРАЦИЯ ОТКЛЮЧЕНЫ")
             
         } catch (e: Exception) {
             android.util.Log.e("OverdueCheckService", "Ошибка отключения звука и вибрации", e)
@@ -512,21 +462,25 @@ class OverdueCheckService : Service() {
             val medicineNames = overdueMedicines.joinToString(", ") { it.name }
             val overdueCount = overdueMedicines.size
             
+            // ИСПРАВЛЕНО: Добавляем звук и более высокий приоритет
             val notification = NotificationCompat.Builder(this, CHANNEL_ID_OVERDUE)
-                .setContentTitle("Просроченные лекарства")
+                .setContentTitle("🚨 ПРОСРОЧЕННЫЕ ЛЕКАРСТВА!")
                 .setContentText("У вас $overdueCount просроченных лекарств")
                 .setStyle(NotificationCompat.BigTextStyle()
-                    .bigText("Просроченные лекарства: $medicineNames\n\nПожалуйста, примите их как можно скорее."))
+                    .bigText("🚨 ПРОСРОЧЕННЫЕ ЛЕКАРСТВА: $medicineNames\n\nПожалуйста, примите их как можно скорее!"))
                 .setSmallIcon(R.drawable.ic_medicine)
                 .setContentIntent(pendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_MAX) // ИСПРАВЛЕНО: Максимальный приоритет
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setAutoCancel(true)
                 .setOngoing(true)
+                .setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI) // ИСПРАВЛЕНО: Добавляем звук
+                .setVibrate(longArrayOf(0, 500, 200, 500, 200, 500)) // ИСПРАВЛЕНО: Добавляем вибрацию
+                .setLights(0xFF0000FF.toInt(), 3000, 3000) // ИСПРАВЛЕНО: Добавляем мигание
                 .build()
             
             notificationManager.notify(NOTIFICATION_ID_OVERDUE, notification)
-            android.util.Log.d("OverdueCheckService", "✓ Уведомление о просроченных лекарствах показано")
+            android.util.Log.d("OverdueCheckService", "✓ Уведомление о просроченных лекарствах показано с высоким приоритетом")
             
         } catch (e: Exception) {
             android.util.Log.e("OverdueCheckService", "Ошибка показа уведомления о просроченных лекарствах", e)

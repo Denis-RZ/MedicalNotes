@@ -12,7 +12,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Редактировать лекарство"
+            android:text="@string/edit_medicine_dialog_title"
             android:textSize="@dimen/text_size_large"
             android:textStyle="bold"
             android:gravity="center"
@@ -29,7 +29,7 @@
                 android:id="@+id/editTextName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Название лекарства"
+                android:hint="@string/medicine_name_hint"
                 android:inputType="text"
                 android:maxLines="1" />
 
@@ -46,7 +46,7 @@
                 android:id="@+id/editTextDosage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Дозировка"
+                android:hint="@string/dosage_hint"
                 android:inputType="text"
                 android:maxLines="1" />
 
@@ -56,7 +56,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Время приема:"
+            android:text="@string/intake_time_label"
             android:layout_marginBottom="@dimen/margin_small" />
 
         <com.google.android.material.button.MaterialButton
@@ -78,7 +78,7 @@
                 android:id="@+id/editTextQuantity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Осталось (шт.)"
+                android:hint="@string/remaining_pcs_hint"
                 android:inputType="number"
                 android:maxLines="1" />
 
@@ -95,7 +95,7 @@
                 android:id="@+id/editTextNotes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Заметки"
+                android:hint="@string/notes_hint"
                 android:inputType="textMultiLine"
                 android:maxLines="3" />
 
@@ -106,7 +106,7 @@
             android:id="@+id/switchActive"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Активно (уведомления включены)"
+            android:text="@string/active_notifications"
             android:layout_marginBottom="@dimen/margin_small" />
 
     </LinearLayout>

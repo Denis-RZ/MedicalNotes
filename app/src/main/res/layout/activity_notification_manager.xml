@@ -21,7 +21,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurface"
             app:contentInsetStartWithNavigation="0dp"
-            app:title="Менеджер уведомлений"
+            app:title="@string/notification_manager_title"
             app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             app:titleTextColor="?attr/colorOnSurface"
             app:navigationIcon="@drawable/ic_arrow_back"
@@ -40,7 +40,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Менеджер уведомлений"
+        android:text="@string/notification_manager_header"
         android:textSize="@dimen/text_size_extra_large"
         android:textStyle="bold"
         android:gravity="center"
@@ -57,7 +57,7 @@
             android:id="@+id/editTextSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Поиск лекарств..."
+            android:hint="@string/search_medicines_placeholder"
             android:inputType="text"
             android:maxLines="1" />
 
@@ -75,7 +75,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Все"
+            android:text="@string/all_medicines_filter"
             android:layout_marginEnd="@dimen/margin_small"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -84,7 +84,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Активные"
+            android:text="@string/active_medicines_filter_alt"
             android:layout_marginEnd="@dimen/margin_small"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -93,7 +93,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Неактивные"
+            android:text="@string/inactive_medicines_filter"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
     </LinearLayout>
@@ -103,7 +103,7 @@
         android:id="@+id/textStatistics"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Всего: 0 | Активных: 0 | Низкий запас: 0"
+        android:text="@string/medicines_summary"
         android:textSize="@dimen/text_size_small"
         android:gravity="center"
         android:layout_marginBottom="@dimen/margin_medium"
@@ -122,7 +122,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Тест уведомления"
+            android:text="@string/test_notification"
             android:layout_marginEnd="@dimen/margin_small"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -131,7 +131,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Отменить все"
+            android:text="@string/cancel_all"
             android:layout_marginEnd="@dimen/margin_small"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -140,7 +140,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Обновить"
+            android:text="@string/refresh_button"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
     </LinearLayout>
@@ -158,7 +158,7 @@
         android:id="@+id/textNoMedicines"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Лекарства не найдены"
+        android:text="@string/no_medicines_found"
         android:textSize="@dimen/text_size_large"
         android:gravity="center"
         android:visibility="gone"

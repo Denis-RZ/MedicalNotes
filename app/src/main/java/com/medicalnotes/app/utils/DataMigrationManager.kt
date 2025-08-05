@@ -95,7 +95,7 @@ class DataMigrationManager(private val context: Context) {
                 dosesPerDay = if (medicine.dosesPerDay == 0) 1 else medicine.dosesPerDay,
                 doseTimes = medicine.doseTimes.ifEmpty { emptyList() },
                 // Добавляем поле типа лекарства
-                medicineType = medicine.medicineType.ifEmpty { "Таблетки" }
+                medicineType = medicine.medicineType.ifEmpty { context.getString(com.medicalnotes.app.R.string.medicine_type_tablets) }
             )
         }
         

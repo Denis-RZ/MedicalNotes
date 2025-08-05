@@ -58,5 +58,26 @@ class MedicalNotesApplication : Application() {
         } catch (e: Exception) {
             android.util.Log.e("MedicalNotesApplication", "Ошибка проверки и восстановления уведомлений", e)
         }
+        
+        //  ДОБАВЛЕНО: Инициализация системы управления языками
+        try {
+            android.util.Log.d("MedicalNotesApplication", "Инициализация LanguageManager")
+            val currentLanguage = com.medicalnotes.app.utils.LanguageManager.getCurrentLanguage(this)
+            android.util.Log.d("MedicalNotesApplication", "✓ LanguageManager инициализирован, текущий язык: ${currentLanguage.displayName}")
+            
+            // Применяем язык к контексту приложения
+            val locale = java.util.Locale(currentLanguage.code)
+            java.util.Locale.setDefault(locale)
+            
+            val config = android.content.res.Configuration(resources.configuration)
+            config.setLocale(locale)
+            
+            @Suppress("DEPRECATION")
+            resources.updateConfiguration(config, resources.displayMetrics)
+            
+            android.util.Log.d("MedicalNotesApplication", "✓ Язык применен к контексту приложения: ${currentLanguage.displayName}")
+        } catch (e: Exception) {
+            android.util.Log.e("MedicalNotesApplication", "Ошибка инициализации LanguageManager", e)
+        }
     }
 } 

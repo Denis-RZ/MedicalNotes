@@ -1,409 +1,271 @@
-# 🏥 MedicalNotes - Приложение для напоминания о лекарствах
+# Medical Notes Android Application
 
-Мобильное приложение для Android, специально разработанное для пожилых людей с диабетом. Приложение помогает отслеживать прием лекарств, управлять запасами таблеток и настраивать интерфейс под индивидуальные потребности пользователя.
+## Project Overview
+This is a Kotlin-based Android application for managing medicine schedules and reminders. The app allows users to add medicines, set schedules, receive notifications, and track medicine intake.
 
-## 📋 Содержание
+## Project Structure
 
-- [Основные функции](#основные-функции)
-- [Технические характеристики](#технические-характеристики)
-- [Быстрый старт](#быстрый-старт)
-- [Установка и сборка](#установка-и-сборка)
-- [Система сборки](#система-сборки)
-- [Python скрипты для запуска](#python-скрипты-для-запуска)
-- [Использование](#использование)
-- [Особенности для пожилых пользователей](#особенности-для-пожилых-пользователей)
-- [Разрешения](#разрешения)
-- [Структура проекта](#структура-проекта)
-- [Устранение проблем](#устранение-проблем)
-- [Поддержка](#поддержка)
+### Core Components
+- **MainActivity.kt** - Main activity displaying medicine list and handling medicine actions
+- **EditMedicineActivity.kt** - Activity for editing existing medicine records
+- **MainViewModel.kt** - ViewModel providing data to MainActivity and handling business logic
+- **MedicineRepository.kt** - Repository layer for data operations
+- **DataManager.kt** - Manages loading, saving, adding, updating, and deleting medicine data to/from JSON files
+- **DosageCalculator.kt** - Calculates dosage and manages medicine status
+- **NotificationManager.kt** - Centralized class for managing notifications
+- **OverdueCheckService.kt** - Background service for checking overdue medicines
 
-## 🎯 Основные функции
+### Data Models
+- **Medicine.kt** - Data structure for medicine records
+- **DosageFrequency** - Enum for medicine frequency (DAILY, EVERY_OTHER_DAY, etc.)
+- **MedicineStatus** - Enum for medicine status (NOT_TODAY, UPCOMING, OVERDUE, TAKEN_TODAY)
 
-### Напоминания о лекарствах
-- ✅ Уведомления о времени приема лекарств
-- ✅ Отслеживание количества оставшихся таблеток
-- ✅ Специальные напоминания для инсулина
-- ✅ Запись истории приемов
-- ✅ Вибрация и звуковые сигналы
-- ✅ Повторные уведомления при пропуске
+### Adapters
+- **MainMedicineAdapter.kt** - Adapter for "Today's Medicines" screen
+- **MedicineGridAdapter.kt** - Adapter for medicine grid display
 
-### Настраиваемые кнопки
-- ✅ Изменение размера кнопок (маленькие/средние/большие/очень большие)
-- ✅ Выбор цвета кнопок (стандартные цвета и высокий контраст)
-- ✅ Настройка действий для каждой кнопки
-- ✅ Адаптация под индивидуальные потребности
+### Localization
+- **strings.xml** (values/) - English string resources
+- **strings.xml** (values-ru/) - Russian string resources
+- **LanguageChangeManager.kt** - Manages language switching
 
-### Специальные функции для диабетиков
-- ✅ Отдельные напоминания для инсулина
-- ✅ Отслеживание уровня сахара в крови
-- ✅ Экстренные контакты
-- ✅ Быстрые действия через настраиваемые кнопки
+## Current Critical Issues
 
-### Простой интерфейс
-- ✅ Большие кнопки и текст для удобства пожилых пользователей
-- ✅ Высокий контраст для лучшей видимости
-- ✅ Простая навигация
-- ✅ Минимальное количество действий для выполнения задач
+### 1. Medicine Not Appearing in "Today's Medicines" After Editing
+**Problem**: When a medicine is edited, especially when changing frequency to "every other day" (через день), it disappears from the "Today's Medicines" screen even though it should be displayed.
 
-## 🔧 Технические характеристики
+**User's Specific Issue**: 
+- Medicine appears correctly when frequency is "daily" (каждый день)
+- Medicine disappears when frequency is changed to "every other day" (через день)
+- This happens after editing, not after initial creation
 
-- **Минимальная версия Android:** API 21 (Android 5.0)
-- **Целевая версия Android:** API 34 (Android 14)
-- **Язык программирования:** Kotlin
-- **Архитектура:** MVVM с LiveData
-- **Хранение данных:** JSON файлы
-- **Уведомления:** Полная поддержка вибрации и звука
-- **Интерфейс:** Адаптивный дизайн для пожилых пользователей
+**Root Cause**: The `startDate` calculation in `DosageCalculator.kt` was using incorrect integer division:
+```kotlin
+// OLD (INCORRECT)
+val startDate = LocalDate.ofEpochDay(medicine.startDate / (24 * 60 * 60 * 1000))
 
-## 🚀 Быстрый старт
+// NEW (CORRECT)
+val startDate = java.time.Instant.ofEpochMilli(medicine.startDate)
+    .atZone(java.time.ZoneId.systemDefault())
+    .toLocalDate()
+```
 
-### Сборка APK за 3 шага
+**Status**: ✅ **FIXED** - The fix has been applied and tested. Both `DosageCalculatorDebugTest.kt` and `EveryOtherDayProblemTest.kt` pass successfully.
 
-1. **Откройте проект**
-   - Запустите Android Studio
-   - Выберите "Open an existing project"
-   - Найдите папку `MedicalNotes` и откройте
+**What to Test**: 
+1. Create a medicine with "daily" frequency - should appear in "Today's Medicines"
+2. Edit the medicine and change frequency to "every other day" - should still appear in "Today's Medicines"
+3. Check logs to ensure `MainViewModel.todayMedicines.value` returns the correct number of medicines
 
-2. **Дождитесь синхронизации**
-   - Android Studio автоматически синхронизирует Gradle
-   - Дождитесь завершения (индикатор внизу)
+### 2. Overdue Notifications Not Appearing on Top
+**Problem**: Overdue notifications are not appearing on top of everything when the application is closed or in the background.
 
-3. **Соберите APK**
-   - **Build** → **Build Bundle(s) / APK(s)** → **Build APK(s)**
-   - APK будет в: `app/build/outputs/apk/debug/app-debug.apk`
+**User's Issue**: Notifications don't show up when app is in background or closed, even though overdue medicines are detected.
 
-### Установка на устройство
+**Status**: 🔄 **PENDING** - Needs investigation and fix.
 
-1. Скопируйте APK на Android устройство
-2. Включите "Установка из неизвестных источников"
-3. Откройте APK и установите
+**What to Test**:
+1. Set a medicine time to a few minutes in the future
+2. Close the app completely
+3. Wait for the time to pass
+4. Check if notification appears on top of other apps
+5. Check if notification has proper priority (PRIORITY_MAX)
 
-## 🛠️ Установка и сборка
+### 3. Vibration Cannot Be Stopped
+**Problem**: Vibration cannot be stopped by any means, including the "stop all vibration" button in settings.
 
-### Требования
-- Android Studio Arctic Fox или новее
-- Android SDK API 21+ (Android 5.0)
-- JDK 8 или новее
-- Python 3.7+ (для скриптов автоматизации)
+**User's Issue**: When vibration starts (from notifications), it cannot be stopped even by pressing the "stop all vibration" button in app settings.
 
-### Шаги установки
-1. Откройте проект в Android Studio
-2. Синхронизируйте Gradle файлы (File → Sync Project with Gradle Files)
-3. Подключите Android устройство или запустите эмулятор
-4. Нажмите "Run" (зеленая кнопка) для сборки и установки приложения
+**Status**: 🔄 **PENDING** - Needs investigation and fix.
 
-### Сборка из командной строки
+**What to Test**:
+1. Create a medicine with time in the future
+2. Wait for notification with vibration
+3. Try to stop vibration using the "stop all vibration" button in settings
+4. Check if vibration continues despite the button press
+5. Check if `VibratorManager.cancel()` is being called properly
+
+### 4. Double Sound Signals from Notifications
+**Problem**: Notifications are producing double sound signals.
+
+**User's Issue**: When notifications appear, the sound plays twice instead of once.
+
+**Status**: 🔄 **PENDING** - Needs investigation and fix.
+
+**What to Test**:
+1. Create a medicine with time in the future
+2. Wait for notification to appear
+3. Listen for sound - should play only once
+4. Check if `NotificationManager.showOverdueMedicineNotification()` is called multiple times
+5. Check if `MainActivity` is also creating notifications (double creation)
+
+### 5. "Take Medicine" Button Issues
+**Problem**: 
+- When the "Take Medicine" button is pressed, the medicine record does not disappear from the "Today's Medicines" screen, although the remaining quantity decreases.
+- When editing, the "Taken" button remains disabled even if the time has not passed.
+
+**User's Issue**: 
+- Medicine card should disappear from "Today's Medicines" after pressing "Take Medicine" button
+- "Take Medicine" button should be enabled/disabled based on time and status
+- Button text should be localized
+
+**Status**: 🔄 **PARTIALLY FIXED** - The medicine disappearing logic has been fixed, but button state issues remain.
+
+**What to Test**:
+1. Press "Take Medicine" button - medicine should disappear from "Today's Medicines"
+2. Edit a medicine - "Take Medicine" button should be enabled if time hasn't passed
+3. Check if button text is localized (English/Russian)
+4. Verify `medicine.takenToday` is set to true after taking medicine
+
+## Recent Fixes Applied
+
+### 1. Fixed startDate Calculation in DosageCalculator.kt
+```kotlin
+// Before (incorrect)
+val startDate = LocalDate.ofEpochDay(medicine.startDate / (24 * 60 * 60 * 1000))
+
+// After (correct)
+val startDate = java.time.Instant.ofEpochMilli(medicine.startDate)
+    .atZone(java.time.ZoneId.systemDefault())
+    .toLocalDate()
+```
+
+### 2. Fixed Medicine Disappearing After "Take Medicine"
+Changed filtering logic in `DosageCalculator.getActiveMedicinesForDate()`:
+```kotlin
+// Before
+.filter { medicine -> medicine.lastTakenDate != date }
+
+// After
+.filter { medicine -> !medicine.takenToday }
+```
+
+### 3. Fixed EditMedicineActivity startDate Reset
+Ensured `startDate` is always reset when frequency changes:
+```kotlin
+if (originalMedicine.frequency != selectedFrequency) {
+    val currentTime = System.currentTimeMillis()
+    medicine.startDate = currentTime
+    // Reset other fields...
+}
+```
+
+### 4. Fixed MainViewModel LiveData Updates
+Updated to use proper coroutine dispatchers and LiveData updates:
+```kotlin
+viewModelScope.launch(Dispatchers.IO) {
+    val todayMedicines = DosageCalculator.getActiveMedicinesForDate(allMedicines, today)
+    _todayMedicines.postValue(todayMedicines)
+}
+```
+
+## Testing
+
+### Test Files Created
+- **EveryOtherDayProblemTest.kt** - Tests the specific "every other day" frequency issue
+- **DosageCalculatorDebugTest.kt** - Tests startDate calculation and EVERY_OTHER_DAY logic
+
+### Test Results
+- ✅ **EveryOtherDayProblemTest.kt** - PASSED - Confirms the fix works for "every other day" frequency
+- ✅ **DosageCalculatorDebugTest.kt** - PASSED - Confirms startDate calculation is correct
+
+### Running Tests
 ```bash
-# Для Windows
-gradlew.bat assembleDebug
+# Run all tests
+.\gradlew app:testDebugUnitTest
 
-# Для Linux/Mac
-./gradlew assembleDebug
+# Run specific test
+.\gradlew app:testDebugUnitTest --tests "com.medicalnotes.app.utils.EveryOtherDayProblemTest"
+
+# Run debug test
+.\gradlew app:testDebugUnitTest --tests "com.medicalnotes.app.utils.DosageCalculatorDebugTest"
 ```
 
-### Установка APK
-После сборки APK файл будет находиться в:
-```
-app/build/outputs/apk/debug/app-debug.apk
-```
+### What Tests Verify
+1. **EveryOtherDayProblemTest.kt**:
+   - Creates medicine with "every other day" frequency
+   - Verifies it appears in "Today's Medicines" when startDate = today
+   - Tests the full chain: DataManager → MedicineRepository → MainViewModel
+   - Compares behavior with "daily" frequency
 
-## 🔨 Система сборки
+2. **DosageCalculatorDebugTest.kt**:
+   - Tests startDate conversion from milliseconds to LocalDate
+   - Verifies "every other day" logic works correctly
+   - Tests medicine should be taken on start date, not next day, then every other day
 
-### Доступные скрипты сборки
+## Build Commands
 
-#### 1. **build.bat** - Основной скрипт сборки (с цветами)
+### Compile APK
 ```bash
-build.bat
-```
-**Возможности:**
-- ✅ Debug APK (быстрая сборка)
-- ✅ Release APK (продакшн)
-- ✅ Clean проект (очистка)
-- ✅ Проверка версии Gradle
-- ✅ Исправление проблем Gradle
-- ✅ Цветной вывод и UTF-8 кодировка
-
-#### 2. **build.ps1** - PowerShell версия
-```powershell
-.\build.ps1
-# или с параметрами:
-.\build.ps1 debug
-.\build.ps1 release
-.\build.ps1 clean
-.\build.ps1 version
-.\build.ps1 fix
-.\build.ps1 help
-```
-
-#### 3. **build_fix.bat** - Скрипт исправления проблем
-```bash
-build_fix.bat
-```
-**Возможности:**
-- ✅ Очистка кэша Gradle
-- ✅ Пересоздание Gradle wrapper
-- ✅ Исправление проблем с кириллицей
-- ✅ Проверка Java версии
-- ✅ Полная диагностика
-
-### Настройки Gradle
-```properties
-# Память и производительность
-org.gradle.jvmargs=-Xmx4096m -XX:MaxPermSize=1024m -Dfile.encoding=UTF-8
-org.gradle.parallel=true
-org.gradle.caching=true
-org.gradle.configureondemand=true
-
-# Стабильность
-org.gradle.daemon=false
-
-# Локальный кэш
-org.gradle.cache.dir=./.gradle-cache
-
-# Путь без кириллицы
-org.gradle.user.home=C:/gradle_home_clean
-
-# Оптимизации
-org.gradle.workers.max=8
-org.gradle.unsafe.configuration-cache=true
-```
-
-## 🐍 Python скрипты для запуска
-
-### Доступные скрипты
-
-#### 1. **launch_medicalnotes.py** - Универсальный запуск
-```bash
-python launch_medicalnotes.py
-```
-**Функции:**
-- ✅ Автоматическая сборка проекта
-- ✅ Поиск подключенных устройств
-- ✅ Установка и запуск приложения
-- ✅ Просмотр логов приложения
-
-#### 2. **run_app.py** - Только установка и запуск
-```bash
-python run_app.py
-```
-**Функции:**
-- ✅ Поиск подключенных устройств
-- ✅ Установка APK файла
-- ✅ Запуск приложения
-- ✅ Просмотр логов
-
-#### 3. **start_emulator.py** - Запуск эмулятора
-```bash
-python start_emulator.py
-```
-**Функции:**
-- ✅ Поиск Android SDK
-- ✅ Список доступных AVD
-- ✅ Создание нового AVD при необходимости
-- ✅ Запуск эмулятора
-
-### Способы запуска
-
-#### Способ 1: Полный цикл (рекомендуется)
-```bash
-python launch_medicalnotes.py
-```
-
-#### Способ 2: Только эмулятор + приложение
-```bash
-# Шаг 1: Запуск эмулятора
-python start_emulator.py
-
-# Шаг 2: После запуска эмулятора
-python run_app.py
-```
-
-#### Способ 3: Ручная сборка + запуск
-```bash
-# Шаг 1: Сборка проекта
 .\gradlew.bat assembleDebug
-
-# Шаг 2: Запуск приложения
-python run_app.py
 ```
 
-## 📱 Использование
-
-### Добавление лекарства
-1. Нажмите кнопку "Добавить лекарство"
-2. Введите название, дозировку и количество таблеток
-3. Выберите время приема
-4. При необходимости отметьте "Это инсулин"
-5. Добавьте заметки и сохраните
-
-### Настройка кнопок
-1. Перейдите в "Настройки" → "Настроить кнопки"
-2. Выберите размер кнопок
-3. Выберите цвет кнопок
-4. Настройте дополнительные параметры
-5. Сохраните настройки
-
-### Отметка приема лекарства
-1. На главном экране нажмите кнопку "Принял" рядом с лекарством
-2. Или используйте настраиваемую кнопку "Принял лекарство"
-3. Количество оставшихся таблеток автоматически уменьшится
-
-### Настройки вибрации и звука
-1. Перейдите в "Настройки"
-2. Включите/выключите вибрацию и звук
-3. Настройки сохраняются автоматически
-
-## 👴 Особенности для пожилых пользователей
-
-- **Большие элементы интерфейса:** Кнопки и текст увеличенного размера
-- **Высокий контраст:** Возможность включить черно-желтую схему
-- **Простая навигация:** Минимальное количество экранов и действий
-- **Настраиваемые кнопки:** Возможность адаптировать интерфейс под себя
-- **Голосовые подсказки:** Поддержка TalkBack для незрячих пользователей
-- **Усиленные уведомления:** Вибрация и звук для привлечения внимания
-
-## 🔐 Разрешения
-
-Приложение запрашивает следующие разрешения:
-- `SCHEDULE_EXACT_ALARM` - для точных уведомлений о лекарствах
-- `POST_NOTIFICATIONS` - для отправки уведомлений
-- `VIBRATE` - для вибрации при уведомлениях
-- `RECEIVE_BOOT_COMPLETED` - для автозапуска после перезагрузки
-
-## 📁 Структура проекта
-
-```
-MedicalNotes/
-├── app/
-│   ├── src/main/
-│   │   ├── java/com/medicalnotes/app/
-│   │   │   ├── activities/          # Активности приложения
-│   │   │   ├── adapters/            # Адаптеры для списков
-│   │   │   ├── models/              # Модели данных
-│   │   │   ├── repository/          # Репозитории для работы с данными
-│   │   │   ├── utils/               # Утилиты и помощники
-│   │   │   ├── viewmodels/          # ViewModels
-│   │   │   ├── services/            # Сервисы
-│   │   │   └── receiver/            # Ресиверы уведомлений
-│   │   ├── res/
-│   │   │   ├── layout/              # Layout файлы
-│   │   │   ├── values/              # Ресурсы (строки, цвета, размеры)
-│   │   │   └── drawable/            # Графические ресурсы
-│   │   └── AndroidManifest.xml
-│   └── build.gradle
-├── build.gradle
-├── settings.gradle
-├── build.bat                        # Скрипт сборки
-├── build.ps1                        # PowerShell скрипт сборки
-├── launch_medicalnotes.py           # Python скрипт запуска
-├── run_app.py                       # Python скрипт установки
-└── start_emulator.py                # Python скрипт эмулятора
-```
-
-## 🚨 Устранение проблем
-
-### Проблемы сборки
-
-#### Проблема: Кириллица в пути пользователя
-**Ошибка:** `Could not create parent directory for lock file C:\Users\имя\.gradle`
-
-**Решение:**
-1. Запустите `build_fix.bat` → выберите "3"
-2. Или запустите `py fix_gradle_path.py`
-3. Или вручную в Android Studio: Settings → Gradle → Gradle user home: `C:\gradle_home_clean`
-
-#### Проблема: Поврежденный кэш
-**Ошибка:** `CorruptedCacheException` или `Failed to create Jar file`
-
-**Решение:**
-1. Запустите `build_fix.bat` → выберите "1" (очистка кэша)
-2. Или запустите `py build_clean.py`
-
-#### Проблема: Недостаточно памяти
-**Решение:**
-1. Увеличьте память в gradle.properties: `org.gradle.jvmargs=-Xmx8192m`
-2. Закройте другие приложения
-3. Используйте `build_simple.bat` для экономии ресурсов
-
-### Проблемы запуска
-
-#### Проблема: ADB не найден
-**Решение:**
-1. Установите Android Studio
-2. Добавьте platform-tools в PATH
-3. Или укажите полный путь к adb.exe
-
-#### Проблема: Нет подключенных устройств
-**Решение:**
-1. Подключите устройство по USB
-2. Включите режим разработчика
-3. Включите отладку по USB
-4. Или запустите эмулятор: `python start_emulator.py`
-
-#### Проблема: Ошибка сборки
-**Решение:**
-1. Проверьте Java версию (нужна Java 8+)
-2. Проверьте Android SDK
-3. Попробуйте собрать вручную: `.\gradlew.bat assembleDebug`
-
-### Общие проблемы
-
-#### Gradle sync failed
-**Решение:** Проверьте интернет соединение
-
-#### SDK not found
-**Решение:** Установите Android SDK API 21+
-
-#### Build failed
-**Решение:** Build → Clean Project
-
-## 📊 Логирование
-
-### Просмотр логов приложения:
+### Clean and Rebuild
 ```bash
-# Автоматически предлагается после запуска
-# Или вручную:
-adb logcat -s MedicalNotes:* MainActivity:* NotificationManager:*
+.\gradlew clean
+.\gradlew.bat assembleDebug
 ```
 
-### Фильтры логов:
-- `MedicalNotes:*` - все логи приложения
-- `MainActivity:*` - логи главной активности
-- `NotificationManager:*` - логи уведомлений
+## User Preferences (from memory)
+- Prefers to build only the main project, not tests
+- Prefers using `.\gradlew.bat assembleDebug` for compilation
+- Prefers tests to be run before compiling to avoid multiple installations
+- Prefers English commit messages
+- Prefers build scripts without pause prompts
+- Prefers console logs in English
+- Prefers storing data in XML files instead of databases
+- Prefers full text labels instead of icons in UI
 
-## 📞 Поддержка
+## Current Status
+The main issue with medicines not appearing after editing (especially with "every other day" frequency) has been **RESOLVED**. The critical `startDate` calculation bug has been fixed and tested.
 
-### Если ничего не помогает:
-1. Удалите папку `.gradle` в корне проекта
-2. Удалите папку `app/build`
-3. Перезапустите Android Studio
-4. Выполните Gradle sync
-5. Попробуйте сборку снова
+## User's Latest Feedback
+- **Issue #1**: "Medicine not appearing after editing" - ✅ **FIXED** (confirmed by tests)
+- **Issue #2**: "Overdue notifications not appearing on top" - 🔄 **PENDING**
+- **Issue #3**: "Vibration cannot be stopped" - 🔄 **PENDING** 
+- **Issue #4**: "Double sound signals" - 🔄 **PENDING**
+- **Issue #5**: "Take Medicine button issues" - 🔄 **PARTIALLY FIXED**
 
-### Логи и отладка:
-- Gradle логи: `gradlew.bat assembleDebug --info`
-- Подробные логи: `gradlew.bat assembleDebug --debug`
-- Очистка и сборка: `gradlew.bat clean assembleDebug`
+## Next Steps for New Developer
+1. **First Priority**: Verify the "every other day" fix works in real app
+   - Create medicine with "daily" frequency → should appear in "Today's Medicines"
+   - Edit medicine → change to "every other day" → should still appear in "Today's Medicines"
+   - Check logs: `MainViewModel.todayMedicines.value` should return correct number
 
-### Дополнительные ресурсы:
-- Проверьте логи ошибок в Android Studio
-- Используйте скрипты диагностики: `build_fix.bat` → "5"
-- Обратитесь к отчетам об исправлениях в проекте
+2. **Second Priority**: Address remaining issues in order:
+   - Overdue notifications not appearing on top
+   - Vibration cannot be stopped  
+   - Double sound signals from notifications
+   - "Take Medicine" button state issues
 
-## 📄 Лицензия
+3. **Always**: Run tests before compilation to avoid multiple installations
+4. **Always**: Check logs to ensure fixes are working as expected
 
-Этот проект создан в образовательных целях.
+## Key Files to Focus On
+- `app/src/main/java/com/medicalnotes/app/utils/DosageCalculator.kt` - Core logic for medicine scheduling
+- `app/src/main/java/com/medicalnotes/app/MainActivity.kt` - Main UI and medicine actions
+- `app/src/main/java/com/medicalnotes/app/service/OverdueCheckService.kt` - Notification service
+- `app/src/main/java/com/medicalnotes/app/utils/NotificationManager.kt` - Notification management
 
-## 🎉 Статус проекта
+## Important Notes
+- The app uses JSON files for data storage (not database)
+- All UI text should be localized (English/Russian)
+- The app has extensive logging for debugging
+- Tests should be run before compilation to avoid multiple installations
+- The user is very particular about testing and verification before releases
 
-**Статус: 🟢 ГОТОВ К ИСПОЛЬЗОВАНИЮ**
+## Critical Debugging Information
+- **Log Tag**: Look for logs with "DosageCalculator", "MainViewModel", "MainActivity"
+- **Key Log Messages**: 
+  - "=== ОБСЕРВЕР ЛЕКАРСТВ НА СЕГОДНЯ ===" - Today's medicines observer
+  - "Получено лекарств из ViewModel: X" - Number of medicines from ViewModel
+  - "ПРОВЕРКА: [Medicine Name] - Статус: [Status]" - Medicine status check
+- **Expected Behavior**: When medicine has "every other day" frequency and startDate = today, it should appear in "Today's Medicines"
+- **Test Environment**: Robolectric tests pass, but real app behavior needs verification
 
-- ✅ Все основные функции работают
-- ✅ Система сборки настроена
-- ✅ Python скрипты для автоматизации
-- ✅ Полная поддержка вибрации и звука
-- ✅ Адаптивный интерфейс для пожилых пользователей
-
----
-
-**Удачной разработки! 🚀** 
+## User Communication Style
+- User prefers detailed testing before compilation
+- User provides extensive logs for debugging
+- User is frustrated with repeated issues and wants thorough verification
+- User speaks Russian but prefers English in code and logs
+- User wants concrete test steps and verification methods 

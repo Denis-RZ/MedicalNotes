@@ -57,7 +57,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Название лекарства"
+                    android:text="@string/medicine_name_placeholder"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/medicine_text_primary"
@@ -85,7 +85,7 @@
                 android:id="@+id/textMedicineDosage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Дозировка"
+                android:text="@string/dosage_label"
                 android:textSize="12sp"
                 android:textColor="@color/medicine_text_secondary"
                 android:maxLines="1"
@@ -98,7 +98,7 @@
                 android:id="@+id/textMedicineQuantity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Осталось: 0 шт"
+                android:text="@string/remaining_pcs_format"
                 android:textSize="11sp"
                 android:textColor="@color/medicine_text_secondary"
                 android:maxLines="1"
@@ -119,7 +119,7 @@
                 android:id="@+id/textStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="АКТИВНО"
+                android:text="@string/active_status"
                 android:textSize="9sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
@@ -135,7 +135,7 @@
                 android:id="@+id/textMissedStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ПРОПУЩЕНО"
+                android:text="@string/missed_status_short"
                 android:textSize="9sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
@@ -156,7 +156,7 @@
             android:layout_marginStart="8dp"
             android:src="@drawable/ic_medicine"
             app:tint="@color/medicine_accent"
-            android:contentDescription="Тип лекарства" />
+                            android:contentDescription="@string/medicine_type" />
 
         <!-- Статус принятия -->
         <ImageView
@@ -167,7 +167,7 @@
             android:src="@drawable/ic_check"
             app:tint="@color/medicine_success"
             android:visibility="gone"
-            android:contentDescription="Лекарство принято"
+                            android:contentDescription="@string/medicine_taken"
             tools:visibility="visible" />
 
     </LinearLayout>

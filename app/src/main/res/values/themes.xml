@@ -189,4 +189,61 @@
         <item name="android:textSize">18sp</item>
         <item name="android:buttonStyle">@style/Widget.MedicalNotes.Button</item>
     </style>
+
+    <!-- Notification Text Styles -->
+    <style name="NotificationTextTitle">
+        <item name="android:textSize">@dimen/notification_text_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/notification_text_primary_light</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    
+    <style name="NotificationTextBody">
+        <item name="android:textSize">@dimen/notification_text_body</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/notification_text_primary_light</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    
+    <style name="NotificationTextCaption">
+        <item name="android:textSize">@dimen/notification_text_caption</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/notification_text_secondary_light</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    
+    <style name="NotificationTextButton">
+        <item name="android:textSize">@dimen/notification_text_button</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/notification_button_primary</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    
+    <style name="NotificationTextStatus">
+        <item name="android:textSize">@dimen/notification_text_caption</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/notification_status_active</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    
+    <style name="NotificationTextStatusOverdue">
+        <item name="android:textSize">@dimen/notification_text_caption</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/notification_status_overdue</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    
+    <style name="NotificationTextTime">
+        <item name="android:textSize">@dimen/notification_text_body</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/notification_accent_primary</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
 </resources> 

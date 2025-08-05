@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.medicalnotes.app.databinding.ActivityEditMedicineBinding
 import com.medicalnotes.app.models.DosageFrequency
 import com.medicalnotes.app.models.DosageTime
 import com.medicalnotes.app.models.Medicine
+import com.medicalnotes.app.models.GroupMetadata
 import com.medicalnotes.app.service.NotificationService
 import com.medicalnotes.app.utils.CustomTimePickerDialog
 import com.medicalnotes.app.viewmodels.AddMedicineViewModel
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-class EditMedicineActivity : AppCompatActivity() {
+class EditMedicineActivity : BaseActivity() {
     
     private lateinit var binding: ActivityEditMedicineBinding
     private lateinit var viewModel: AddMedicineViewModel
@@ -30,7 +30,7 @@ class EditMedicineActivity : AppCompatActivity() {
     // Переменные для хранения данных
     private var selectedTime: LocalTime? = null
     private var selectedFrequency: DosageFrequency = DosageFrequency.DAILY
-    private var selectedMedicineType: String = "Таблетки"
+    private var selectedMedicineType: String = ""
     private val selectedDays = mutableSetOf<Int>()
     private var allGroups = mutableListOf<String>() // Добавляем список всех групп
     
@@ -97,9 +97,10 @@ class EditMedicineActivity : AppCompatActivity() {
     }
     
     private fun setupToolbar() {
+        // Настройка toolbar
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = getString(R.string.edit_medicine_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Редактировать лекарство"
         
         binding.toolbar.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
@@ -165,25 +166,25 @@ class EditMedicineActivity : AppCompatActivity() {
     
     private fun setupMedicineTypeField() {
         val medicineTypes = listOf(
-            "Таблетки",
-            "Капсулы", 
-            "Уколы (инъекции)",
-            "Оземпик",
-            "Мунджаро",
-            "Инсулин",
-            "Капли",
-            "Сироп",
-            "Ингаляции",
-            "Мази",
-            "Гели",
-            "Кремы",
-            "Свечи",
-            "Спреи",
-            "Аэрозоли",
-            "Порошки",
-            "Суспензии",
-            "Эмульсии",
-            "Другое"
+            getString(com.medicalnotes.app.R.string.medicine_type_tablets),
+            getString(com.medicalnotes.app.R.string.medicine_type_capsules), 
+            getString(com.medicalnotes.app.R.string.medicine_type_injections),
+            getString(com.medicalnotes.app.R.string.medicine_type_ozempic),
+            getString(com.medicalnotes.app.R.string.medicine_type_mounjaro),
+            getString(com.medicalnotes.app.R.string.medicine_type_insulin),
+            getString(com.medicalnotes.app.R.string.medicine_type_drops),
+            getString(com.medicalnotes.app.R.string.medicine_type_syrup),
+            getString(com.medicalnotes.app.R.string.medicine_type_inhalations),
+            getString(com.medicalnotes.app.R.string.medicine_type_ointments),
+            getString(com.medicalnotes.app.R.string.medicine_type_gels),
+            getString(com.medicalnotes.app.R.string.medicine_type_creams),
+            getString(com.medicalnotes.app.R.string.medicine_type_suppositories),
+            getString(com.medicalnotes.app.R.string.medicine_type_sprays),
+            getString(com.medicalnotes.app.R.string.medicine_type_aerosols),
+            getString(com.medicalnotes.app.R.string.medicine_type_powders),
+            getString(com.medicalnotes.app.R.string.medicine_type_suspensions),
+            getString(com.medicalnotes.app.R.string.medicine_type_emulsions),
+            getString(com.medicalnotes.app.R.string.medicine_type_other)
         )
         
         val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, medicineTypes)
@@ -198,9 +199,9 @@ class EditMedicineActivity : AppCompatActivity() {
             com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Medicine type selected: $selectedMedicineType")
             
             // Автоматически отмечаем чекбокс инсулина для соответствующих типов
-            binding.checkBoxInsulin.isChecked = selectedMedicineType == "Инсулин" || 
-                                               selectedMedicineType == "Оземпик" || 
-                                               selectedMedicineType == "Мунджаро"
+            binding.checkBoxInsulin.isChecked = selectedMedicineType == getString(com.medicalnotes.app.R.string.medicine_type_insulin) || 
+                                               selectedMedicineType == getString(com.medicalnotes.app.R.string.medicine_type_ozempic) || 
+                                               selectedMedicineType == getString(com.medicalnotes.app.R.string.medicine_type_mounjaro)
             
             com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Insulin checkbox set to: ${binding.checkBoxInsulin.isChecked}")
         }
@@ -329,6 +330,9 @@ class EditMedicineActivity : AppCompatActivity() {
             updateTimeDisplay()
             updateFrequencyDisplay()
             
+            // ИСПРАВЛЕНО: Обновляем выпадающий список типов лекарств для правильной локализации
+            updateMedicineTypeDropdown()
+            
             //  ИСПРАВЛЕНО: Правильно устанавливаем тип лекарства
             binding.autoCompleteMedicineType.setText(selectedMedicineType, false)
             com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Set medicine type in field: $selectedMedicineType")
@@ -375,18 +379,18 @@ class EditMedicineActivity : AppCompatActivity() {
     private fun updateFrequencyDisplay() {
         try {
             val frequencyText = when (selectedFrequency) {
-                DosageFrequency.DAILY -> "Каждый день"
-                DosageFrequency.EVERY_OTHER_DAY -> "Через день"
-                DosageFrequency.TWICE_A_WEEK -> "2 раза в неделю"
-                DosageFrequency.THREE_TIMES_A_WEEK -> "3 раза в неделю"
-                DosageFrequency.WEEKLY -> "Раз в неделю"
-                DosageFrequency.CUSTOM -> "По расписанию"
+                DosageFrequency.DAILY -> getString(com.medicalnotes.app.R.string.frequency_daily)
+                DosageFrequency.EVERY_OTHER_DAY -> getString(com.medicalnotes.app.R.string.frequency_every_other_day)
+                DosageFrequency.TWICE_A_WEEK -> getString(com.medicalnotes.app.R.string.frequency_twice_a_week)
+                DosageFrequency.THREE_TIMES_A_WEEK -> getString(com.medicalnotes.app.R.string.frequency_three_times_a_week)
+                DosageFrequency.WEEKLY -> getString(com.medicalnotes.app.R.string.frequency_weekly)
+                DosageFrequency.CUSTOM -> getString(com.medicalnotes.app.R.string.frequency_custom)
             }
             binding.buttonFrequency.text = frequencyText
             com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Updated frequency display: $frequencyText (selectedFrequency: $selectedFrequency)")
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("EditMedicine", "Error updating frequency display", e)
-            binding.buttonFrequency.text = "Каждый день"
+            binding.buttonFrequency.text = getString(com.medicalnotes.app.R.string.frequency_daily)
             selectedFrequency = DosageFrequency.DAILY
         }
     }
@@ -394,12 +398,12 @@ class EditMedicineActivity : AppCompatActivity() {
     private fun showFrequencyDialog() {
         try {
             val frequencies = arrayOf(
-                "Каждый день",
-                "Через день", 
-                "2 раза в неделю",
-                "3 раза в неделю",
-                "Раз в неделю",
-                "По расписанию"
+                getString(com.medicalnotes.app.R.string.frequency_daily),
+                getString(com.medicalnotes.app.R.string.frequency_every_other_day), 
+                getString(com.medicalnotes.app.R.string.frequency_twice_a_week),
+                getString(com.medicalnotes.app.R.string.frequency_three_times_a_week),
+                getString(com.medicalnotes.app.R.string.frequency_weekly),
+                getString(com.medicalnotes.app.R.string.frequency_custom)
             )
             
             val currentIndex = when (selectedFrequency) {
@@ -412,7 +416,7 @@ class EditMedicineActivity : AppCompatActivity() {
             }
             
             AlertDialog.Builder(this)
-                .setTitle("Выберите схему приема")
+                .setTitle(getString(com.medicalnotes.app.R.string.frequency_selection_dialog))
                 .setSingleChoiceItems(frequencies, currentIndex) { _, which ->
                     try {
                         selectedFrequency = when (which) {
@@ -491,13 +495,13 @@ class EditMedicineActivity : AppCompatActivity() {
     
     private fun showWeekDaysDialog() {
         val weekDays = arrayOf(
-            "Понедельник",
-            "Вторник", 
-            "Среда",
-            "Четверг",
-            "Пятница",
-            "Суббота",
-            "Воскресенье"
+            getString(com.medicalnotes.app.R.string.monday),
+            getString(com.medicalnotes.app.R.string.tuesday), 
+            getString(com.medicalnotes.app.R.string.wednesday),
+            getString(com.medicalnotes.app.R.string.thursday),
+            getString(com.medicalnotes.app.R.string.friday),
+            getString(com.medicalnotes.app.R.string.saturday),
+            getString(com.medicalnotes.app.R.string.sunday)
         )
         
         val checkedItems = BooleanArray(7) { i ->
@@ -522,9 +526,17 @@ class EditMedicineActivity : AppCompatActivity() {
     
     private fun updateWeekDaysDisplay() {
         if (selectedDays.isEmpty()) {
-            binding.buttonWeekDays.text = "Выбрать дни"
+            binding.buttonWeekDays.text = getString(com.medicalnotes.app.R.string.weekday_selection)
         } else {
-            val dayNames = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
+            val dayNames = listOf(
+                getString(com.medicalnotes.app.R.string.monday_short),
+                getString(com.medicalnotes.app.R.string.tuesday_short),
+                getString(com.medicalnotes.app.R.string.wednesday_short),
+                getString(com.medicalnotes.app.R.string.thursday_short),
+                getString(com.medicalnotes.app.R.string.friday_short),
+                getString(com.medicalnotes.app.R.string.saturday_short),
+                getString(com.medicalnotes.app.R.string.sunday_short)
+            )
             val selectedDayNames = selectedDays.sorted().map { dayNames[it - 1] }
             binding.buttonWeekDays.text = "Дни: ${selectedDayNames.joinToString(", ")}"
         }
@@ -565,31 +577,45 @@ class EditMedicineActivity : AppCompatActivity() {
             DosageFrequency.CUSTOM -> listOf(DosageTime.CUSTOM)
         }
 
-        // Создаем ID группы, если указано название
-        val groupId = if (groupName.isNotEmpty()) {
-            System.currentTimeMillis() // Простой способ генерации ID
-        } else {
-            null
-        }
-
         viewModel.getMedicineById(medicineId) { originalMedicine ->
             if (originalMedicine != null) {
+                // ВРЕМЕННО: Упрощенная обработка групповых данных
+                val groupId = if (groupName.isNotEmpty()) System.currentTimeMillis() else null
+                val groupStartDate = if (groupName.isNotEmpty()) System.currentTimeMillis() else 0L
+                val groupFrequency = if (groupName.isNotEmpty()) selectedFrequency else DosageFrequency.DAILY
+                val groupValidationHash = if (groupName.isNotEmpty()) "temp" else ""
+                val groupMetadata = if (groupName.isNotEmpty()) GroupMetadata(
+                    groupId = groupId!!,
+                    groupName = groupName,
+                    groupStartDate = groupStartDate,
+                    groupFrequency = groupFrequency,
+                    groupSize = 1,
+                    groupValidationHash = groupValidationHash
+                ) else null
+                
                 val saveTime = selectedTime ?: LocalTime.of(8, 0)
                 val currentTime = LocalTime.now()
                 
-                //  ИСПРАВЛЕНО: Сбрасываем статус принятия в следующих случаях:
-                // 1. Изменена частота приема
-                // 2. Изменено время приема И новое время уже прошло
-                // 3. Лекарство было принято сегодня, но новое время приема уже прошло
+                //  ИСПРАВЛЕНО: Сбрасываем статус принятия только в критических случаях:
+                // 1. Изменена частота приема (это влияет на логику расчета дней)
+                // 2. Лекарство было принято сегодня, но новое время приема уже прошло (нужно сбросить статус)
+                // 3. Лекарство отмечено как принятое, но количество не уменьшилось (не было фактически принято)
+                // 4. Лекарство было принято сегодня, но время изменено на будущее (нужно сбросить статус)
+                // 5. НЕ сбрасываем статус если лекарство еще не было принято сегодня
+                val wasActuallyTaken = originalMedicine.remainingQuantity < originalMedicine.quantity
+                val timeChangedToFuture = originalMedicine.takenToday && originalMedicine.time != saveTime && saveTime.isAfter(currentTime)
                 val shouldResetStatus = originalMedicine.frequency != selectedFrequency || 
-                                       (originalMedicine.time != saveTime && saveTime.isBefore(currentTime)) ||
-                                       (originalMedicine.takenToday && saveTime.isBefore(currentTime))
+                                       (originalMedicine.takenToday && saveTime.isBefore(currentTime)) ||
+                                       (originalMedicine.takenToday && !wasActuallyTaken) ||
+                                       timeChangedToFuture
                 
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "=== АНАЛИЗ СБРОСА СТАТУСА ===")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Текущее время: $currentTime")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Новое время приема: $saveTime")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Лекарство принято сегодня: ${originalMedicine.takenToday}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Количество не уменьшилось (не было фактически принято): ${!wasActuallyTaken}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Новое время уже прошло: ${saveTime.isBefore(currentTime)}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Время изменено на будущее: $timeChangedToFuture")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменена частота: ${originalMedicine.frequency != selectedFrequency}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменено время И прошло: ${originalMedicine.time != saveTime && saveTime.isBefore(currentTime)}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Сбрасываем статус: $shouldResetStatus")
@@ -602,6 +628,8 @@ class EditMedicineActivity : AppCompatActivity() {
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменена частота: ${originalMedicine.frequency != selectedFrequency}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменено время: ${originalMedicine.time != saveTime}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Сбрасываем статус: $shouldResetStatus")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Старый startDate: ${originalMedicine.startDate}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Новый startDate будет: ${if (originalMedicine.frequency != selectedFrequency) "сегодня" else "старый"}")
                 
                 val updatedMedicine = originalMedicine.copy(
                     name = name,
@@ -624,23 +652,27 @@ class EditMedicineActivity : AppCompatActivity() {
                         emptyList()
                     },
                     customTimes = emptyList(),
-                    startDate = if (shouldResetStatus) {
-                        //  ИСПРАВЛЕНО: При сбросе статуса устанавливаем дату начала на сегодня 00:00
+                    startDate = if (originalMedicine.frequency != selectedFrequency) {
+                        //  ИСПРАВЛЕНО: Изменяем startDate при изменении частоты приема
                         val today = java.time.LocalDate.now()
                         val startOfDay = today.atStartOfDay(java.time.ZoneId.systemDefault())
                         startOfDay.toInstant().toEpochMilli()
                     } else {
                         originalMedicine.startDate
-                    }, //  ИСПРАВЛЕНО: Сбрасываем дату начала при изменении частоты ИЛИ времени
+                    }, //  ИСПРАВЛЕНО: Изменяем startDate при изменении частоты
                     multipleDoses = false,
                     dosesPerDay = 1,
                     doseTimes = listOf(saveTime),
                     groupId = groupId,
                     groupName = groupName,
                     groupOrder = groupOrder,
+                    groupStartDate = groupStartDate,
+                    groupFrequency = groupFrequency,
+                    groupValidationHash = groupValidationHash,
+                    groupMetadata = groupMetadata,
                     lastTakenTime = if (shouldResetStatus) 0 else originalMedicine.lastTakenTime, //  ИСПРАВЛЕНО: Сбрасываем время последнего приема
-                    takenToday = if (shouldResetStatus) false else originalMedicine.takenToday, //  ИСПРАВЛЕНО: Сбрасываем статус принятия сегодня
-                    takenAt = if (shouldResetStatus) 0 else originalMedicine.takenAt, //  ИСПРАВЛЕНО: Сбрасываем время принятия
+                    takenToday = if (shouldResetStatus && originalMedicine.takenToday) false else originalMedicine.takenToday, //  ИСПРАВЛЕНО: Сбрасываем статус принятия только если лекарство было принято
+                    takenAt = if (shouldResetStatus && originalMedicine.takenToday) 0 else originalMedicine.takenAt, //  ИСПРАВЛЕНО: Сбрасываем время принятия только если лекарство было принято
                     isMissed = if (shouldResetStatus) false else originalMedicine.isMissed, //  ИСПРАВЛЕНО: Сбрасываем статус пропуска
                     missedCount = if (shouldResetStatus) 0 else originalMedicine.missedCount, //  ИСПРАВЛЕНО: Сбрасываем счетчик пропусков
                     updatedAt = System.currentTimeMillis()
@@ -813,6 +845,163 @@ class EditMedicineActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this@EditMedicineActivity, "Лекарство не найдено", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+    
+    override fun updateUIAfterLanguageChange() {
+        super.updateUIAfterLanguageChange()
+        
+        try {
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicineActivity", "Updating UI after language change")
+            
+            // Обновляем заголовок Activity
+            title = getString(R.string.edit_medicine)
+            supportActionBar?.title = getString(R.string.edit_medicine)
+            
+            // Обновляем заголовки полей
+            updateFieldLabels()
+            
+            // Обновляем подсказки (hints)
+            updateFieldHints()
+            
+            // Обновляем текст кнопок
+            updateButtonTexts()
+            
+            // Обновляем текст в спиннерах и адаптерах
+            updateSpinnerTexts()
+            
+            // Обновляем меню
+            invalidateOptionsMenu()
+            
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicineActivity", "UI updated successfully after language change")
+            
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicineActivity", "Error updating UI after language change", e)
+        }
+    }
+    
+    private fun updateFieldLabels() {
+        try {
+            // Обновляем заголовки полей (используем доступные элементы)
+            // binding.textInputLayoutName.hint = getString(R.string.medicine_name)
+            // binding.textInputLayoutQuantity.hint = getString(R.string.quantity)
+            // binding.textInputLayoutNotes.hint = getString(R.string.notes)
+            // binding.textInputLayoutType.hint = getString(R.string.medicine_type)
+            
+            // Обновляем заголовки секций (используем доступные элементы)
+            // binding.textViewTimeSection.text = getString(R.string.time_section)
+            // binding.textViewFrequencySection.text = getString(R.string.frequency_section)
+            // binding.textViewGroupSection.text = getString(R.string.group_section)
+            
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicineActivity", "Field labels update completed")
+            
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicineActivity", "Error updating field labels", e)
+        }
+    }
+    
+    private fun updateFieldHints() {
+        try {
+            // Обновляем подсказки в полях ввода
+            binding.editTextName.hint = getString(R.string.enter_medicine_name)
+            binding.editTextQuantity.hint = getString(R.string.enter_quantity)
+            binding.editTextNotes.hint = getString(R.string.enter_notes)
+            
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicineActivity", "Error updating field hints", e)
+        }
+    }
+    
+    private fun updateButtonTexts() {
+        try {
+            // Обновляем текст кнопок (используем только существующие элементы)
+            binding.buttonSave.text = getString(R.string.save)
+            binding.buttonCancel.text = getString(R.string.cancel)
+            
+            // Проверяем существование других кнопок перед обновлением
+            // buttonAddTime не существует в layout EditMedicineActivity
+            
+            try {
+                binding.buttonChangeGroup?.text = getString(R.string.change_group)
+            } catch (e: Exception) {
+                com.medicalnotes.app.utils.LogCollector.w("EditMedicineActivity", "buttonChangeGroup not found")
+            }
+            
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicineActivity", "Error updating button texts", e)
+        }
+    }
+    
+    private fun updateSpinnerTexts() {
+        try {
+            // Обновляем текст в спиннерах частоты
+            updateFrequencyDisplay()
+            
+            // Обновляем отображение времени
+            updateTimeDisplay()
+            
+            // ОБНОВЛЯЕМ СПИСОК ТИПОВ ЛЕКАРСТВ
+            updateMedicineTypeDropdown()
+            
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicineActivity", "Error updating spinner texts", e)
+        }
+    }
+    
+    private fun updateMedicineTypeDropdown() {
+        try {
+            // Создаем новый список типов лекарств с обновленными строками
+            val medicineTypes = listOf(
+                getString(com.medicalnotes.app.R.string.medicine_type_tablets),
+                getString(com.medicalnotes.app.R.string.medicine_type_capsules), 
+                getString(com.medicalnotes.app.R.string.medicine_type_injections),
+                getString(com.medicalnotes.app.R.string.medicine_type_ozempic),
+                getString(com.medicalnotes.app.R.string.medicine_type_mounjaro),
+                getString(com.medicalnotes.app.R.string.medicine_type_insulin),
+                getString(com.medicalnotes.app.R.string.medicine_type_drops),
+                getString(com.medicalnotes.app.R.string.medicine_type_syrup),
+                getString(com.medicalnotes.app.R.string.medicine_type_inhalations),
+                getString(com.medicalnotes.app.R.string.medicine_type_ointments),
+                getString(com.medicalnotes.app.R.string.medicine_type_gels),
+                getString(com.medicalnotes.app.R.string.medicine_type_creams),
+                getString(com.medicalnotes.app.R.string.medicine_type_suppositories),
+                getString(com.medicalnotes.app.R.string.medicine_type_sprays),
+                getString(com.medicalnotes.app.R.string.medicine_type_aerosols),
+                getString(com.medicalnotes.app.R.string.medicine_type_powders),
+                getString(com.medicalnotes.app.R.string.medicine_type_suspensions),
+                getString(com.medicalnotes.app.R.string.medicine_type_emulsions),
+                getString(com.medicalnotes.app.R.string.medicine_type_other)
+            )
+            
+            // Создаем новый адаптер с обновленными данными
+            val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, medicineTypes)
+            binding.autoCompleteMedicineType.setAdapter(adapter)
+            
+            // ИСПРАВЛЕНО: Локализуем сохраненный тип лекарства
+            val localizedMedicineType = com.medicalnotes.app.utils.DataLocalizationHelper.localizeMedicineType(
+                selectedMedicineType, 
+                resources.configuration.locales[0], 
+                this
+            )
+            
+            // Если локализованный тип соответствует какому-то типу в новом списке, используем его
+            val matchingType = medicineTypes.find { it == localizedMedicineType }
+            if (matchingType != null) {
+                binding.autoCompleteMedicineType.setText(matchingType, false)
+                selectedMedicineType = matchingType
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicineActivity", "Localized medicine type found: $matchingType")
+            } else {
+                // Если не найдено соответствие, устанавливаем значение по умолчанию
+                val defaultType = getString(com.medicalnotes.app.R.string.medicine_type_tablets)
+                binding.autoCompleteMedicineType.setText(defaultType, false)
+                selectedMedicineType = defaultType
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicineActivity", "Using default medicine type: $defaultType")
+            }
+            
+            com.medicalnotes.app.utils.LogCollector.d("EditMedicineActivity", "Medicine type dropdown updated successfully")
+            
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("EditMedicineActivity", "Error updating medicine type dropdown", e)
         }
     }
     

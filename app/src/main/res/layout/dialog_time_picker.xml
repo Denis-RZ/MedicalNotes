@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Выберите время"
+        android:text="@string/select_time"
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -19,7 +19,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Часы"
+        android:text="@string/hours"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
@@ -45,7 +45,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Минуты"
+        android:text="@string/minutes"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
@@ -71,7 +71,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Выбранное время:"
+        android:text="@string/selected_time"
         android:textSize="14sp"
         android:gravity="center"
         android:layout_marginBottom="8dp" />
@@ -98,7 +98,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Отмена"
+            android:text="@string/cancel"
             android:layout_marginEnd="8dp"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -107,7 +107,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="ОК"
+            android:text="@string/ok"
             android:layout_marginStart="8dp"
             style="@style/Widget.Material3.Button" />
 

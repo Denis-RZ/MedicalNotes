@@ -21,7 +21,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurface"
             app:contentInsetStartWithNavigation="0dp"
-            app:title="Настройка кнопок"
+            app:title="@string/button_customization_title"
             app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             app:titleTextColor="?attr/colorOnSurface"
             app:navigationIcon="@drawable/ic_arrow_back"
@@ -80,7 +80,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Дополнительные настройки"
+            android:text="@string/additional_information"
             android:textSize="@dimen/text_size_large"
             android:textStyle="bold"
             android:layout_marginBottom="@dimen/margin_small" />
@@ -89,7 +89,7 @@
             android:id="@+id/checkBoxHighContrast"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Высокий контраст"
+            android:text="@string/high_contrast"
             android:textSize="@dimen/text_size_large"
             android:layout_marginBottom="@dimen/margin_small" />
 
@@ -97,7 +97,7 @@
             android:id="@+id/checkBoxVibration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Вибрация при уведомлениях"
+            android:text="@string/vibration_on_notifications"
             android:textSize="@dimen/text_size_large"
             android:layout_marginBottom="@dimen/margin_small" />
 
@@ -105,7 +105,7 @@
             android:id="@+id/checkBoxSound"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Звук при уведомлениях"
+            android:text="@string/sound_on_notifications"
             android:textSize="@dimen/text_size_large"
             android:layout_marginBottom="@dimen/margin_large" />
 
@@ -121,7 +121,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Сбросить"
+                android:text="@string/reset"
                 android:layout_marginEnd="@dimen/margin_small"
                 style="@style/Widget.MedicalNotes.Button" />
 
@@ -130,7 +130,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Сохранить"
+                android:text="@string/save"
                 android:layout_marginStart="@dimen/margin_small"
                 style="@style/Widget.MedicalNotes.Button" />
 

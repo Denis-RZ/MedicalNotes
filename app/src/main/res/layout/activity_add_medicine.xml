@@ -21,7 +21,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurface"
             app:contentInsetStartWithNavigation="0dp"
-            app:title="Добавить лекарство"
+            app:title="@string/add_medicine_title"
             app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             app:titleTextColor="?attr/colorOnSurface"
             app:navigationIcon="@drawable/ic_arrow_back"
@@ -64,7 +64,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Основная информация"
+                        android:text="@string/basic_information"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
                         android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="@dimen/margin_medium"
@@ -96,7 +96,7 @@
                             android:maxLines="2"
                             android:ellipsize="end"
                             android:importantForAccessibility="yes"
-                            android:contentDescription="Поле для ввода названия лекарства" />
+                            android:contentDescription="@string/medicine_name_input_field" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -124,7 +124,7 @@
                             android:maxLines="2"
                             android:ellipsize="end"
                             android:importantForAccessibility="yes"
-                            android:contentDescription="Поле для ввода дозировки лекарства" />
+                            android:contentDescription="@string/dosage_input_field" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -133,7 +133,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/margin_medium"
-                        android:hint="Тип лекарства"
+                        android:hint="@string/enter_medicine_type_hint"
                         app:startIconDrawable="@drawable/ic_type"
                         app:startIconTint="?attr/colorPrimary"
                         app:endIconMode="dropdown_menu"
@@ -146,7 +146,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:minHeight="@dimen/input_height_mobile"
-                            android:text="Таблетки"
+                            android:text="@string/tablets"
                             android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                             android:textSize="@dimen/text_size_mobile_medium"
                             android:inputType="none"
@@ -156,7 +156,7 @@
                             android:enabled="true"
                             android:editable="false"
                             android:importantForAccessibility="yes"
-                            android:contentDescription="Выбор типа лекарства" />
+                            android:contentDescription="@string/medicine_type_selection" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -182,7 +182,7 @@
                             android:inputType="number"
                             android:maxLines="1"
                             android:importantForAccessibility="yes"
-                            android:contentDescription="Поле для ввода количества лекарства" />
+                            android:contentDescription="@string/quantity_input_field" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -210,7 +210,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Расписание приема"
+                        android:text="@string/schedule_section"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
                         android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="@dimen/margin_medium"
@@ -233,7 +233,7 @@
                         app:strokeWidth="1dp"
                         android:minHeight="56dp"
                         android:layout_marginBottom="@dimen/margin_medium"
-                        android:contentDescription="Выбор времени приема"
+                        android:contentDescription="@string/time_selection"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
 
                     <!-- Frequency Selection -->
@@ -241,7 +241,7 @@
                         android:id="@+id/buttonFrequency"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Каждый день"
+                        android:text="@string/daily"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                         app:icon="@drawable/ic_schedule"
                         app:iconGravity="textStart"
@@ -251,7 +251,7 @@
                         app:strokeWidth="1dp"
                         android:minHeight="56dp"
                         android:layout_marginBottom="@dimen/margin_medium"
-                        android:contentDescription="Выбор частоты приема"
+                        android:contentDescription="@string/frequency_selection"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
 
                     <!-- Week Days Selection (Conditional) -->
@@ -265,7 +265,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Дни недели"
+                            android:text="@string/weekdays"
                             android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginBottom="@dimen/margin_small" />
@@ -274,7 +274,7 @@
                             android:id="@+id/buttonWeekDays"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Выбрать дни"
+                            android:text="@string/select_days"
                             android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
                             app:icon="@drawable/ic_calendar"
                             app:iconGravity="textStart"
@@ -283,7 +283,7 @@
                             app:strokeColor="?attr/colorOutline"
                             app:strokeWidth="1dp"
                             android:minHeight="48dp"
-                            android:contentDescription="Выбор дней недели"
+                            android:contentDescription="@string/weekday_selection"
                             style="@style/Widget.Material3.Button.OutlinedButton" />
 
                     </LinearLayout>
@@ -312,7 +312,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Дополнительная информация"
+                        android:text="@string/additional_information"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
                         android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="@dimen/margin_medium"
@@ -325,7 +325,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/margin_medium"
-                        android:hint="Заметки"
+                        android:hint="@string/enter_notes_hint"
                         app:startIconDrawable="@drawable/ic_notes"
                         app:startIconTint="?attr/colorPrimary"
                         app:endIconMode="clear_text"
@@ -344,7 +344,7 @@
                             android:maxLines="3"
                             android:ellipsize="end"
                             android:importantForAccessibility="yes"
-                            android:contentDescription="Поле для ввода заметок о лекарстве" />
+                            android:contentDescription="@string/notes_input_field" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -353,12 +353,12 @@
                         android:id="@+id/checkBoxInsulin"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Это инсулин"
+                        android:text="@string/this_is_insulin"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                         android:textColor="?attr/colorOnSurface"
                         app:buttonTint="?attr/colorPrimary"
                         android:importantForAccessibility="yes"
-                        android:contentDescription="Отметить, если это инсулин" />
+                        android:contentDescription="@string/mark_as_insulin" />
 
                 </LinearLayout>
 
@@ -386,7 +386,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Группировка лекарств"
+                        android:text="@string/medicine_grouping"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
                         android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="@dimen/margin_medium"
@@ -399,7 +399,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/margin_medium"
-                        android:hint="Название группы"
+                        android:hint="@string/enter_group_name_hint"
                         app:startIconDrawable="@drawable/ic_group_name"
                         app:startIconTint="?attr/colorPrimary"
                         app:endIconMode="clear_text"
@@ -418,7 +418,7 @@
                             android:maxLines="1"
                             android:ellipsize="end"
                             android:importantForAccessibility="yes"
-                            android:contentDescription="Поле для ввода названия группы лекарств" />
+                            android:contentDescription="@string/group_name_input_field" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -427,7 +427,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/margin_medium"
-                        android:hint="Порядок в группе (1, 2, 3...)"
+                        android:hint="@string/enter_group_order_hint"
                         app:startIconDrawable="@drawable/ic_order"
                         app:startIconTint="?attr/colorPrimary"
                         app:endIconMode="clear_text"
@@ -446,7 +446,7 @@
                             android:text="1"
                             android:maxLines="1"
                             android:importantForAccessibility="yes"
-                            android:contentDescription="Поле для ввода порядка лекарства в группе" />
+                            android:contentDescription="@string/order_input_field" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -455,7 +455,7 @@
                         android:id="@+id/buttonChangeGroup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Изменить группу"
+                        android:text="@string/change_group"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
                         app:icon="@drawable/ic_change_group"
                         app:iconGravity="textStart"
@@ -464,7 +464,7 @@
                         app:strokeColor="?attr/colorOutline"
                         app:strokeWidth="1dp"
                         android:minHeight="48dp"
-                        android:contentDescription="Изменить группу лекарства"
+                        android:contentDescription="@string/change_medicine_group"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
 
                 </LinearLayout>
@@ -493,7 +493,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Несколько приемов в день"
+                        android:text="@string/multiple_times_per_day"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
                         android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="@dimen/margin_medium"
@@ -506,21 +506,21 @@
                         android:id="@+id/switchMultipleDoses"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Несколько приемов в день"
+                        android:text="@string/multiple_times_per_day"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                         android:textColor="?attr/colorOnSurface"
                         app:thumbTint="?attr/colorPrimary"
                         app:trackTint="?attr/colorPrimary"
                         android:layout_marginBottom="@dimen/margin_medium"
                         android:importantForAccessibility="yes"
-                        android:contentDescription="Включить несколько приемов в день" />
+                        android:contentDescription="@string/enable_multiple_intakes" />
 
                     <!-- Add Time Button -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonAddTime"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Добавить время"
+                        android:text="@string/add_time"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
                         app:icon="@drawable/ic_time"
                         app:iconGravity="textStart"
@@ -529,7 +529,7 @@
                         app:strokeColor="?attr/colorOutline"
                         app:strokeWidth="1dp"
                         android:minHeight="48dp"
-                        android:contentDescription="Добавить время приема"
+                        android:contentDescription="@string/add_intake_time"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
 
                     <!-- Selected Times Display -->
@@ -537,7 +537,7 @@
                         android:id="@+id/textSelectedTimes"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Времена приема: 08:00"
+                        android:text="@string/times_taken"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginTop="@dimen/margin_small" />
@@ -566,7 +566,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Связанные лекарства"
+                        android:text="@string/related_medicines"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
                         android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="@dimen/margin_medium"
@@ -579,7 +579,7 @@
                         android:id="@+id/buttonSelectMedicines"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Выбрать связанные лекарства"
+                        android:text="@string/select_related_medicines"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
                         app:icon="@drawable/ic_medicine"
                         app:iconGravity="textStart"
@@ -588,7 +588,7 @@
                         app:strokeColor="?attr/colorOutline"
                         app:strokeWidth="1dp"
                         android:minHeight="48dp"
-                        android:contentDescription="Выбрать связанные лекарства"
+                        android:contentDescription="@string/select_related_medicines"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
 
                     <!-- Selected Medicines Display -->
@@ -596,7 +596,7 @@
                         android:id="@+id/textSelectedMedicines"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Не выбрано"
+                        android:text="@string/not_selected_alt"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginTop="@dimen/margin_small"
@@ -633,12 +633,12 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:indeterminateTint="?attr/colorPrimary"
-                android:contentDescription="Сохранение лекарства" />
+                android:contentDescription="@string/saving_medicine" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Сохранение..."
+                android:text="@string/saving_alt"
                 android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                 android:textColor="?attr/colorOnSurface"
                 android:layout_marginTop="@dimen/margin_medium" />
@@ -684,7 +684,7 @@
                 app:strokeWidth="1dp"
                 android:layout_marginEnd="@dimen/margin_mobile_small"
                 android:minHeight="56dp"
-                android:contentDescription="Отменить добавление лекарства"
+                android:contentDescription="@string/cancel_adding_medicine"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
@@ -703,7 +703,7 @@
                 app:iconTint="?attr/colorOnPrimary"
                 android:layout_marginStart="@dimen/margin_mobile_small"
                 android:minHeight="56dp"
-                android:contentDescription="Сохранить лекарство"
+                android:contentDescription="@string/save_medicine"
                 style="@style/Widget.Material3.Button" />
 
         </LinearLayout>

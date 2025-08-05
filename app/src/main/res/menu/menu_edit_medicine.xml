@@ -4,13 +4,13 @@
 
     <item
         android:id="@+id/action_save"
-        android:title="Сохранить"
+        android:title="@string/save_action"
         android:icon="@drawable/ic_save"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_delete"
-        android:title="Удалить"
+        android:title="@string/delete_action"
         android:icon="@drawable/ic_delete"
         app:showAsAction="always" />
 

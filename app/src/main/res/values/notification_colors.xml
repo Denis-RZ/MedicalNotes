@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Notification Colors - Following Android notification patterns -->
+    
+    <!-- Primary notification colors -->
+    <color name="notification_background_light">#FFFFFF</color>
+    <color name="notification_background_dark">#121212</color>
+    
+    <!-- Text colors -->
+    <color name="notification_text_primary_light">#000000</color>
+    <color name="notification_text_primary_dark">#FFFFFF</color>
+    <color name="notification_text_secondary_light">#757575</color>
+    <color name="notification_text_secondary_dark">#B3FFFFFF</color>
+    
+    <!-- Accent colors -->
+    <color name="notification_accent_primary">#1976D2</color>
+    <color name="notification_accent_success">#4CAF50</color>
+    <color name="notification_accent_warning">#FF9800</color>
+    <color name="notification_accent_error">#F44336</color>
+    
+    <!-- Status colors -->
+    <color name="notification_status_overdue">#F44336</color>
+    <color name="notification_status_active">#4CAF50</color>
+    <color name="notification_status_upcoming">#2196F3</color>
+    
+    <!-- Button colors -->
+    <color name="notification_button_primary">#1976D2</color>
+    <color name="notification_button_secondary">#757575</color>
+    <color name="notification_button_success">#4CAF50</color>
+    <color name="notification_button_warning">#FF9800</color>
+    
+    <!-- Card colors -->
+    <color name="notification_card_background_light">#F5F5F5</color>
+    <color name="notification_card_background_dark">#1E1E1E</color>
+    <color name="notification_card_border_light">#E0E0E0</color>
+    <color name="notification_card_border_dark">#424242</color>
+    
+    <!-- Icon background colors -->
+    <color name="notification_icon_background_primary">#1976D2</color>
+    <color name="notification_icon_background_overdue">#F44336</color>
+    <color name="notification_icon_background_success">#4CAF50</color>
+    
+    <!-- Divider colors -->
+    <color name="notification_divider_light">#E0E0E0</color>
+    <color name="notification_divider_dark">#424242</color>
+</resources> 

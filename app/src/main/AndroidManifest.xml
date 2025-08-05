@@ -127,7 +127,17 @@
             android:theme="@style/Theme.MedicalNotes.NoActionBar" />
 
         <activity
+            android:name=".LanguageActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MedicalNotes.NoActionBar" />
+
+        <activity
             android:name=".NotificationManagerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MedicalNotes.NoActionBar" />
+
+        <activity
+            android:name=".LanguageTestActivity"
             android:exported="false"
             android:theme="@style/Theme.MedicalNotes.NoActionBar" />
 
@@ -168,6 +178,19 @@
                 <action android:name="com.medicalnotes.app.MEDICINE_TAKEN" />
                 <action android:name="com.medicalnotes.app.LOW_STOCK_ALERT" />
                 <action android:name="com.medicalnotes.app.EMERGENCY_ALERT" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Ресивер для кнопок уведомлений -->
+        <receiver
+            android:name=".receiver.NotificationButtonReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.medicalnotes.ACTION_BUTTON_TAKEN" />
+                <action android:name="com.medicalnotes.ACTION_BUTTON_SNOOZE" />
+                <action android:name="com.medicalnotes.ACTION_BUTTON_SKIP" />
+                <action android:name="com.medicalnotes.ACTION_BUTTON_DETAILS" />
             </intent-filter>
         </receiver>
 

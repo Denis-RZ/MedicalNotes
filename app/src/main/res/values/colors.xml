@@ -109,4 +109,7 @@
     <color name="medicine_error">#F44336</color>
     <color name="medicine_info_background">#E3F2FD</color>
     <color name="medicine_success_background">#E8F5E8</color>
+    
+    <!-- ===== ЦВЕТА ДЛЯ ОТЛАДКИ ===== -->
+    <color name="debug_text">#666666</color>
 </resources> 

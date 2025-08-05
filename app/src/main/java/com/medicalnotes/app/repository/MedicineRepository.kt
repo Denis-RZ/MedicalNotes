@@ -42,9 +42,11 @@ class MedicineRepository(context: Context) {
     }
     
     suspend fun deleteMedicine(medicineId: Long): Boolean = withContext(Dispatchers.IO) {
+        android.util.Log.d("MedicineRepository", "Начинаем удаление лекарства с ID: $medicineId")
         return@withContext try {
-            dataManager.deleteMedicine(medicineId)
-            true
+            val result = dataManager.deleteMedicine(medicineId)
+            android.util.Log.d("MedicineRepository", "Результат удаления из DataManager: $result")
+            result
         } catch (e: Exception) {
             android.util.Log.e("MedicineRepository", "Error deleting medicine", e)
             false

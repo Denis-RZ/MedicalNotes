@@ -10,6 +10,7 @@ import com.medicalnotes.app.models.Medicine
 import com.medicalnotes.app.utils.DosageCalculator
 import com.medicalnotes.app.utils.MedicineStatus
 import java.time.format.DateTimeFormatter
+import com.medicalnotes.app.utils.DataLocalizationHelper
 
 class MainMedicineAdapter(
     private val onMedicineClick: (Medicine) -> Unit
@@ -37,49 +38,52 @@ class MainMedicineAdapter(
 
         fun bind(medicine: Medicine) {
             try {
+                // Локализуем данные лекарства для текущего языка
+                val localizedMedicine = DataLocalizationHelper.localizeMedicineData(medicine, binding.root.context)
+                
                 binding.apply {
                     // Устанавливаем название лекарства
-                    textMedicineName.text = medicine.name
+                    textMedicineName.text = localizedMedicine.name
                     
-                    textMedicineDosage.text = medicine.dosage
+                    textMedicineDosage.text = localizedMedicine.dosage
                     
                     // Добавляем схему приема к дозировке
-                    val dosageDescription = DosageCalculator.getDosageDescription(medicine)
-                    val groupInfo = if (medicine.groupName.isNotEmpty()) {
-                        " (${medicine.groupName}, №${medicine.groupOrder})"
+                    val dosageDescription = DosageCalculator.getDosageDescription(localizedMedicine, binding.root.context)
+                    val groupInfo = if (localizedMedicine.groupName.isNotEmpty()) {
+                        " (${localizedMedicine.groupName}, №${localizedMedicine.groupOrder})"
                     } else {
                         ""
                     }
-                    val fullDosageText = if (medicine.dosage.isNotEmpty()) {
-                        "$dosageDescription - ${medicine.dosage}$groupInfo"
+                    val fullDosageText = if (localizedMedicine.dosage.isNotEmpty()) {
+                        "$dosageDescription - ${localizedMedicine.dosage}$groupInfo"
                     } else {
                         dosageDescription + groupInfo
                     }
                     textMedicineDosage.text = fullDosageText
                     
                     // Получаем статус лекарства
-                    val medicineStatus = DosageCalculator.getMedicineStatus(medicine)
+                    val medicineStatus = DosageCalculator.getMedicineStatus(localizedMedicine)
                     
                     // Отображаем время приема
-                    val timeText = if (medicine.multipleDoses && medicine.doseTimes.isNotEmpty()) {
-                        val times = medicine.doseTimes.map { it.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) }
+                    val timeText = if (localizedMedicine.multipleDoses && localizedMedicine.doseTimes.isNotEmpty()) {
+                        val times = localizedMedicine.doseTimes.map { it.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) }
                         times.joinToString(", ")
                     } else {
-                        medicine.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                        localizedMedicine.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                     }
                     textMedicineTime.text = timeText
                     
                     // Исправляем дублирование "Осталось:"
-                    textMedicineQuantity.text = "${medicine.remainingQuantity} ${medicine.medicineType.lowercase()}"
+                    textMedicineQuantity.text = "${localizedMedicine.remainingQuantity} ${localizedMedicine.medicineType.lowercase()}"
                     
                     // Показываем статус в зависимости от состояния лекарства
                     when (medicineStatus) {
                         MedicineStatus.OVERDUE -> {
                             //  СРОЧНО: НОВЫЙ ДИЗАЙН ДЛЯ ПРОСРОЧЕННЫХ ЛЕКАРСТВ
                             textMissedStatus.visibility = android.view.View.VISIBLE
-                            textMissedStatus.text = " ПРОСРОЧЕНО!"
-                            textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
-                            textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.missed_background)
+                            textMissedStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.missed_status)
+                            textMissedStatus.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.white))
+                            textMissedStatus.background = binding.root.context.getDrawable(com.medicalnotes.app.R.drawable.missed_background)
                             textMissedStatus.textSize = 14f
                             textMissedStatus.setPadding(24, 12, 24, 12)
                             
@@ -88,39 +92,40 @@ class MainMedicineAdapter(
                             
                             //  СРОЧНО: Красный фон карточки с границей
                             binding.viewCardBackground.setBackgroundColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.overdue_background)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_background)
                             )
                             cardMedicine.setStrokeColor(
                                 android.content.res.ColorStateList.valueOf(
-                                    root.context.getColor(com.medicalnotes.app.R.color.overdue_red)
+                                    binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_red)
                                 )
                             )
                             cardMedicine.setStrokeWidth(6)
                             
                             //  СРОЧНО: Темно-красный текст для лучшей видимости
-                            textMedicineName.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
-                            textMedicineTime.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
-                            textMedicineDosage.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
-                            textMedicineQuantity.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
-                            textMedicineNotes.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
+                            textMedicineName.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
+                            textMedicineTime.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
+                            textMedicineDosage.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
+                            textMedicineQuantity.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
+                            textMedicineNotes.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_red))
                             
                             //  СРОЧНО: Показываем иконку предупреждения
                             binding.textWarningIcon.visibility = android.view.View.VISIBLE
                             
                             //  СРОЧНО: Желтая кнопка с красным текстом
                             buttonTakeMedicine.setBackgroundColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.urgent_button)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.urgent_button)
                             )
                             buttonTakeMedicine.setTextColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.overdue_red)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_red)
                             )
                             buttonTakeMedicine.setIconTint(
                                 android.content.res.ColorStateList.valueOf(
-                                    root.context.getColor(com.medicalnotes.app.R.color.overdue_red)
+                                    binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_red)
                                 )
                             )
-                            buttonTakeMedicine.text = "ПРИНЯТЬ"
+                            buttonTakeMedicine.text = binding.root.context.getString(com.medicalnotes.app.R.string.button_take_medicine)
                             buttonTakeMedicine.textSize = 14f
+                            buttonTakeMedicine.isEnabled = true
                             
                             //  СРОЧНО: Убираем красный фон кнопки
                             buttonTakeMedicine.backgroundTintList = null
@@ -130,7 +135,7 @@ class MainMedicineAdapter(
                             
                             //  ИЗМЕНЕНО: Уведомления теперь управляются автоматически в MainActivity
                             // Уведомление для просроченных лекарств показывается только визуально
-                            android.util.Log.d("MainMedicineAdapter", "Просроченное лекарство отображается: ${medicine.name}")
+                            android.util.Log.d("MainMedicineAdapter", "Просроченное лекарство отображается: ${localizedMedicine.name}")
                         }
                         MedicineStatus.UPCOMING -> {
                             //  Скрываем иконку предупреждения для обычных лекарств
@@ -140,38 +145,40 @@ class MainMedicineAdapter(
                             binding.textStatus.visibility = android.view.View.VISIBLE
                             
                             textMissedStatus.visibility = android.view.View.VISIBLE
-                            textMissedStatus.text = "СЕГОДНЯ"
-                            textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_green))
-                            textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
+                            textMissedStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_today_uppercase)
+                            textMissedStatus.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.medical_green))
+                            textMissedStatus.background = binding.root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
                             
                             //  ДОБАВЛЕНО: Черный цвет текста для обычного отображения
-                            textMedicineName.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineTime.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineDosage.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineQuantity.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineNotes.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineName.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineTime.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineDosage.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineQuantity.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineNotes.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
                             
                             // Обычный фон
                             binding.viewCardBackground.setBackgroundColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.white)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                             )
                             cardMedicine.setStrokeColor(
                                 android.content.res.ColorStateList.valueOf(
-                                    root.context.getColor(com.medicalnotes.app.R.color.gray_medium)
+                                    binding.root.context.getColor(com.medicalnotes.app.R.color.gray_medium)
                                 )
                             )
                             cardMedicine.setStrokeWidth(1)
                             
-                            //  УЛУЧШЕНО: Зеленая кнопка с белым текстом для обычных лекарств
+                            //  ИСПРАВЛЕНО: Включаем кнопку и устанавливаем правильный текст для обычных лекарств
+                            buttonTakeMedicine.text = binding.root.context.getString(com.medicalnotes.app.R.string.button_take_medicine)
+                            buttonTakeMedicine.isEnabled = true
                             buttonTakeMedicine.setBackgroundColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.medicine_success)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.medicine_success)
                             )
                             buttonTakeMedicine.setTextColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.white)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                             )
                             buttonTakeMedicine.setIconTint(
                                 android.content.res.ColorStateList.valueOf(
-                                    root.context.getColor(com.medicalnotes.app.R.color.white)
+                                    binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                                 )
                             )
                         }
@@ -181,41 +188,43 @@ class MainMedicineAdapter(
                             
                             //  Показываем статус "ПРИНЯТО" для принятых лекарств
                             binding.textStatus.visibility = android.view.View.VISIBLE
-                            binding.textStatus.text = "ПРИНЯТО"
+                            binding.textStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.taken_status)
                             
                             textMissedStatus.visibility = android.view.View.VISIBLE
-                            textMissedStatus.text = "ПРИНЯТО"
-                            textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_blue))
-                            textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
+                            textMissedStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.taken_status)
+                            textMissedStatus.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.medical_blue))
+                            textMissedStatus.background = binding.root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
                             
                             //  ДОБАВЛЕНО: Черный цвет текста для принятых лекарств
-                            textMedicineName.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineTime.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineDosage.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineQuantity.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineNotes.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineName.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineTime.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineDosage.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineQuantity.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineNotes.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
                             
                             // Обычный фон
                             binding.viewCardBackground.setBackgroundColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.white)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                             )
                             cardMedicine.setStrokeColor(
                                 android.content.res.ColorStateList.valueOf(
-                                    root.context.getColor(com.medicalnotes.app.R.color.gray_medium)
+                                    binding.root.context.getColor(com.medicalnotes.app.R.color.gray_medium)
                                 )
                             )
                             cardMedicine.setStrokeWidth(1)
                             
-                            //  УЛУЧШЕНО: Зеленая кнопка с белым текстом для принятых лекарств
+                            //  ИСПРАВЛЕНО: Отключаем кнопку и меняем текст для принятых лекарств
+                            buttonTakeMedicine.text = binding.root.context.getString(com.medicalnotes.app.R.string.button_medicine_taken)
+                            buttonTakeMedicine.isEnabled = false
                             buttonTakeMedicine.setBackgroundColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.medicine_success)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.medicine_success)
                             )
                             buttonTakeMedicine.setTextColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.white)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                             )
                             buttonTakeMedicine.setIconTint(
                                 android.content.res.ColorStateList.valueOf(
-                                    root.context.getColor(com.medicalnotes.app.R.color.white)
+                                    binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                                 )
                             )
                         }
@@ -225,69 +234,80 @@ class MainMedicineAdapter(
                             
                             //  Показываем статус "АКТИВНО" для остальных случаев
                             binding.textStatus.visibility = android.view.View.VISIBLE
-                            binding.textStatus.text = "АКТИВНО"
+                            binding.textStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_active_uppercase)
                             
                             textMissedStatus.visibility = android.view.View.GONE
                             binding.viewCardBackground.setBackgroundColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.white)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                             )
                             cardMedicine.setStrokeColor(
                                 android.content.res.ColorStateList.valueOf(
-                                    root.context.getColor(com.medicalnotes.app.R.color.gray_medium)
+                                    binding.root.context.getColor(com.medicalnotes.app.R.color.gray_medium)
                                 )
                             )
                             cardMedicine.setStrokeWidth(1)
                             
                             //  ДОБАВЛЕНО: Черный цвет текста для остальных случаев
-                            textMedicineName.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineTime.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineDosage.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineQuantity.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
-                            textMedicineNotes.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineName.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineTime.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineDosage.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineQuantity.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
+                            textMedicineNotes.setTextColor(binding.root.context.getColor(com.medicalnotes.app.R.color.black))
                             
-                            //  УЛУЧШЕНО: Зеленая кнопка с белым текстом для остальных случаев
+                            //  ИСПРАВЛЕНО: Включаем кнопку и устанавливаем правильный текст для не принятых лекарств
+                            buttonTakeMedicine.text = binding.root.context.getString(com.medicalnotes.app.R.string.button_take_medicine)
+                            buttonTakeMedicine.isEnabled = true
                             buttonTakeMedicine.setBackgroundColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.medicine_success)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.medicine_success)
                             )
                             buttonTakeMedicine.setTextColor(
-                                root.context.getColor(com.medicalnotes.app.R.color.white)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                             )
                             buttonTakeMedicine.setIconTint(
                                 android.content.res.ColorStateList.valueOf(
-                                    root.context.getColor(com.medicalnotes.app.R.color.white)
+                                    binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                                 )
                             )
                         }
                     }
                     
-                    if (medicine.notes.isNotEmpty()) {
-                        textMedicineNotes.text = medicine.notes
+                    if (localizedMedicine.notes.isNotEmpty()) {
+                        textMedicineNotes.text = localizedMedicine.notes
                         textMedicineNotes.visibility = android.view.View.VISIBLE
                     } else {
                         textMedicineNotes.visibility = android.view.View.GONE
                     }
                     
+                    // DEBUG: Показываем групповую информацию для отладки
+                    binding.debugGroupInfo.visibility = android.view.View.VISIBLE
+                    binding.debugGroupId.text = "Group ID: ${localizedMedicine.groupId}"
+                    binding.debugGroupName.text = "Group Name: ${localizedMedicine.groupName}"
+                    binding.debugGroupOrder.text = "Group Order: ${localizedMedicine.groupOrder}"
+                    binding.debugGroupStartDate.text = "Group Start: ${localizedMedicine.groupStartDate}"
+                    binding.debugGroupFrequency.text = "Group Freq: ${localizedMedicine.groupFrequency}"
+                    binding.debugIsValidGroup.text = "Valid Group: ${localizedMedicine.isValidGroup()}"
+                    
                     //  ИЗМЕНЕНО: Цветовая индикация для инсулина (только если не просрочено)
-                    if (medicine.isInsulin && medicineStatus != MedicineStatus.OVERDUE) {
+                    if (localizedMedicine.isInsulin && medicineStatus != MedicineStatus.OVERDUE) {
                         cardMedicine.setCardBackgroundColor(
-                            root.context.getColor(com.medicalnotes.app.R.color.medical_orange)
+                            binding.root.context.getColor(com.medicalnotes.app.R.color.medical_orange)
                         )
                     }
                     
                     //  ИЗМЕНЕНО: Индикация низкого запаса (только если не просрочено)
-                    if (medicine.remainingQuantity <= 5 && medicineStatus != MedicineStatus.OVERDUE) {
+                    if (localizedMedicine.remainingQuantity <= 5 && medicineStatus != MedicineStatus.OVERDUE) {
                         textMedicineQuantity.setTextColor(
-                            root.context.getColor(com.medicalnotes.app.R.color.medical_red)
+                            binding.root.context.getColor(com.medicalnotes.app.R.color.medical_red)
                         )
                     } else if (medicineStatus != MedicineStatus.OVERDUE) {
                         textMedicineQuantity.setTextColor(
-                            root.context.getColor(com.medicalnotes.app.R.color.black)
+                            binding.root.context.getColor(com.medicalnotes.app.R.color.black)
                         )
                     }
                     // Для просроченных лекарств цвет уже установлен выше (белый)
                     
                     buttonTakeMedicine.setOnClickListener {
-                        onMedicineClick(medicine)
+                        onMedicineClick(localizedMedicine)
                     }
                     
                     // Устанавливаем тег для мигания
@@ -326,6 +346,11 @@ class MainMedicineAdapter(
         
 
 
+    }
+
+    fun updateLanguage() {
+        android.util.Log.d("MainMedicineAdapter", "Updating language in adapter")
+        notifyDataSetChanged()
     }
 
     private class MainMedicineDiffCallback : DiffUtil.ItemCallback<Medicine>() {

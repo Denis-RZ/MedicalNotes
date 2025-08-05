@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.medicalnotes.app.adapters.MedicineGridAdapter
@@ -15,7 +14,7 @@ import com.medicalnotes.app.utils.DosageCalculator
 import com.medicalnotes.app.utils.MedicineStatusHelper
 import com.medicalnotes.app.viewmodels.MainViewModel
 
-class MedicineManagerActivity : AppCompatActivity() {
+class MedicineManagerActivity : BaseActivity() {
     
     private lateinit var binding: ActivityMedicineManagerBinding
     private lateinit var viewModel: MainViewModel
@@ -42,7 +41,7 @@ class MedicineManagerActivity : AppCompatActivity() {
     private fun setupViews() {
         // Настройка toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Управление лекарствами"
+        supportActionBar?.title = getString(R.string.medicine_manager_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
         // Настраиваем RecyclerView

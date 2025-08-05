@@ -93,6 +93,8 @@ class XmlDataManager(private val context: Context) {
         if (index != -1 && medicines[index].remainingQuantity > 0) {
             medicines[index] = medicines[index].copy(
                 remainingQuantity = medicines[index].remainingQuantity - 1,
+                lastTakenTime = System.currentTimeMillis(),  // ИСПРАВЛЕНО: Добавляем lastTakenTime
+                takenToday = true,  // ИСПРАВЛЕНО: Устанавливаем takenToday = true
                 updatedAt = System.currentTimeMillis()
             )
             return saveMedicines(medicines)

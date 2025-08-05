@@ -12,7 +12,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.medicalnotes.app.databinding.ActivityDataBackupBinding
@@ -25,7 +24,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DataBackupActivity : AppCompatActivity() {
+class DataBackupActivity : BaseActivity() {
     
     private lateinit var binding: ActivityDataBackupBinding
     private lateinit var dataExportManager: DataExportManager
@@ -66,7 +65,7 @@ class DataBackupActivity : AppCompatActivity() {
     private fun setupViews() {
         // Настройка toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Резервное копирование"
+        supportActionBar?.title = getString(R.string.data_backup_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
     

@@ -25,10 +25,24 @@ class NotificationRestorationManager(private val context: Context) {
         try {
             android.util.Log.d("NotificationRestorationManager", "Начинаем проверку и восстановление уведомлений")
             
-            val activeMedicines = dataManager.getActiveMedicines()
-            android.util.Log.d("NotificationRestorationManager", "Найдено активных лекарств: ${activeMedicines.size}")
+            // ИСПРАВЛЕНО: Используем ту же логику, что и "Лекарства на сегодня"
+            val allMedicines = dataManager.loadMedicines()
+            val today = java.time.LocalDate.now()
+            val todayMedicines = com.medicalnotes.app.utils.DosageCalculator.getActiveMedicinesForDate(allMedicines, today)
             
-            activeMedicines.forEach { medicine ->
+            android.util.Log.d("NotificationRestorationManager", "Всего лекарств в базе: ${allMedicines.size}")
+            android.util.Log.d("NotificationRestorationManager", "Лекарств на сегодня (для восстановления): ${todayMedicines.size}")
+            
+            // Подробное логирование для отладки
+            todayMedicines.forEach { medicine ->
+                android.util.Log.d("NotificationRestorationManager", "Проверяем уведомление для: ${medicine.name}")
+                android.util.Log.d("NotificationRestorationManager", "  - Время: ${medicine.time}")
+                android.util.Log.d("NotificationRestorationManager", "  - Частота: ${medicine.frequency}")
+                android.util.Log.d("NotificationRestorationManager", "  - Группа: ${medicine.groupName}")
+                android.util.Log.d("NotificationRestorationManager", "  - Порядок в группе: ${medicine.groupOrder}")
+            }
+            
+            todayMedicines.forEach { medicine ->
                 if (isNotificationScheduled(medicine)) {
                     android.util.Log.d("NotificationRestorationManager", "Уведомление для ${medicine.name} уже запланировано")
                 } else {

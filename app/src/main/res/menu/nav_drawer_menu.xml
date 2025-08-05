@@ -4,40 +4,40 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_manage_medicines"
-            android:title="Управление лекарствами"
+            android:title="@string/manage_medicines_menu"
             android:icon="@drawable/ic_medicine" />
         
         <item
             android:id="@+id/nav_manage_groups"
-            android:title="Управление группами"
+            android:title="@string/manage_groups_menu"
             android:icon="@drawable/ic_group" />
         
         <item
             android:id="@+id/nav_settings"
-            android:title="Настройки"
+            android:title="@string/settings_menu"
             android:icon="@drawable/ic_info" />
         
         <item
             android:id="@+id/nav_elderly_mode"
-            android:title="Режим для пожилых"
+            android:title="@string/elderly_mode_menu"
             android:icon="@drawable/ic_additional_info" />
     </group>
 
-    <item android:title="Инструменты">
+    <item android:title="@string/tools">
         <menu>
             <item
                 android:id="@+id/nav_logs"
-                android:title="Логи системы"
+                android:title="@string/system_logs_menu"
                 android:icon="@drawable/ic_notes" />
             
             <item
                 android:id="@+id/nav_export_data"
-                android:title="Экспорт данных"
+                android:title="@string/export_data_menu"
                 android:icon="@drawable/ic_save" />
             
             <item
                 android:id="@+id/nav_test_groups"
-                android:title="Тестирование групп"
+                android:title="@string/test_groups_menu"
                 android:icon="@drawable/ic_group" />
         </menu>
     </item>

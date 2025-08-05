@@ -31,7 +31,7 @@
             android:clickable="true"
             android:focusable="true"
             app:buttonTint="@color/medicine_accent"
-            android:contentDescription="Выбрать лекарство" />
+                            android:contentDescription="@string/select_medicine" />
 
         <!-- Header with name and time -->
         <LinearLayout
@@ -62,7 +62,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Название лекарства"
+                android:text="@string/medicine_name_placeholder"
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                 android:textColor="@color/medicine_text_primary"
                 android:maxLines="2"
@@ -81,7 +81,7 @@
                 app:chipBackgroundColor="@color/medicine_accent"
                 app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="12dp"
-                android:contentDescription="Время приема лекарства"
+                android:contentDescription="@string/medicine_intake_time"
                 tools:text="08:00" />
 
         </LinearLayout>
@@ -91,7 +91,7 @@
             android:id="@+id/textMedicineDosage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Дозировка"
+            android:text="@string/dosage_label"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
             android:textColor="@color/medicine_text_secondary"
             android:layout_marginBottom="12dp"
@@ -103,13 +103,13 @@
             android:id="@+id/textMedicineNotes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Заметки"
+            android:text="@string/notes_label"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
             android:textColor="@color/medicine_text_secondary"
             android:layout_marginBottom="12dp"
             android:visibility="gone"
             android:lineSpacingExtra="1dp"
-            android:contentDescription="Заметки о лекарстве"
+                            android:contentDescription="@string/medicine_notes"
             tools:text="Принимать во время еды"
             tools:visibility="visible" />
 
@@ -126,7 +126,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Осталось: 0 таблеток"
+                android:text="@string/remaining_tablets_format"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
                 android:textColor="@color/medicine_text_secondary"
                 tools:text="Осталось: 15 таблеток" />
@@ -143,7 +143,7 @@
                     android:id="@+id/textLowStockStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="МАЛО"
+                    android:text="@string/low_status"
                     android:textSize="10sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"
@@ -160,7 +160,7 @@
                     android:id="@+id/textMissedStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ПРОПУЩЕНО"
+                    android:text="@string/missed_status_short"
                     android:textSize="10sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"
@@ -187,7 +187,7 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="ПРИНЯТЬ"
+                android:text="@string/take_action"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
@@ -199,7 +199,7 @@
                 android:backgroundTint="@color/medicine_success"
                 app:cornerRadius="8dp"
                 android:layout_marginEnd="4dp"
-                android:contentDescription="Отметить как принято"
+                android:contentDescription="@string/mark_as_taken"
                 style="@style/Widget.Material3.Button" />
 
             <com.google.android.material.button.MaterialButton
@@ -207,7 +207,7 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="ПРОПУСТИТЬ"
+                android:text="@string/skip_action"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/medicine_warning"
@@ -220,7 +220,7 @@
                 app:strokeWidth="1dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
-                android:contentDescription="Отметить как пропущено"
+                android:contentDescription="@string/mark_as_skipped"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
@@ -228,7 +228,7 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="ИЗМЕНИТЬ"
+                android:text="@string/change_action"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/medicine_accent"
@@ -241,7 +241,7 @@
                 app:strokeWidth="1dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
-                android:contentDescription="Редактировать лекарство"
+                android:contentDescription="@string/edit_medicine_desc"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
@@ -249,7 +249,7 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="УДАЛИТЬ"
+                android:text="@string/delete_action_short"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/medicine_error"
@@ -261,7 +261,7 @@
                 app:strokeColor="@color/medicine_error"
                 app:strokeWidth="1dp"
                 android:layout_marginStart="4dp"
-                android:contentDescription="Удалить лекарство"
+                android:contentDescription="@string/delete_medicine_desc"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
         </LinearLayout>

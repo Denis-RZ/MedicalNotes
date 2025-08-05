@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.medicalnotes.app.adapters.MedicineAdapter
@@ -18,13 +17,14 @@ import com.medicalnotes.app.utils.DisplayUtils
 import com.medicalnotes.app.utils.NotificationManager
 import com.medicalnotes.app.utils.DataManager
 import com.medicalnotes.app.viewmodels.MainViewModel
+import com.medicalnotes.app.service.NotificationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.format.DateTimeFormatter
 
-class ElderlyMedicineManagementActivity : AppCompatActivity() {
+class ElderlyMedicineManagementActivity : BaseActivity() {
     
     private lateinit var binding: ActivityMedicineManagementElderlyBinding
     private lateinit var viewModel: MainViewModel
@@ -50,20 +50,24 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
     private fun setupViews() {
         // Настройка toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Управление лекарствами"
+        supportActionBar?.title = getString(R.string.medicine_manager_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
         // Настройка RecyclerView для всех лекарств
         medicineAdapter = MedicineAdapter(
             onMedicineClick = { medicine ->
-                // Показать диалог редактирования
-                showEditMedicineDialog(medicine)
+                android.util.Log.d("ElderlyMedicineManagement", "Нажата кнопка ПРИНЯТЬ для лекарства: ${medicine.name}")
+                // Отмечаем лекарство как принятое
+                viewModel.markMedicineAsTaken(medicine.id)
+                Toast.makeText(this, "Лекарство \"${medicine.name}\" отмечено как принятое", Toast.LENGTH_SHORT).show()
             },
             onSkipClick = { medicine ->
+                android.util.Log.d("ElderlyMedicineManagement", "Нажата кнопка ПРОПУСТИТЬ для лекарства: ${medicine.name}")
                 // Отметить как пропущенное
                 viewModel.markMedicineAsSkipped(medicine.id)
             },
             onEditClick = { medicine ->
+                android.util.Log.d("ElderlyMedicineManagement", "Нажата кнопка ИЗМЕНИТЬ для лекарства: ${medicine.name}")
                 // Открываем экран редактирования лекарства
                 val intent = Intent(this, EditMedicineActivity::class.java).apply {
                     putExtra("medicine_id", medicine.id)
@@ -71,6 +75,7 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
                 startActivity(intent)
             },
             onDeleteClick = { medicine ->
+                android.util.Log.d("ElderlyMedicineManagement", "Нажата кнопка УДАЛИТЬ для лекарства: ${medicine.name}")
                 // Показать диалог подтверждения удаления
                 showDeleteConfirmationDialog(medicine)
             }
@@ -121,7 +126,12 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
     
     private fun observeData() {
         viewModel.allMedicines.observe(this) { medicines ->
+            android.util.Log.d("ElderlyMedicineManagement", "Получены обновленные данные: ${medicines.size} лекарств")
+            medicines.forEach { medicine ->
+                android.util.Log.d("ElderlyMedicineManagement", "Лекарство: ${medicine.name} (ID: ${medicine.id})")
+            }
             medicineAdapter.submitList(medicines)
+            android.util.Log.d("ElderlyMedicineManagement", "Список обновлен в адаптере")
         }
     }
     
@@ -312,10 +322,13 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
     }
     
     private fun showEditMedicineDialog(medicine: Medicine) {
+        android.util.Log.d("ElderlyMedicineManagement", "Показываем диалог редактирования для лекарства: ${medicine.name}")
+        
         AlertDialog.Builder(this)
             .setTitle("РЕДАКТИРОВАТЬ ЛЕКАРСТВО")
             .setMessage("Редактировать '${medicine.name}'?")
             .setPositiveButton("РЕДАКТИРОВАТЬ") { _, _ ->
+                android.util.Log.d("ElderlyMedicineManagement", "Пользователь подтвердил редактирование лекарства: ${medicine.name}")
                 val intent = Intent(this, EditMedicineActivity::class.java).apply {
                     putExtra("medicine_id", medicine.id)
                 }
@@ -326,11 +339,26 @@ class ElderlyMedicineManagementActivity : AppCompatActivity() {
     }
     
     private fun showDeleteConfirmationDialog(medicine: Medicine) {
+        android.util.Log.d("ElderlyMedicineManagement", "=== ПОКАЗЫВАЕМ ДИАЛОГ УДАЛЕНИЯ ===")
+        android.util.Log.d("ElderlyMedicineManagement", "Лекарство: ${medicine.name} (ID: ${medicine.id})")
+        
         AlertDialog.Builder(this)
             .setTitle("УДАЛИТЬ ЛЕКАРСТВО")
             .setMessage("Вы уверены, что хотите удалить лекарство \"${medicine.name}\"?\n\nЭто действие нельзя отменить.")
             .setPositiveButton("УДАЛИТЬ") { _, _ ->
+                android.util.Log.d("ElderlyMedicineManagement", "=== ПОЛЬЗОВАТЕЛЬ ПОДТВЕРДИЛ УДАЛЕНИЕ ===")
+                android.util.Log.d("ElderlyMedicineManagement", "Лекарство: ${medicine.name} (ID: ${medicine.id})")
+                
+                // Отменяем уведомления для этого лекарства
+                val intent = Intent(this, NotificationService::class.java).apply {
+                    action = "CANCEL_MEDICINE"
+                    putExtra("medicine_id", medicine.id)
+                }
+                startService(intent)
+                android.util.Log.d("ElderlyMedicineManagement", "Отправлен запрос на отмену уведомлений для лекарства ID: ${medicine.id}")
+                
                 viewModel.deleteMedicine(medicine.id)
+                android.util.Log.d("ElderlyMedicineManagement", "Вызван viewModel.deleteMedicine для ID: ${medicine.id}")
                 Toast.makeText(this, "Лекарство \"${medicine.name}\" удалено", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("ОТМЕНА", null)

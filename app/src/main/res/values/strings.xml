@@ -1,85 +1,658 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Медицинские заметки</string>
-    <string name="service_description">Сервис уведомлений о лекарствах</string>
+    <string name="app_name">Medical Notes</string>
+    <string name="service_description">Medicine notification service</string>
+    <string name="quick_settings_tile_description">Open medicine management app</string>
     
-    <!-- Главный экран -->
-    <string name="today_medicines">Лекарства на сегодня</string>
-    <string name="add_medicine">Добавить лекарство</string>
-    <string name="settings">Настройки</string>
-    <string name="customize_buttons">Настроить кнопки</string>
+    <!-- Main screen -->
+    <string name="today_medicines">Today\'s Medicines</string>
+    <string name="add_medicine">Add Medicine</string>
+    <string name="settings">Settings</string>
+    <string name="customize_buttons">Customize Buttons</string>
     
-    <!-- Лекарства -->
-    <string name="medicine_name">Название лекарства</string>
-    <string name="medicine_dosage">Дозировка</string>
-    <string name="medicine_quantity">Количество</string>
-    <string name="medicine_time">Время приема</string>
-    <string name="medicine_notes">Заметки</string>
-    <string name="save_medicine">Сохранить</string>
-    <string name="delete_medicine">Удалить</string>
+    <!-- Medicines -->
+    <string name="medicine_name">Medicine Name</string>
+    <string name="medicine_dosage">Dosage</string>
+    <string name="medicine_quantity">Quantity</string>
+    <string name="medicine_time">Time to take</string>
+    <string name="medicine_notes">Notes</string>
+    <string name="save_medicine">Save</string>
+    <string name="delete_medicine">Delete</string>
     
-    <!-- Действия -->
-    <string name="taken">Принял</string>
-    <string name="skipped">Пропустил</string>
-    <string name="emergency_call">Экстренный вызов</string>
-    <string name="check_supply">Проверить запас</string>
+    <!-- Actions -->
+    <string name="taken">Taken</string>
+    <string name="skipped">Skipped</string>
+    <string name="button_take_medicine">Take Medicine</string>
+    <string name="button_medicine_taken">Taken</string>
+
+
+    <string name="emergency_call">Emergency Call</string>
+    <string name="check_supply">Check Supply</string>
     
-    <!-- Настройки кнопок -->
-    <string name="button_size">Размер кнопок</string>
-    <string name="button_color">Цвет кнопок</string>
-    <string name="button_actions">Действия кнопок</string>
-    <string name="small_buttons">Маленькие</string>
-    <string name="medium_buttons">Средние</string>
-    <string name="large_buttons">Большие</string>
-    <string name="extra_large_buttons">Очень большие</string>
+    <!-- Button settings -->
+    <string name="button_size">Button Size</string>
+    <string name="button_color">Button Color</string>
+    <string name="button_actions">Button Actions</string>
+    <string name="small_buttons">Small</string>
+    <string name="medium_buttons">Medium</string>
+    <string name="large_buttons">Large</string>
+    <string name="extra_large_buttons">Extra Large</string>
     
-    <!-- Уведомления -->
-    <string name="medicine_reminder">Напоминание о лекарстве</string>
-    <string name="time_to_take">Время принимать</string>
-    <string name="medicine_reminder_text">Время принимать %1$s</string>
-    <string name="low_supply_warning">Заканчиваются таблетки</string>
-    <string name="low_supply_text">Осталось мало таблеток %1$s</string>
+    <!-- Notifications -->
+    <string name="medicine_reminder">Medicine Reminder</string>
+    <string name="time_to_take">Time to take</string>
+    <string name="time_to_take_medicine">Time to take medicine</string>
+    <string name="medicine_reminder_text">Time to take %1$s</string>
+    <string name="low_supply_warning">Low Supply Warning</string>
+    <string name="low_supply_text">Low supply of %1$s</string>
     
-    <!-- Диабет -->
-    <string name="insulin_reminder">Напоминание об инсулине</string>
-    <string name="blood_sugar">Уровень сахара</string>
-    <string name="record_sugar">Записать сахар</string>
+    <!-- Diabetes -->
+    <string name="insulin_reminder">Insulin Reminder</string>
+    <string name="blood_sugar">Blood Sugar</string>
+    <string name="record_sugar">Record Sugar</string>
     
-    <!-- Общие -->
-    <string name="ok">ОК</string>
-    <string name="cancel">Отмена</string>
-    <string name="yes">Да</string>
-    <string name="no">Нет</string>
-    <string name="edit">Изменить</string>
-    <string name="delete">Удалить</string>
-    <string name="back">Назад</string>
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="back">Back</string>
     
-    <!-- Управление лекарствами -->
-    <string name="manage_medicines">Управление лекарствами</string>
-    <string name="sos_button">КНОПКА SOS</string>
-    <string name="son">СЫН</string>
-    <string name="journal">ЖУРНАЛ</string>
-    <string name="my_medicines">МОИ ЛЕКАРСТВА</string>
-    <string name="remaining">Осталось</string>
-    <string name="tablets">таблеток</string>
-    <string name="taken_status">ПРИНЯТО</string>
-    <string name="missed_status">ПРОПУЩЕНО</string>
-    <string name="skip_dose">ПРОПУСТИТЬ ПРИЕМ</string>
-    <string name="elderly_mode">Режим для пожилых</string>
-    <string name="disable_elderly_mode">Выключить режим для пожилых</string>
+    <!-- Medicine management -->
+    <string name="manage_medicines">Manage Medicines</string>
+    <string name="sos_button">SOS BUTTON</string>
+    <string name="son">SON</string>
+    <string name="journal">JOURNAL</string>
+    <string name="my_medicines">MY MEDICINES</string>
+    <string name="remaining">Remaining</string>
+    <string name="tablets">tablets</string>
+    <string name="taken_status">TAKEN</string>
+    <string name="missed_status">MISSED</string>
+    <string name="skip_dose">SKIP DOSE</string>
+    <string name="elderly_mode">ELDERLY MODE</string>
+    <string name="disable_elderly_mode">DISABLE ELDERLY MODE</string>
     
-    <!-- Частоты приема -->
-    <string name="daily">Каждый день</string>
-    <string name="every_other_day">Через день</string>
-    <string name="twice_a_week">2 раза в неделю</string>
-    <string name="three_times_a_week">3 раза в неделю</string>
-    <string name="weekly">Раз в неделю</string>
-    <string name="custom_schedule">По расписанию</string>
+    <!-- Frequencies -->
+    <string name="daily">Daily</string>
+    <string name="every_other_day">Every other day</string>
+    <string name="twice_a_week">Twice a week</string>
+    <string name="three_times_a_week">Three times a week</string>
+    <string name="weekly">Weekly</string>
+    <string name="custom_schedule">Custom schedule</string>
     
-    <!-- Времена дня -->
-    <string name="morning">Утром</string>
-    <string name="afternoon">Днем</string>
-    <string name="evening">Вечером</string>
-    <string name="night">Ночью</string>
-    <string name="custom_time">Пользовательское время</string>
+    <!-- Time periods -->
+    <string name="morning">Morning</string>
+    <string name="afternoon">Afternoon</string>
+    <string name="evening">Evening</string>
+    <string name="night">Night</string>
+    <string name="custom_time">Custom time</string>
+    
+    <!-- Settings -->
+    <string name="language_settings">Application Language</string>
+    <string name="current_language">Current Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="russian">Русский</string>
+    <string name="english">English</string>
+    <string name="language_changed">Language Changed</string>
+    <string name="restart_required">Application restart required</string>
+    
+    <!-- Errors and messages -->
+    <string name="error_initialization">Data initialization error</string>
+    <string name="error_ui_setup">UI setup error</string>
+    <string name="error_loading_data">Data loading error</string>
+    <string name="error_starting_services">Services startup error</string>
+    <string name="test_crash_reporter">CrashReporter Test</string>
+    <string name="settings_saved">Settings saved</string>
+    <string name="no_backups_available">No backups available</string>
+    <string name="select_backup_restore">Select backup to restore</string>
+    <string name="confirm_restore">Restore Confirmation</string>
+    <string name="restore_backup_message">Restore data from backup \'%1$s\'? Current data will be replaced.</string>
+    <string name="restore">Restore</string>
+    <string name="no_backups">No backups</string>
+
+    <string name="clear_old">Clear Old</string>
+    <string name="close">Close</string>
+    <string name="data_statistics">Data Statistics</string>
+    <string name="total_medicines">Total Medicines</string>
+    <string name="active_medicines">Active Medicines</string>
+    <string name="total_buttons">Total Buttons</string>
+    <string name="visible_buttons">Visible Buttons</string>
+    <string name="low_stock_medicines">Low Stock Medicines</string>
+    <string name="backup_count">Backup Count</string>
+    <string name="config_version">Config Version</string>
+    <string name="clear_data">Clear Data</string>
+    <string name="clear_data_confirm">Are you sure you want to delete ALL data? This action cannot be undone.</string>
+    <string name="delete_all">Delete All</string>
+
+    <string name="test_overdue_message">Create test medicine for 2 minutes ahead and close app?\n\nIn 2 minutes notification with vibration and sound will appear.</string>
+    <string name="create_and_close">Create and Close</string>
+    <string name="test_medicine_created">Test medicine created!\nTime to take: %1$s\nApp will close in 3 seconds...</string>
+    <string name="stop_notifications">Stop Notifications</string>
+    <string name="stop_notifications_message">Force stop all vibrations, sounds and notifications?\n\nThis may be useful if standard buttons on medicine card don\'t work.</string>
+    <string name="stop_all">Stop All</string>
+    <string name="all_notifications_stopped">All notifications, vibrations and sounds stopped!</string>
+    <string name="emergency_notification">Emergency Notification</string>
+    <string name="medicine">Medicine</string>
+    <string name="button_customization">Button Customization</string>
+    <string name="small">Small</string>
+    <string name="medium">Medium</string>
+    <string name="large">Large</string>
+    <string name="extra_large">Extra Large</string>
+    <string name="blue">Blue</string>
+    <string name="gray">Gray</string>
+    <string name="green">Green</string>
+    <string name="orange">Orange</string>
+    <string name="red">Red</string>
+    <string name="high_contrast">High Contrast</string>
+    <string name="reset_to_defaults">Reset to Defaults</string>
+    <string name="reset_confirm">Reset all button settings to default values?</string>
+    <string name="reset">Reset</string>
+    <string name="version">Version</string>
+    <string name="updated">Updated</string>
+    <string name="installed">Installed</string>
+
+    <string name="pieces">pieces</string>
+    <string name="copies">copies</string>
+    <string name="size">Size</string>
+    <string name="date">Date</string>
+    <string name="kb">KB</string>
+    
+    <!-- Additional strings for language support -->
+    <string name="edit_medicine">Edit Medicine</string>
+    <string name="quantity">Quantity</string>
+    <string name="notes">Notes</string>
+    <string name="medicine_type">Medicine Type</string>
+    <string name="enter_medicine_name">Enter medicine name</string>
+    <string name="enter_quantity">Enter quantity</string>
+    <string name="enter_notes">Enter notes</string>
+    <string name="save">Save</string>
+    <string name="create_group">Create Group</string>
+    <string name="add_to_group">Add to Group</string>
+    <string name="change_group">Change Group</string>
+    <string name="time_section">Time</string>
+    <string name="frequency_section">Frequency</string>
+    
+    <!-- Frequency options -->
+    <string name="frequency_daily">Daily</string>
+    <string name="frequency_every_other_day">Every other day</string>
+    <string name="frequency_twice_a_week">Twice a week</string>
+    <string name="frequency_three_times_a_week">Three times a week</string>
+    <string name="frequency_weekly">Once a week</string>
+    <string name="frequency_custom">Custom schedule</string>
+    <string name="frequency_selection_dialog">Select frequency</string>
+    
+    <string name="group_section">Group</string>
+    <string name="overdue">OVERDUE</string>
+    <string name="today">TODAY</string>
+    <string name="snooze">Snooze</string>
+    <string name="skip">Skip</string>
+    <string name="groups">Groups</string>
+    <string name="backup_restore">Backup &amp; Restore</string>
+    <string name="about">About</string>
+    <string name="app_description">Medicine management application</string>
+    <string name="data_backup">Data Backup</string>
+    <string name="language_test">Language Test</string>
+    <string name="notification_manager">Notification Manager</string>
+    <string name="create_backup">Create Backup</string>
+    <string name="restore_backup">Restore Backup</string>
+    <string name="export_data">Export Data</string>
+    <string name="import_data">Import Data</string>
+    <string name="crash_report">Crash Report</string>
+    <string name="test_medicine">Test Medicine</string>
+    <string name="system_logs">System Logs</string>
+    <string name="test_groups">Test Groups</string>
+    <string name="medicines">Medicines</string>
+    
+    <!-- Plurals -->
+    <plurals name="medicines_count">
+        <item quantity="one">%d medicine</item>
+        <item quantity="other">%d medicines</item>
+    </plurals>
+    
+    <!-- Format strings -->
+    <string name="and_more">%1$s and %2$d more</string>
+    
+    <!-- Activity titles -->
+    <string name="notification_manager_title">Notification Manager</string>
+    <string name="medicine_manager_title">Medicine Management</string>
+    <string name="group_management_title">Group Management</string>
+    <string name="edit_medicine_title">Edit Medicine</string>
+    <string name="data_backup_title">Data Backup</string>
+    <string name="crash_report_title">Crash Report</string>
+    <string name="button_customization_title">Button Customization</string>
+    <string name="add_medicine_title">Add Medicine</string>
+    
+    <!-- Form sections -->
+    <string name="basic_information">Basic Information</string>
+    <string name="additional_information">Additional Information</string>
+    <string name="medicine_grouping">Medicine Grouping</string>
+    <string name="schedule_section">Schedule</string>
+    <string name="weekdays">Weekdays</string>
+    <string name="select_days">Select Days</string>
+    <string name="multiple_times_per_day">Multiple times per day</string>
+    <string name="add_time">Add Time</string>
+    <string name="times_taken">Times taken: %1$s</string>
+    <string name="related_medicines">Related Medicines</string>
+
+    <string name="not_selected">Not selected</string>
+    <string name="saving">Saving...</string>
+    
+    <!-- Form fields -->
+    <string name="enter_medicine_name_hint">Enter medicine name</string>
+    <string name="enter_dosage_hint">Enter dosage</string>
+    <string name="enter_medicine_type_hint">Enter medicine type</string>
+    <string name="enter_quantity_hint">Enter quantity</string>
+    <string name="enter_notes_hint">Enter notes</string>
+    <string name="enter_group_name_hint">Enter group name</string>
+    <string name="enter_group_order_hint">Group order (1, 2, 3...)</string>
+    <string name="search_medicines_hint">Search medicines...</string>
+    
+    <!-- Checkboxes and options -->
+    <string name="this_is_insulin">This is insulin</string>
+    <string name="vibration_on_notifications">Vibration on notifications</string>
+    <string name="sound_on_notifications">Sound on notifications</string>
+    
+    <!-- Buttons -->
+    <string name="copy">Copy</string>
+    <string name="send">Send</string>
+    <string name="refresh">Refresh</string>
+    <string name="clear">Clear</string>
+    <string name="export_data_button">Export Data</string>
+    <string name="select_backup">Select Backup</string>
+    <string name="auto_import">Auto Import</string>
+    <string name="available_backups">Available Backups</string>
+    <string name="no_backups_found">No backups found</string>
+    
+    <!-- Status and messages -->
+    <string name="status">Status</string>
+    <string name="checking">Checking...</string>
+    <string name="actions">Actions</string>
+    <string name="report_details">Report Details</string>
+    <string name="loading_report">Loading report...</string>
+    <string name="empty_schedule">Schedule is empty</string>
+    <string name="click_plus_to_add">Click + to add medicine</string>
+    <string name="loading_error">Loading Error</string>
+    <string name="failed_to_load_medicines">Failed to load medicines</string>
+    <string name="retry">Retry</string>
+    <string name="system_logs_header">SYSTEM LOGS:</string>
+    <string name="loading_logs">Loading logs...</string>
+    <string name="clear_logs">CLEAR LOGS</string>
+    <string name="copy_log">COPY LOG</string>
+    <string name="diagnostics">🔍 DIAGNOSTICS</string>
+    <string name="fix_problems">🔧 FIX PROBLEMS</string>
+    
+    <!-- Elderly mode -->
+    <string name="my_medicines_elderly">🏥 MY MEDICINES</string>
+    <string name="today_medicines_elderly">📋 TODAY\'S MEDICINES</string>
+    <string name="medicine_management_elderly">💊 MEDICINE MANAGEMENT</string>
+    <string name="toggle_elderly_mode">👴 TOGGLE ELDERLY MODE</string>
+    <string name="journal_elderly">JOURNAL</string>
+    <string name="add_elderly">ADD</string>
+    
+    <!-- Medicine management -->
+    <string name="medicine_management">Medicine Management</string>
+    <string name="add_button">+ Add</string>
+    <string name="all_medicines">All</string>
+    <string name="active_medicines_filter">Active</string>
+    <string name="low_stock_filter">Low Stock</string>
+    <string name="no_medicines">No medicines</string>
+    <string name="add_first_medicine">Add first medicine</string>
+    <string name="groups_count">Groups</string>
+    <string name="medicines_in_groups">Medicines in groups</string>
+    <string name="average_in_group">Average in group</string>
+    <string name="auto_grouping">Auto Grouping</string>
+    <string name="clear_groups">Clear Groups</string>
+    <string name="no_groups_found">No groups found</string>
+    <string name="create_first_group">Create first group to organize medicines</string>
+    
+    <!-- Navigation menu -->
+    <string name="manage_medicines_menu">Manage Medicines</string>
+    <string name="manage_groups_menu">Manage Groups</string>
+    <string name="settings_menu">Settings</string>
+    <string name="elderly_mode_menu">Elderly Mode</string>
+    <string name="tools">Tools</string>
+    <string name="system_logs_menu">System Logs</string>
+    <string name="export_data_menu">Export Data</string>
+    <string name="test_groups_menu">Test Groups</string>
+    
+    <!-- Menu actions -->
+    <string name="save_action">Save</string>
+    <string name="delete_action">Delete</string>
+    <string name="export_groups">Export Groups</string>
+    <string name="import_groups">Import Groups</string>
+    <string name="settings_action">Settings</string>
+    
+    <!-- Medicine card -->
+    <string name="time_to_take_medicine_card">Time to take medicine</string>
+    <string name="name_time">Name / Time</string>
+    <string name="snooze_10_min">Snooze 10 min</string>
+    <string name="skip_medicine">Skip</string>
+    <string name="taken_medicine">Taken</string>
+    
+    <!-- Preview -->
+    <string name="preview">Preview</string>
+    
+    <!-- Notification cards -->
+    <string name="take_medicine">Take: %1$s</string>
+    <string name="active">Active</string>
+    <string name="dosage_format">Dosage: %1$s</string>
+    <string name="remaining_format">Remaining: %1$d pcs.</string>
+    <string name="group_format">Group: %1$s</string>
+    <string name="time_to_take_medicine_exclamation">Time to take medicine!</string>
+    <string name="medicine_name_label">Medicine Name</string>
+    <string name="time_format">Time: %1$s</string>
+    <string name="click_taken_to_mark">Click \'Taken\' to mark medicine intake</string>
+    
+    <!-- Medicine item labels -->
+    <string name="medicine_name_placeholder">Medicine Name</string>
+    <string name="dosage_label">Dosage</string>
+    <string name="remaining_tablets_format">Remaining: %1$d tablets</string>
+    <string name="active_status">ACTIVE</string>
+    <string name="low_status">LOW</string>
+    <string name="take_all_selected">TAKE ALL SELECTED</string>
+    <string name="missed_medicines_format">MISSED %1$d MEDICINES</string>
+    <string name="every_other_day_time">every other day at %1$s</string>
+    <string name="taken_status_short">TAKEN</string>
+    <string name="notes_label">Notes</string>
+    <string name="overdue_status">OVERDUE</string>
+    <string name="take_action">TAKE</string>
+    <string name="remaining_pcs_format">Remaining: %1$d pcs</string>
+    <string name="remaining_short_format">Remaining: %1$d</string>
+    <string name="running_out">RUNNING OUT!</string>
+    <string name="missed_status_short">MISSED</string>
+    <string name="skip_action">SKIP</string>
+    <string name="change_action">CHANGE</string>
+    <string name="delete_action_short">DELETE</string>
+    
+    <!-- Group items -->
+    <string name="group_name_placeholder">Group Name</string>
+    <string name="order_format">Order: %1$d</string>
+    <string name="active_female">ACTIVE</string>
+    <string name="medicines_in_group_format">Medicines in group: %1$d</string>
+    <string name="intake_time_format">Intake time: %1$s</string>
+    <string name="missed_group_format">MISSED %1$d MEDICINES</string>
+    <string name="take_all_group_medicines">TAKE ALL GROUP MEDICINES</string>
+    <string name="group_notes">Group Notes</string>
+    <string name="change_action_short">CHANGE</string>
+    <string name="delete_action_short_alt">DELETE</string>
+    <string name="medicine_list">Medicine List</string>
+    <string name="add_medicine_to_group">ADD MEDICINE</string>
+    
+    <!-- Grid items -->
+    <string name="name_label">Name</string>
+    <string name="taken_status_grid">TAKEN</string>
+    <string name="running_out_grid">RUNNING OUT</string>
+    
+    <!-- Elderly items -->
+    <string name="skip_action_elderly">SKIP</string>
+    
+    <!-- Dialog elements -->
+    <string name="select_time">Select Time</string>
+    <string name="hours">Hours</string>
+    <string name="minutes">Minutes</string>
+    <string name="selected_time">Selected time:</string>
+    
+    <!-- Search and hints -->
+    <string name="search_medicines_placeholder">Search medicines...</string>
+    <string name="medicine_name_hint">Medicine Name</string>
+    <string name="dosage_hint">Dosage</string>
+    <string name="remaining_pcs_hint">Remaining (pcs.)</string>
+    <string name="notes_hint">Notes</string>
+    
+    <!-- Status indicators -->
+    <string name="order_short">Order: %1$d</string>
+    <string name="active_short">ACTIVE</string>
+    <string name="missed_short">MISSED</string>
+    <string name="change_short">CHANGE</string>
+    <string name="delete_short">DELETE</string>
+    
+    <!-- Dialog titles and labels -->
+    <string name="edit_medicine_dialog_title">Edit Medicine</string>
+    <string name="intake_time_label">Intake time:</string>
+    <string name="active_notifications">Active (notifications enabled)</string>
+    
+    <!-- Settings sections -->
+    <string name="app_settings">Application Settings</string>
+    <string name="notifications_section">Notifications</string>
+    <string name="enable_notifications">Enable notifications</string>
+    <string name="vibration">Vibration</string>
+    <string name="sound">Sound</string>
+    <string name="remind_before_minutes">Remind before (minutes):</string>
+    <string name="notification_thresholds">Notification Thresholds</string>
+    <string name="low_stock_warning_pcs">Low stock warning (pcs.):</string>
+    <string name="backup_section">Backup</string>
+    <string name="auto_backup">Automatic backup</string>
+    <string name="data_compression">Data compression</string>
+    <string name="max_backups">Maximum backups:</string>
+    <string name="data_backup_section">Data Backup</string>
+    <string name="create_backup_button">Create backup</string>
+    <string name="restore_button">Restore</string>
+    <string name="backup_list">Backup list</string>
+    <string name="interface_section">Interface</string>
+    <string name="customize_buttons_button">Customize buttons</string>
+    <string name="language_test_button">Language test</string>
+    <string name="notifications_button">Notifications</string>
+    <string name="high_contrast_button">High contrast</string>
+    <string name="data_section">Data</string>
+    <string name="statistics">Statistics</string>
+    <string name="check_data_integrity">Check data integrity</string>
+    <string name="clear_all_data">Clear all data</string>
+    <string name="notification_testing">Notification Testing</string>
+    <string name="test_notification_description">Creates a test medicine for 2 minutes ahead and closes the app to test notifications</string>
+    <string name="test_overdue_medicine">Test overdue medicine</string>
+    <string name="stop_vibration_sound">Stop vibration and sound</string>
+    <string name="about_app">About App</string>
+    <string name="version_info">Version: v1.2 (3)</string>
+    <string name="updated_info">Updated: 27.12.2024 15:30</string>
+    <string name="installed_info">Installed: 27.12.2024 15:30</string>
+    <string name="crash_report_section">Crash Report</string>
+    <string name="save_settings">Save settings</string>
+    
+    <!-- Notification manager -->
+    <string name="notification_manager_header">Notification Manager</string>
+    <string name="all_medicines_filter">All</string>
+    <string name="active_medicines_filter_alt">Active</string>
+    <string name="inactive_medicines_filter">Inactive</string>
+    <string name="medicines_summary">Total: %1$d | Active: %2$d | Low stock: %3$d</string>
+    <string name="test_notification">Test notification</string>
+    <string name="cancel_all">Cancel all</string>
+    <string name="refresh_button">Refresh</string>
+    <string name="no_medicines_found">No medicines found</string>
+    
+    <!-- Medicine modern -->
+    <string name="today_medicines_header">Today\'s Medicines</string>
+    
+    <!-- Medicine management elderly -->
+    <string name="medicine_management_elderly_header">MEDICINE MANAGEMENT</string>
+    <string name="change_action_elderly">CHANGE</string>
+    <string name="settings_action_elderly">SETTINGS</string>
+    <string name="app_settings_elderly">APP SETTINGS</string>
+    <string name="notification_settings_elderly">NOTIFICATION SETTINGS</string>
+    <string name="group_management_elderly">GROUP MANAGEMENT</string>
+    <string name="back_action_elderly">BACK</string>
+    
+    <!-- Data backup -->
+    <string name="export_data_section">Export Data</string>
+    <string name="create_backup_description">Create a backup of all application data (medicines, settings, buttons)</string>
+    <string name="export_data_button_alt">Export data</string>
+    <string name="import_data_section">Import Data</string>
+    <string name="restore_data_description">Restore data from backup</string>
+    <string name="select_backup_button">Select backup</string>
+    <string name="auto_import_button">Auto import</string>
+    <string name="available_backups_section">Available backups</string>
+    <string name="refresh_backups">Refresh</string>
+    <string name="no_backups_found_alt">No backups found</string>
+    
+    <!-- Crash report -->
+    <string name="clear_button">Clear</string>
+    <string name="report_details_section">Report Details</string>
+    <string name="loading_report_alt">Loading report...</string>
+    
+    <!-- Add medicine -->
+    <string name="not_selected_alt">Not selected</string>
+    <string name="saving_alt">Saving...</string>
+    
+    <!-- Medicine manager -->
+    <string name="medicine_manager_header">Medicine Management</string>
+    
+    <!-- Content descriptions for accessibility -->
+    <string name="select_medicine">Select medicine</string>
+    <string name="medicine_taken">Medicine taken</string>
+    <string name="take_all_selected_medicines">Take all selected medicines</string>
+
+    <string name="take_all_group_medicines_desc">Take all medicines in group</string>
+    <string name="medicine_intake_time">Medicine intake time</string>
+
+    <string name="mark_as_taken">Mark as taken</string>
+    <string name="mark_as_skipped">Mark as skipped</string>
+    <string name="edit_medicine_desc">Edit medicine</string>
+    <string name="delete_medicine_desc">Delete medicine</string>
+    <string name="loading_medicines">Loading medicines</string>
+    <string name="clear_system_logs">Clear system logs</string>
+    <string name="copy_logs_to_clipboard">Copy logs to clipboard</string>
+    <string name="run_app_diagnostics">Run app diagnostics</string>
+    <string name="auto_fix_problems">Auto fix problems</string>
+    <string name="add_medicine_desc">Add medicine</string>
+    <string name="auto_group_medicines">Auto group medicines</string>
+    <string name="clear_all_groups">Clear all groups</string>
+    <string name="create_new_group">Create new group</string>
+    <string name="medicine_name_input_field">Medicine name input field</string>
+    <string name="dosage_input_field">Dosage input field</string>
+    <string name="medicine_type_selection">Medicine type selection</string>
+    <string name="quantity_input_field">Quantity input field</string>
+    <string name="frequency_selection">Frequency selection</string>
+    <string name="notes_input_field">Notes input field</string>
+    <string name="mark_as_insulin">Mark as insulin</string>
+    <string name="group_name_input_field">Group name input field</string>
+    <string name="order_input_field">Order input field</string>
+    <string name="saving_changes">Saving changes</string>
+    <string name="time_selection">Time selection</string>
+    <string name="weekday_selection">Weekday selection</string>
+    <string name="change_medicine_group">Change medicine group</string>
+    <string name="enable_multiple_intakes">Enable multiple intakes per day</string>
+    <string name="add_intake_time">Add intake time</string>
+    <string name="select_related_medicines">Select related medicines</string>
+    <string name="saving_medicine">Saving medicine</string>
+    <string name="cancel_adding_medicine">Cancel adding medicine</string>
+
+    <!-- Medicine statuses -->
+    <string name="status_taken">Taken</string>
+    <string name="status_taken_uppercase">TAKEN</string>
+    <string name="status_overdue">Overdue</string>
+    <string name="status_overdue_uppercase">OVERDUE</string>
+    <string name="status_active">Active</string>
+    <string name="status_active_uppercase">ACTIVE</string>
+    <string name="status_today">Today</string>
+    <string name="status_today_uppercase">TODAY</string>
+    <string name="status_skip">Skip</string>
+    <string name="status_skip_uppercase">SKIP</string>
+    <string name="status_take">Take</string>
+    <string name="status_take_uppercase">TAKE</string>
+    <string name="status_cancel">Cancel</string>
+    <string name="status_disable">Disable</string>
+
+    <!-- Medicine types -->
+    <string name="medicine_type_tablets">Tablets</string>
+    <string name="medicine_type_capsules">Capsules</string>
+    <string name="medicine_type_injections">Injections</string>
+    <string name="medicine_type_drops">Drops</string>
+    <string name="medicine_type_syrup">Syrup</string>
+    <string name="medicine_type_inhalations">Inhalations</string>
+    <string name="medicine_type_ointments">Ointments</string>
+    <string name="medicine_type_gels">Gels</string>
+    <string name="medicine_type_creams">Creams</string>
+    <string name="medicine_type_suppositories">Suppositories</string>
+    <string name="medicine_type_sprays">Sprays</string>
+    <string name="medicine_type_aerosols">Aerosols</string>
+    <string name="medicine_type_powders">Powders</string>
+    <string name="medicine_type_suspensions">Suspensions</string>
+    <string name="medicine_type_emulsions">Emulsions</string>
+    <string name="medicine_type_insulin">Insulin</string>
+    <string name="medicine_type_ozempic">Ozempic</string>
+    <string name="medicine_type_mounjaro">Mounjaro</string>
+    <string name="medicine_type_other">Other</string>
+
+    <!-- Weekdays -->
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="sunday">Sunday</string>
+    <string name="monday_short">Mon</string>
+    <string name="tuesday_short">Tue</string>
+    <string name="wednesday_short">Wed</string>
+    <string name="thursday_short">Thu</string>
+    <string name="friday_short">Fri</string>
+    <string name="saturday_short">Sat</string>
+    <string name="sunday_short">Sun</string>
+
+    <!-- Actions and buttons -->
+    <string name="action_drank">Drank</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_snooze">Snooze</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_create">Create</string>
+    <string name="action_add">Add</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_understood">UNDERSTOOD</string>
+    <string name="action_export">EXPORT</string>
+    <string name="action_error">ERROR</string>
+    <string name="action_edit">EDIT</string>
+    <string name="action_ok">OK</string>
+
+    <!-- Messages and notifications -->
+    <string name="medicine_generic">Medicine</string>
+    <string name="action_taken">Taken</string>
+    <string name="action_skipped">Skipped</string>
+    <string name="action_copy">Copy</string>
+    <string name="unknown">Unknown</string>
+    <string name="none">None</string>
+    <string name="critical">CRITICAL</string>
+    <string name="normal">NORMAL</string>
+    <string name="settings_uppercase">SETTINGS</string>
+    <string name="enabled">ENABLED</string>
+    <string name="disabled">DISABLED</string>
+
+    <!-- Plural forms -->
+    <string name="medicine_count_one">medicine</string>
+    <string name="medicine_count_few">medicines</string>
+    <string name="medicine_count_many">medicines</string>
+    <string name="preparation_count_one">preparation</string>
+    <string name="preparation_count_few">preparations</string>
+    <string name="preparation_count_many">preparations</string>
+
+    <!-- Medicine groups -->
+    <string name="group_vitamins">Vitamins</string>
+    <string name="group_heart">Heart</string>
+    <string name="group_1">Group 1</string>
+    <string name="group_2">Group 2</string>
+
+    <!-- Log messages -->
+    <string name="warning_low_supply">WARNING: Running low on %1$s</string>
+    <string name="critical_no_supply">CRITICAL: %1$s have run out!</string>
+    <string name="medicine_successfully_updated">✓ Medicine successfully updated</string>
+    <string name="error_updating_medicine">Error updating medicine: %1$s</string>
+    <string name="medicine_taken_success">Medicine %1$s taken!</string>
+    <string name="immediate_update_list">🔄 IMMEDIATE LIST UPDATE</string>
+    <string name="card_immediately_removed">🔄 Medicine card %1$s immediately removed from list</string>
+    <string name="error_immediate_removal">ERROR immediate card removal: %1$s</string>
+    <string name="adapter_updated">✓ Adapter updated</string>
+    <string name="error_adapter_update">ERROR adapter update: %1$s</string>
+    <string name="medicine_list_updated">✓ Medicine list updated</string>
+    <string name="update_completed">=== UPDATE COMPLETED ===</string>
+    <string name="medicine_info">Medicine: %1$s (ID: %2$d)</string>
+    <string name="status_taken_today">Status: takenToday = true</string>
+    <string name="update_time">Update time: %1$s</string>
+    <string name="restarting_periodic_check">Restarting periodic check in 10 seconds</string>
+    <string name="periodic_check_restarted">Periodic check restarted</string>
+
 </resources> 

@@ -210,7 +210,7 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                 }
             }
             "com.medicalnotes.app.EMERGENCY_ALERT" -> {
-                val message = intent.getStringExtra("message") ?: "Экстренное уведомление"
+                val message = intent.getStringExtra("message") ?: context.getString(com.medicalnotes.app.R.string.emergency_notification)
                 val notificationManager = NotificationManager(context)
                 notificationManager.showEmergencyAlert(message)
             }

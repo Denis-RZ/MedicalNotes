@@ -14,6 +14,14 @@ class GroupAdapter(
     private val onAddToGroup: (String) -> Unit
 ) : RecyclerView.Adapter<GroupAdapter.GroupViewHolder>() {
 
+    /**
+     * Обновляет язык в адаптере и перерисовывает все элементы
+     */
+    fun updateLanguage() {
+        android.util.Log.d("GroupAdapter", "Updating language in adapter")
+        notifyDataSetChanged()
+    }
+
     private var groups: List<GroupData> = emptyList()
 
     data class GroupData(
@@ -60,7 +68,11 @@ class GroupAdapter(
         fun bind(groupData: GroupData) {
             binding.apply {
                 textGroupName.text = groupData.name
-                textMedicineCount.text = "${groupData.totalMedicines} лекарств"
+                textMedicineCount.text = root.context.resources.getQuantityString(
+                    com.medicalnotes.app.R.plurals.medicines_count,
+                    groupData.totalMedicines,
+                    groupData.totalMedicines
+                )
                 
                 // Отображаем первые 3 лекарства в группе
                 val medicineNames = groupData.medicines
@@ -68,7 +80,11 @@ class GroupAdapter(
                     .joinToString(", ") { it.name }
                 
                 if (groupData.totalMedicines > 3) {
-                    textMedicineList.text = "$medicineNames и еще ${groupData.totalMedicines - 3}"
+                    textMedicineList.text = root.context.getString(
+                        com.medicalnotes.app.R.string.and_more,
+                        medicineNames,
+                        groupData.totalMedicines - 3
+                    )
                 } else {
                     textMedicineList.text = medicineNames
                 }

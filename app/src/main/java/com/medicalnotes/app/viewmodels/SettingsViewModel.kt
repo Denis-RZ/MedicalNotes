@@ -58,9 +58,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             val success = dataManager.updateSettings(settings)
             if (success) {
                 _settings.value = settings
-                _message.value = "Настройки сохранены"
+                _message.value = getApplication<Application>().getString(com.medicalnotes.app.R.string.settings_saved)
             } else {
-                _message.value = "Ошибка сохранения настроек"
+                _message.value = "Error saving settings"
             }
         }
     }
@@ -68,20 +68,22 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     //  ДОБАВЛЕНО: Обновление UserPreferences
     fun updateUserPreferences(
         enableVibration: Boolean? = null,
-        enableSound: Boolean? = null
+        enableSound: Boolean? = null,
+        language: com.medicalnotes.app.utils.LanguageManager.Language? = null
     ) {
         viewModelScope.launch {
             val currentPreferences = dataManager.loadUserPreferences()
             val updatedPreferences = currentPreferences.copy(
                 enableVibration = enableVibration ?: currentPreferences.enableVibration,
                 enableSound = enableSound ?: currentPreferences.enableSound,
+                language = language ?: currentPreferences.language,
                 updatedAt = System.currentTimeMillis()
             )
             
             dataManager.updateUserPreferences(updatedPreferences)
             _userPreferences.value = updatedPreferences
             
-            android.util.Log.d("SettingsViewModel", "UserPreferences обновлены: вибрация=${updatedPreferences.enableVibration}, звук=${updatedPreferences.enableSound}")
+            android.util.Log.d("SettingsViewModel", "UserPreferences обновлены: вибрация=${updatedPreferences.enableVibration}, звук=${updatedPreferences.enableSound}, язык=${updatedPreferences.language}")
         }
     }
     

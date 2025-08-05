@@ -14,7 +14,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseActivity() {
     
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var viewModel: SettingsViewModel
@@ -45,35 +45,35 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupViews() {
         // Настройка toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Настройки"
+        supportActionBar?.title = getString(R.string.settings)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
         // Отображение информации о версии
-        binding.textViewVersion.text = "Версия: ${VersionUtils.getShortVersionInfo(this)}"
-        binding.textViewBuildTime.text = "Обновлено: ${VersionUtils.getLastUpdateTime(this)}"
+        binding.textViewVersion.text = "${getString(R.string.version)}: ${VersionUtils.getShortVersionInfo(this)}"
+        binding.textViewBuildTime.text = "${getString(R.string.updated)}: ${VersionUtils.getLastUpdateTime(this)}"
         
         try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
             val installTime = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
                 .format(java.util.Date(packageInfo.firstInstallTime))
-            binding.textViewInstallTime.text = "Установлено: $installTime"
+            binding.textViewInstallTime.text = "${getString(R.string.installed)}: $installTime"
         } catch (e: Exception) {
-            binding.textViewInstallTime.text = "Установлено: Неизвестно"
+            binding.textViewInstallTime.text = "${getString(R.string.installed)}: ${getString(R.string.unknown)}"
         }
     }
     
     private fun setupListeners() {
         // Слайдеры
         binding.sliderAdvanceMinutes.addOnChangeListener { _, value, _ ->
-            binding.textAdvanceMinutes.text = "${value.toInt()} минут"
+            binding.textAdvanceMinutes.text = "${value.toInt()} ${getString(R.string.minutes)}"
         }
         
         binding.sliderLowStockThreshold.addOnChangeListener { _, value, _ ->
-            binding.textLowStockThreshold.text = "${value.toInt()} шт."
+            binding.textLowStockThreshold.text = "${value.toInt()} ${getString(R.string.pieces)}"
         }
         
         binding.sliderMaxBackups.addOnChangeListener { _, value, _ ->
-            binding.textMaxBackups.text = "${value.toInt()} копий"
+            binding.textMaxBackups.text = "${value.toInt()} ${getString(R.string.copies)}"
         }
         
         // Кнопки
@@ -83,6 +83,14 @@ class SettingsActivity : AppCompatActivity() {
         
         binding.buttonCustomizeButtons.setOnClickListener {
             startActivity(Intent(this, ButtonCustomizationActivity::class.java))
+        }
+        
+        binding.buttonLanguageSettings.setOnClickListener {
+            startActivity(Intent(this, LanguageActivity::class.java))
+        }
+        
+        binding.buttonLanguageTest.setOnClickListener {
+            startActivity(Intent(this, LanguageTestActivity::class.java))
         }
         
         binding.buttonNotificationManager.setOnClickListener {
@@ -139,13 +147,13 @@ class SettingsActivity : AppCompatActivity() {
             settings?.let {
                 binding.switchNotifications.isChecked = true // Уведомления всегда включены
                 binding.sliderAdvanceMinutes.value = it.notificationAdvanceMinutes.toFloat()
-                binding.textAdvanceMinutes.text = "${it.notificationAdvanceMinutes} минут"
+                binding.textAdvanceMinutes.text = "${it.notificationAdvanceMinutes} ${getString(R.string.minutes)}"
                 binding.sliderLowStockThreshold.value = it.lowStockThreshold.toFloat()
-                binding.textLowStockThreshold.text = "${it.lowStockThreshold} шт."
+                binding.textLowStockThreshold.text = "${it.lowStockThreshold} ${getString(R.string.pieces)}"
                 binding.switchAutoBackup.isChecked = it.autoBackup
                 binding.switchDataCompression.isChecked = it.dataCompression
                 binding.sliderMaxBackups.value = it.maxBackups.toFloat()
-                binding.textMaxBackups.text = "${it.maxBackups} копий"
+                binding.textMaxBackups.text = "${it.maxBackups} ${getString(R.string.copies)}"
                 binding.switchHighContrast.isChecked = false // По умолчанию выключен
             }
         }
@@ -192,52 +200,52 @@ class SettingsActivity : AppCompatActivity() {
     private fun showBackupRestoreDialog() {
         val backups = viewModel.backupList.value ?: emptyList()
         if (backups.isEmpty()) {
-            Toast.makeText(this, "Нет доступных резервных копий", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_backups_available), Toast.LENGTH_SHORT).show()
             return
         }
         
         val backupNames = backups.map { it.name }.toTypedArray()
         
         AlertDialog.Builder(this)
-            .setTitle("Выберите резервную копию для восстановления")
+            .setTitle(getString(R.string.select_backup_restore))
             .setItems(backupNames) { _, which ->
                 val selectedBackup = backups[which]
                 showConfirmRestoreDialog(selectedBackup)
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
     
     private fun showConfirmRestoreDialog(backupFile: File) {
         AlertDialog.Builder(this)
-            .setTitle("Подтверждение восстановления")
-            .setMessage("Восстановить данные из резервной копии '${backupFile.name}'? Текущие данные будут заменены.")
-            .setPositiveButton("Восстановить") { _, _ ->
+            .setTitle(getString(R.string.confirm_restore))
+            .setMessage(getString(R.string.restore_backup_message, backupFile.name))
+            .setPositiveButton(getString(R.string.restore)) { _, _ ->
                 viewModel.restoreFromBackup(backupFile.absolutePath)
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
     
     private fun showBackupListDialog() {
         val backups = viewModel.backupList.value ?: emptyList()
         if (backups.isEmpty()) {
-            Toast.makeText(this, "Нет резервных копий", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_backups), Toast.LENGTH_SHORT).show()
             return
         }
         
         val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
         val backupInfo = backups.map { file ->
-            "${file.name}\nРазмер: ${file.length() / 1024} KB\nДата: ${dateFormat.format(Date(file.lastModified()))}"
+            "${file.name}\n${getString(R.string.size)}: ${file.length() / 1024} ${getString(R.string.kb)}\n${getString(R.string.date)}: ${dateFormat.format(Date(file.lastModified()))}"
         }.joinToString("\n\n")
         
         AlertDialog.Builder(this)
-            .setTitle("Список резервных копий")
+            .setTitle(getString(R.string.backup_list))
             .setMessage(backupInfo)
-            .setPositiveButton("Очистить старые", { _, _ ->
+            .setPositiveButton(getString(R.string.clear_old), { _, _ ->
                 viewModel.cleanupOldBackups()
             })
-            .setNegativeButton("Закрыть", null)
+            .setNegativeButton(getString(R.string.close), null)
             .show()
     }
     
@@ -245,32 +253,32 @@ class SettingsActivity : AppCompatActivity() {
         val statistics = viewModel.dataStatistics.value ?: emptyMap()
         val statsText = statistics.entries.joinToString("\n") { (key, value) ->
             when (key) {
-                "medicines_count" -> "Всего лекарств: $value"
-                "active_medicines" -> "Активных лекарств: $value"
-                "buttons_count" -> "Всего кнопок: $value"
-                "visible_buttons" -> "Видимых кнопок: $value"
-                "low_stock_medicines" -> "Лекарств с низким запасом: $value"
-                "backup_count" -> "Резервных копий: $value"
-                "config_version" -> "Версия конфигурации: $value"
+                "medicines_count" -> "${getString(R.string.total_medicines)}: $value"
+                "active_medicines" -> "${getString(R.string.active_medicines)}: $value"
+                "buttons_count" -> "${getString(R.string.total_buttons)}: $value"
+                "visible_buttons" -> "${getString(R.string.visible_buttons)}: $value"
+                "low_stock_medicines" -> "${getString(R.string.low_stock_medicines)}: $value"
+                "backup_count" -> "${getString(R.string.backup_count)}: $value"
+                "config_version" -> "${getString(R.string.config_version)}: $value"
                 else -> "$key: $value"
             }
         }
         
         AlertDialog.Builder(this)
-            .setTitle("Статистика данных")
+            .setTitle(getString(R.string.data_statistics))
             .setMessage(statsText)
-            .setPositiveButton("OK", null)
+            .setPositiveButton(getString(R.string.ok), null)
             .show()
     }
     
     private fun showClearDataDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Очистка данных")
-            .setMessage("Вы уверены, что хотите удалить ВСЕ данные? Это действие нельзя отменить.")
-            .setPositiveButton("Удалить все") { _, _ ->
+            .setTitle(getString(R.string.clear_data))
+            .setMessage(getString(R.string.clear_data_confirm))
+            .setPositiveButton(getString(R.string.delete_all)) { _, _ ->
                 viewModel.clearAllData()
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
     
@@ -283,12 +291,12 @@ class SettingsActivity : AppCompatActivity() {
             
             // Показываем диалог подтверждения
             AlertDialog.Builder(this)
-                .setTitle("Тест просроченного лекарства")
-                .setMessage("Создать тестовое лекарство на 2 минуты вперед и закрыть приложение?\n\nЧерез 2 минуты появится уведомление с вибрацией и звуком.")
-                .setPositiveButton("Создать и закрыть") { _, _ ->
+                .setTitle(getString(R.string.test_overdue_medicine))
+                .setMessage(getString(R.string.test_overdue_message))
+                .setPositiveButton(getString(R.string.create_and_close)) { _, _ ->
                     createTestMedicineAndClose()
                 }
-                .setNegativeButton("Отмена", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .show()
                 
         } catch (e: Exception) {
@@ -310,7 +318,7 @@ class SettingsActivity : AppCompatActivity() {
             
             // Показываем подтверждение
             Toast.makeText(this, 
-                "Тестовое лекарство создано!\nВремя приема: ${testMedicine.time}\nПриложение закроется через 3 секунды...", 
+                getString(R.string.test_medicine_created, testMedicine.time), 
                 Toast.LENGTH_LONG
             ).show()
             
@@ -347,12 +355,12 @@ class SettingsActivity : AppCompatActivity() {
             
             // Показываем диалог подтверждения
             AlertDialog.Builder(this)
-                .setTitle("Остановить уведомления")
-                .setMessage("Принудительно остановить все вибрации, звуки и уведомления?\n\nЭто может быть полезно, если стандартные кнопки на карточке лекарства не работают.")
-                .setPositiveButton("Остановить все") { _, _ ->
+                .setTitle(getString(R.string.stop_notifications))
+                .setMessage(getString(R.string.stop_notifications_message))
+                .setPositiveButton(getString(R.string.stop_all)) { _, _ ->
                     forceStopAllNotifications()
                 }
-                .setNegativeButton("Отмена", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .show()
                 
         } catch (e: Exception) {
@@ -373,7 +381,7 @@ class SettingsActivity : AppCompatActivity() {
             notificationManager.forceStopAllNotifications()
             
             // Показываем подтверждение
-            Toast.makeText(this, "Все уведомления, вибрации и звуки остановлены!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.all_notifications_stopped), Toast.LENGTH_LONG).show()
             
             android.util.Log.d("SettingsActivity", "✓ Принудительная остановка завершена")
             
@@ -383,6 +391,107 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    override fun updateUIAfterLanguageChange() {
+        super.updateUIAfterLanguageChange()
+        
+        try {
+            android.util.Log.d("SettingsActivity", "Updating UI after language change")
+            
+            // Обновляем заголовок Activity
+            title = getString(R.string.settings)
+            supportActionBar?.title = getString(R.string.settings)
+            
+            // Обновляем информацию о версии
+            binding.textViewVersion.text = "${getString(R.string.version)}: ${VersionUtils.getShortVersionInfo(this)}"
+            binding.textViewBuildTime.text = "${getString(R.string.updated)}: ${VersionUtils.getLastUpdateTime(this)}"
+            
+            // Обновляем текст слайдеров
+            updateSliderTexts()
+            
+            // Обновляем текст кнопок
+            updateButtonTexts()
+            
+            android.util.Log.d("SettingsActivity", "UI updated successfully after language change")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsActivity", "Error updating UI after language change", e)
+        }
+    }
+    
+    private fun updateSliderTexts() {
+        try {
+            // Обновляем текст слайдеров
+            binding.textAdvanceMinutes.text = "${binding.sliderAdvanceMinutes.value.toInt()} ${getString(R.string.minutes)}"
+            binding.textLowStockThreshold.text = "${binding.sliderLowStockThreshold.value.toInt()} ${getString(R.string.pieces)}"
+            binding.textMaxBackups.text = "${binding.sliderMaxBackups.value.toInt()} ${getString(R.string.copies)}"
+            
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsActivity", "Error updating slider texts", e)
+        }
+    }
+    
+    private fun updateButtonTexts() {
+        try {
+            // Обновляем текст кнопок (используем только существующие элементы)
+            try {
+                binding.buttonDataBackup?.text = getString(R.string.data_backup)
+            } catch (e: Exception) {
+                android.util.Log.w("SettingsActivity", "buttonDataBackup not found")
+            }
+            
+            try {
+                binding.buttonCustomizeButtons?.text = getString(R.string.customize_buttons)
+            } catch (e: Exception) {
+                android.util.Log.w("SettingsActivity", "buttonCustomizeButtons not found")
+            }
+            
+            try {
+                binding.buttonLanguageSettings?.text = getString(R.string.language_settings)
+            } catch (e: Exception) {
+                android.util.Log.w("SettingsActivity", "buttonLanguageSettings not found")
+            }
+            
+            try {
+                binding.buttonLanguageTest?.text = getString(R.string.language_test)
+            } catch (e: Exception) {
+                android.util.Log.w("SettingsActivity", "buttonLanguageTest not found")
+            }
+            
+            try {
+                binding.buttonNotificationManager?.text = getString(R.string.notification_manager)
+            } catch (e: Exception) {
+                android.util.Log.w("SettingsActivity", "buttonNotificationManager not found")
+            }
+            
+            try {
+                binding.buttonCreateBackup?.text = getString(R.string.create_backup)
+            } catch (e: Exception) {
+                android.util.Log.w("SettingsActivity", "buttonCreateBackup not found")
+            }
+            
+            try {
+                binding.buttonRestoreBackup?.text = getString(R.string.restore_backup)
+            } catch (e: Exception) {
+                android.util.Log.w("SettingsActivity", "buttonRestoreBackup not found")
+            }
+            
+            try {
+                binding.buttonClearData?.text = getString(R.string.clear_data)
+            } catch (e: Exception) {
+                android.util.Log.w("SettingsActivity", "buttonClearData not found")
+            }
+            
+            try {
+                binding.buttonStopNotifications?.text = getString(R.string.stop_notifications)
+            } catch (e: Exception) {
+                android.util.Log.w("SettingsActivity", "buttonStopNotifications not found")
+            }
+            
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsActivity", "Error updating button texts", e)
+        }
+    }
+    
     override fun onSupportNavigateUp(): Boolean {
         // Используем современный подход вместо устаревшего onBackPressed()
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {

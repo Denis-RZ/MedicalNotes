@@ -99,7 +99,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:visibility="gone"
-                        android:contentDescription="Загрузка лекарств" />
+                        android:contentDescription="@string/loading_medicines" />
 
                     <!-- Empty State -->
                     <LinearLayout
@@ -116,7 +116,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Расписание пусто"
+                            android:text="@string/empty_schedule"
                             android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="@dimen/margin_medium" />
@@ -124,7 +124,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Нажмите + чтобы добавить лекарство"
+                            android:text="@string/click_plus_to_add"
                             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="@dimen/margin_small" />
@@ -146,7 +146,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Ошибка загрузки"
+                            android:text="@string/loading_error"
                             android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                             android:textColor="?attr/colorError"
                             android:layout_marginTop="@dimen/margin_medium" />
@@ -155,7 +155,7 @@
                             android:id="@+id/textErrorMessage"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Не удалось загрузить лекарства"
+                            android:text="@string/failed_to_load_medicines"
                             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="@dimen/margin_small" />
@@ -164,7 +164,7 @@
                             android:id="@+id/buttonRetry"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Повторить"
+                            android:text="@string/retry"
                             android:layout_marginTop="@dimen/margin_medium"
                             style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -185,7 +185,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="ЛОГИ СИСТЕМЫ:"
+                    android:text="@string/system_logs_header"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
                     android:textColor="?attr/colorPrimary"
                     android:layout_marginBottom="@dimen/margin_small" />
@@ -209,7 +209,7 @@
                             android:textColor="@android:color/white"
                             android:textSize="10sp"
                             android:fontFamily="monospace"
-                            android:text="Логи загрузки...\n" />
+                            android:text="@string/loading_logs" />
 
                     </ScrollView>
 
@@ -220,7 +220,7 @@
                     android:id="@+id/buttonClearLogs"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
-                    android:text="ОЧИСТИТЬ ЛОГИ"
+                    android:text="@string/clear_logs"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
                     app:icon="@null"
                     app:iconSize="16dp"
@@ -228,7 +228,7 @@
                     app:strokeColor="?attr/colorOutline"
                     app:strokeWidth="1dp"
                     android:layout_marginTop="@dimen/margin_small"
-                    android:contentDescription="Очистить логи системы"
+                    android:contentDescription="@string/clear_system_logs"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
 
                 <!-- Copy Log Button -->
@@ -236,7 +236,7 @@
                     android:id="@+id/buttonCopyLog"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
-                    android:text="КОПИРОВАТЬ ЛОГ"
+                    android:text="@string/copy_log"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
                     app:icon="@null"
                     app:iconSize="16dp"
@@ -244,7 +244,7 @@
                     app:strokeColor="?attr/colorOutline"
                     app:strokeWidth="1dp"
                     android:layout_marginTop="@dimen/margin_small"
-                    android:contentDescription="Копировать логи в буфер обмена"
+                    android:contentDescription="@string/copy_logs_to_clipboard"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
 
                 <!-- Diagnostic Button -->
@@ -252,7 +252,7 @@
                     android:id="@+id/buttonDiagnostic"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
-                    android:text="🔍 ДИАГНОСТИКА"
+                    android:text="@string/diagnostics"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
                     app:icon="@null"
                     app:iconSize="16dp"
@@ -260,7 +260,7 @@
                     app:strokeColor="?attr/colorPrimary"
                     app:strokeWidth="1dp"
                     android:layout_marginTop="@dimen/margin_small"
-                    android:contentDescription="Запустить диагностику приложения"
+                    android:contentDescription="@string/run_app_diagnostics"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
 
                 <!-- Fix Issues Button -->
@@ -268,7 +268,7 @@
                     android:id="@+id/buttonFixIssues"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
-                    android:text="🔧 ИСПРАВИТЬ ПРОБЛЕМЫ"
+                    android:text="@string/fix_problems"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
                     app:icon="@null"
                     app:iconSize="16dp"
@@ -276,7 +276,7 @@
                     app:strokeColor="?attr/colorError"
                     app:strokeWidth="1dp"
                     android:layout_marginTop="@dimen/margin_small"
-                    android:contentDescription="Автоматически исправить проблемы"
+                    android:contentDescription="@string/auto_fix_problems"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
 
             </LinearLayout>
@@ -292,7 +292,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/margin_large"
-        android:contentDescription="Добавить лекарство"
+                        android:contentDescription="@string/add_medicine_desc"
         app:srcCompat="@android:drawable/ic_input_add"
         app:tint="?attr/colorOnPrimary"
         style="@style/Widget.Material3.FloatingActionButton.Primary" />

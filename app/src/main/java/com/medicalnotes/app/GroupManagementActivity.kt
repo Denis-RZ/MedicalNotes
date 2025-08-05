@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.medicalnotes.app.adapters.GroupAdapter
 import com.medicalnotes.app.databinding.ActivityGroupManagementBinding
@@ -17,7 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class GroupManagementActivity : AppCompatActivity() {
+class GroupManagementActivity : BaseActivity() {
     
     private lateinit var binding: ActivityGroupManagementBinding
     private lateinit var dataManager: DataManager
@@ -37,7 +36,7 @@ class GroupManagementActivity : AppCompatActivity() {
     private fun setupViews() {
         // Настройка toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Управление группами"
+        supportActionBar?.title = getString(R.string.group_management_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
         // Настройка RecyclerView

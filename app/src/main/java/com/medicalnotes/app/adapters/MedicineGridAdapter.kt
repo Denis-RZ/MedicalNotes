@@ -10,6 +10,7 @@ import com.medicalnotes.app.models.Medicine
 import com.medicalnotes.app.utils.DosageCalculator
 import com.medicalnotes.app.utils.MedicineStatusHelper
 import com.medicalnotes.app.utils.MedicineStatus
+import com.medicalnotes.app.utils.DataLocalizationHelper
 
 class MedicineGridAdapter(
     private val onMedicineClick: (Medicine) -> Unit,
@@ -42,9 +43,12 @@ class MedicineGridAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(medicine: Medicine) {
+            // Локализуем данные лекарства для текущего языка
+            val localizedMedicine = DataLocalizationHelper.localizeMedicineData(medicine, binding.root.context)
+            
             binding.apply {
                 // Обновляем статус лекарства
-                val updatedMedicine = MedicineStatusHelper.updateMedicineStatus(medicine)
+                val updatedMedicine = MedicineStatusHelper.updateMedicineStatus(localizedMedicine)
                 val status = MedicineStatusHelper.getMedicineStatus(updatedMedicine)
                 
                 // Основная информация - ограничиваем длину названия
@@ -55,7 +59,7 @@ class MedicineGridAdapter(
                 }
                 
                 // Дозировка с схемой приема
-                val dosageDescription = DosageCalculator.getDosageDescription(updatedMedicine)
+                val dosageDescription = DosageCalculator.getDosageDescription(updatedMedicine, binding.root.context)
                 val groupInfo = if (updatedMedicine.groupName.isNotEmpty()) {
                     " (${updatedMedicine.groupName}, №${updatedMedicine.groupOrder})"
                 } else {
@@ -123,21 +127,25 @@ class MedicineGridAdapter(
                         binding.buttonToggle.text = "Принял"
                         binding.buttonToggle.visibility = android.view.View.VISIBLE
                         binding.buttonEdit.visibility = android.view.View.VISIBLE
+                        binding.buttonDelete.visibility = android.view.View.VISIBLE
                     }
                     MedicineStatus.OVERDUE -> {
                         binding.buttonToggle.text = "Принял"
                         binding.buttonToggle.visibility = android.view.View.VISIBLE
                         binding.buttonEdit.visibility = android.view.View.VISIBLE
+                        binding.buttonDelete.visibility = android.view.View.VISIBLE
                     }
                     MedicineStatus.TAKEN_TODAY -> {
                         binding.buttonToggle.text = "Отменить"
                         binding.buttonToggle.visibility = android.view.View.VISIBLE
                         binding.buttonEdit.visibility = android.view.View.VISIBLE
+                        binding.buttonDelete.visibility = android.view.View.VISIBLE
                     }
                     MedicineStatus.NOT_TODAY -> {
                         binding.buttonToggle.text = "Отключить"
                         binding.buttonToggle.visibility = android.view.View.VISIBLE
                         binding.buttonEdit.visibility = android.view.View.VISIBLE
+                        binding.buttonDelete.visibility = android.view.View.VISIBLE
                     }
                 }
                 
@@ -157,6 +165,12 @@ class MedicineGridAdapter(
                 binding.buttonEdit.setOnClickListener { 
                     android.util.Log.d("MedicineGridAdapter", "Edit button clicked for: ${updatedMedicine.name}")
                     onEditClick(updatedMedicine) 
+                }
+                
+                // Обработчик кнопки удаления
+                binding.buttonDelete.setOnClickListener {
+                    android.util.Log.d("MedicineGridAdapter", "Delete button clicked for: ${updatedMedicine.name}")
+                    onDeleteClick(updatedMedicine)
                 }
                 
                 // Обработчик кнопки принятия/отмены

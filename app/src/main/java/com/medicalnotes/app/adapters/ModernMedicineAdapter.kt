@@ -54,8 +54,8 @@ class ModernMedicineAdapter(
                 }
                 textMedicineTime.text = timeText
                 
-                // Дозировка с описанием
-                val dosageDescription = DosageCalculator.getDosageDescription(updatedMedicine)
+                // Дозировка с схемой приема
+                val dosageDescription = DosageCalculator.getDosageDescription(updatedMedicine, binding.root.context)
                 val groupInfo = if (updatedMedicine.groupName.isNotEmpty()) {
                     " (${updatedMedicine.groupName}, №${updatedMedicine.groupOrder})"
                 } else {
@@ -74,25 +74,25 @@ class ModernMedicineAdapter(
                 // Статус в зависимости от состояния
                 when (status) {
                     MedicineStatus.UPCOMING -> {
-                        textStatus.text = "СЕГОДНЯ"
+                        textStatus.text = root.context.getString(com.medicalnotes.app.R.string.status_today_uppercase)
                         textStatus.background = root.context.getDrawable(
                             com.medicalnotes.app.R.drawable.status_active_badge
                         )
                     }
                     MedicineStatus.OVERDUE -> {
-                        textStatus.text = "ПРОСРОЧЕНО"
+                        textStatus.text = root.context.getString(com.medicalnotes.app.R.string.status_overdue_uppercase)
                         textStatus.background = root.context.getDrawable(
                             com.medicalnotes.app.R.drawable.missed_light_background
                         )
                     }
                     MedicineStatus.TAKEN_TODAY -> {
-                        textStatus.text = "ПРИНЯТО"
+                        textStatus.text = root.context.getString(com.medicalnotes.app.R.string.status_taken_uppercase)
                         textStatus.background = root.context.getDrawable(
                             com.medicalnotes.app.R.drawable.status_light_background
                         )
                     }
                     MedicineStatus.NOT_TODAY -> {
-                        textStatus.text = "НЕ АКТИВНО"
+                        textStatus.text = root.context.getString(com.medicalnotes.app.R.string.status_disable)
                         textStatus.background = root.context.getDrawable(
                             com.medicalnotes.app.R.drawable.status_light_background
                         )

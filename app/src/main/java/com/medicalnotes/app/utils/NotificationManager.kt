@@ -18,6 +18,7 @@ import com.medicalnotes.app.R
 import com.medicalnotes.app.models.Medicine
 import com.medicalnotes.app.receiver.MedicineAlarmReceiver
 import com.medicalnotes.app.utils.DataManager
+import com.medicalnotes.app.utils.NotificationCardRemoteViews
 import java.time.LocalTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -1816,35 +1817,28 @@ class NotificationManager(private val context: Context) {
      */
     fun showMedicineCardNotification(medicine: Medicine, isOverdue: Boolean = false) {
         try {
-            android.util.Log.d("NotificationManager", "Создание полноэкранного уведомления для: ${medicine.name}")
+            android.util.Log.d("NotificationManager", "Создание уведомления с карточкой для: ${medicine.name}")
             
             ensureChannel(CHANNEL_ID_MEDICINE_CARD, "Карточки приема", "Карточка с кнопками действий")
             
-            // Создаем PendingIntent для полноэкранной Activity
-            val open = Intent(context, com.medicalnotes.app.MedicineCardActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra("medicine_id", medicine.id)
-                putExtra("medicine_name", medicine.name)
-                putExtra("medicine_time", medicine.time.toString())
-            }
-            val fullScreen = PendingIntent.getActivity(
-                context, medicine.id.toInt(), open,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            // Создаем RemoteViews для карточки лекарства
+            val remoteViews = NotificationCardRemoteViews.createMedicineNotificationView(
+                context, medicine, isOverdue
             )
-
-            // Создаем действия для уведомления
-            fun action(a: String, req: Int, title: String): NotificationCompat.Action {
-                val i = Intent(context, MedicineAlarmReceiver::class.java).apply {
-                    action = a; putExtra("medicine_id", medicine.id)
+            
+            // Создаем PendingIntents для кнопок
+            fun createButtonIntent(action: String, requestCode: Int): PendingIntent {
+                val intent = Intent(context, MedicineAlarmReceiver::class.java).apply {
+                    this.action = action
+                    putExtra("medicine_id", medicine.id)
                 }
-                val pi = PendingIntent.getBroadcast(
-                    context, req, i,
+                return PendingIntent.getBroadcast(
+                    context, requestCode, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                return NotificationCompat.Action.Builder(0, title, pi).build()
             }
-
-            // Создаем уведомление с полноэкранным intent
+            
+            // Создаем уведомление с RemoteViews
             val title = if (isOverdue) "ПРОСРОЧЕНО: ${medicine.name}" else "Примите: ${medicine.name}"
             val contentText = if (isOverdue) "Просрочено! Запланировано было на ${medicine.time}" else "Запланировано на ${medicine.time}"
             
@@ -1856,10 +1850,17 @@ class NotificationManager(private val context: Context) {
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setAutoCancel(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setFullScreenIntent(fullScreen, true)
-                .addAction(action("ACTION_MEDICINE_TAKEN", 100, "Принял"))
-                .addAction(action("ACTION_SNOOZE_10", 101, "Отложить 10 мин"))
-                .addAction(action("ACTION_MEDICINE_SKIP", 102, "Пропустить"))
+                .setCustomBigContentView(remoteViews) // Используем RemoteViews для расширенного вида
+                .setCustomContentView(remoteViews) // Используем RemoteViews для компактного вида
+                .addAction(NotificationCompat.Action.Builder(
+                    0, context.getString(com.medicalnotes.app.R.string.action_taken), createButtonIntent("ACTION_MEDICINE_TAKEN", 100)
+                ).build())
+                .addAction(NotificationCompat.Action.Builder(
+                    0, context.getString(com.medicalnotes.app.R.string.action_snooze), createButtonIntent("ACTION_SNOOZE_10", 101)
+                ).build())
+                .addAction(NotificationCompat.Action.Builder(
+                    0, context.getString(com.medicalnotes.app.R.string.action_skip), createButtonIntent("ACTION_MEDICINE_SKIP", 102)
+                ).build())
                 .build()
             
             // Показываем уведомление
@@ -2792,5 +2793,17 @@ class NotificationManager(private val context: Context) {
             throw e
         }
     }
-
+    
+    /**
+     * Отменяет уведомление по ID
+     */
+    fun cancelNotification(notificationId: Int) {
+        try {
+            notificationManager.cancel(notificationId)
+            android.util.Log.d(TAG, "Уведомление $notificationId отменено")
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Ошибка отмены уведомления $notificationId", e)
+        }
+    }
+    
 } 

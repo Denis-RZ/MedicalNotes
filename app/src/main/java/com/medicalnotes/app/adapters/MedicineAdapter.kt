@@ -18,6 +18,14 @@ class MedicineAdapter(
     private val onDeleteClick: (Medicine) -> Unit
 ) : ListAdapter<Medicine, MedicineAdapter.MedicineViewHolder>(MedicineDiffCallback()) {
 
+    /**
+     * Обновляет язык в адаптере и перерисовывает все элементы
+     */
+    fun updateLanguage() {
+        android.util.Log.d("MedicineAdapter", "Updating language in adapter")
+        notifyDataSetChanged()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MedicineViewHolder {
         val binding = ItemMedicineBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -47,7 +55,7 @@ class MedicineAdapter(
                 textMedicineDosage.text = medicine.dosage
                 
                 // Добавляем схему приема к дозировке
-                val dosageDescription = DosageCalculator.getDosageDescription(medicine)
+                val dosageDescription = DosageCalculator.getDosageDescription(medicine, binding.root.context)
                 val groupInfo = if (medicine.groupName.isNotEmpty()) {
                     " (${medicine.groupName}, №${medicine.groupOrder})"
                 } else {
@@ -72,13 +80,13 @@ class MedicineAdapter(
                 }
                 textMedicineTime.text = timeText
                 
-                textMedicineQuantity.text = "Осталось: ${medicine.remainingQuantity} ${medicine.medicineType.lowercase()}"
+                textMedicineQuantity.text = root.context.getString(com.medicalnotes.app.R.string.remaining, medicine.remainingQuantity, medicine.medicineType.lowercase())
                 
                 // Показываем статус в зависимости от состояния лекарства
                 when (medicineStatus) {
                     MedicineStatus.OVERDUE -> {
                         textMissedStatus.visibility = android.view.View.VISIBLE
-                        textMissedStatus.text = "ПРОСРОЧЕНО"
+                        textMissedStatus.text = root.context.getString(com.medicalnotes.app.R.string.overdue)
                         textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_red))
                         textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.missed_background)
                         
@@ -92,7 +100,7 @@ class MedicineAdapter(
                     }
                     MedicineStatus.UPCOMING -> {
                         textMissedStatus.visibility = android.view.View.VISIBLE
-                        textMissedStatus.text = "СЕГОДНЯ"
+                        textMissedStatus.text = root.context.getString(com.medicalnotes.app.R.string.today)
                         textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_green))
                         textMissedStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_background)
                         

@@ -4,12 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.medicalnotes.app.databinding.ActivityCrashReportBinding
 import com.medicalnotes.app.utils.CrashReporter
 import com.medicalnotes.app.utils.LogCollector
 
-class CrashReportActivity : AppCompatActivity() {
+class CrashReportActivity : BaseActivity() {
     
     private lateinit var binding: ActivityCrashReportBinding
     
@@ -32,7 +31,7 @@ class CrashReportActivity : AppCompatActivity() {
     private fun setupViews() {
         // Настройка toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Отчет об ошибке"
+        supportActionBar?.title = getString(R.string.crash_report_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
         // Настройка кнопок

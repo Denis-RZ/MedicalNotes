@@ -19,7 +19,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurface"
             app:contentInsetStartWithNavigation="0dp"
-            app:title="Управление лекарствами"
+            app:title="@string/medicine_manager_title"
             app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             app:titleTextColor="?attr/colorOnSurface"
             app:navigationIcon="@drawable/ic_arrow_back"
@@ -48,7 +48,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Управление лекарствами"
+                android:text="@string/medicine_manager_header"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnPrimary" />
@@ -57,7 +57,7 @@
                 android:id="@+id/buttonAddMedicine"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="+ Добавить"
+                android:text="@string/add_button"
                 android:textSize="14sp"
                 style="@style/Widget.Material3.Button" />
 
@@ -76,7 +76,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Все"
+            android:text="@string/all_medicines"
             android:textSize="12sp"
             android:layout_marginEnd="4dp"
             style="@style/Widget.Material3.Button.OutlinedButton" />
@@ -86,7 +86,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Активные"
+            android:text="@string/active_medicines_filter"
             android:textSize="12sp"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
@@ -97,7 +97,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Заканчиваются"
+            android:text="@string/low_stock_filter"
             android:textSize="12sp"
             android:layout_marginStart="4dp"
             style="@style/Widget.Material3.Button.OutlinedButton" />
@@ -133,7 +133,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Нет лекарств"
+            android:text="@string/no_medicines"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/gray"
@@ -142,7 +142,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Добавьте первое лекарство"
+            android:text="@string/add_first_medicine"
             android:textSize="14sp"
             android:textColor="@color/gray" />
 

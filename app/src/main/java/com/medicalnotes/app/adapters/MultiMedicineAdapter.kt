@@ -60,18 +60,18 @@ class MultiMedicineAdapter(
             // Статус группы
             when {
                 item.isTaken -> {
-                    binding.textStatus.text = "Принято"
+                    binding.textStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_taken)
                     binding.textMissedStatus.visibility = android.view.View.GONE
-                    binding.buttonTakeAll.text = "ПРИНЯТО"
+                    binding.buttonTakeAll.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_taken_uppercase)
                     binding.buttonTakeAll.backgroundTintList = android.content.res.ColorStateList.valueOf(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.medical_blue)
                     )
                 }
                 item.isOverdue -> {
-                    binding.textStatus.text = "Просрочено"
+                    binding.textStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_overdue)
                     binding.textMissedStatus.visibility = android.view.View.VISIBLE
-                    binding.textMissedStatus.text = "ПРОСРОЧЕНО"
-                    binding.buttonTakeAll.text = "ПРИНЯТЬ ВСЕ"
+                    binding.textMissedStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_overdue_uppercase)
+                    binding.buttonTakeAll.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_take_uppercase) + " ВСЕ"
                     binding.buttonTakeAll.backgroundTintList = android.content.res.ColorStateList.valueOf(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.medical_red)
                     )
@@ -82,9 +82,9 @@ class MultiMedicineAdapter(
                     )
                 }
                 else -> {
-                    binding.textStatus.text = "Готово к приему"
+                    binding.textStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_active)
                     binding.textMissedStatus.visibility = android.view.View.GONE
-                    binding.buttonTakeAll.text = "ПРИНЯТЬ ВСЕ"
+                    binding.buttonTakeAll.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_take_uppercase) + " ВСЕ"
                     binding.buttonTakeAll.backgroundTintList = android.content.res.ColorStateList.valueOf(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.button_success)
                     )
@@ -104,9 +104,9 @@ class MultiMedicineAdapter(
         
         private fun getMedicineWord(count: Int): String {
             return when {
-                count == 1 -> "препарат"
-                count in 2..4 -> "препарата"
-                else -> "препаратов"
+                count == 1 -> binding.root.context.getString(com.medicalnotes.app.R.string.preparation_count_one)
+                count in 2..4 -> binding.root.context.getString(com.medicalnotes.app.R.string.preparation_count_few)
+                else -> binding.root.context.getString(com.medicalnotes.app.R.string.preparation_count_many)
             }
         }
     }

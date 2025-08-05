@@ -12,7 +12,7 @@ import com.medicalnotes.app.models.ButtonSize
 import com.medicalnotes.app.models.CustomButton
 import com.medicalnotes.app.viewmodels.ButtonCustomizationViewModel
 
-class ButtonCustomizationActivity : AppCompatActivity() {
+class ButtonCustomizationActivity : BaseActivity() {
     
     private lateinit var binding: ActivityButtonCustomizationBinding
     private lateinit var viewModel: ButtonCustomizationViewModel
@@ -43,7 +43,7 @@ class ButtonCustomizationActivity : AppCompatActivity() {
     private fun setupViews() {
         // Настройка toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Настройка кнопок"
+        supportActionBar?.title = getString(R.string.button_customization)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
         // Настройка спиннеров
@@ -55,7 +55,7 @@ class ButtonCustomizationActivity : AppCompatActivity() {
         val sizeAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            listOf("Маленькие", "Средние", "Большие", "Очень большие")
+            listOf(getString(R.string.small), getString(R.string.medium), getString(R.string.large), getString(R.string.extra_large))
         )
         sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerButtonSize.adapter = sizeAdapter
@@ -64,7 +64,7 @@ class ButtonCustomizationActivity : AppCompatActivity() {
         val colorAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
-            listOf("Синий", "Серый", "Зеленый", "Оранжевый", "Красный", "Высокий контраст")
+            listOf(getString(R.string.blue), getString(R.string.gray), getString(R.string.green), getString(R.string.orange), getString(R.string.red), getString(R.string.high_contrast))
         )
         colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerButtonColor.adapter = colorAdapter
@@ -108,7 +108,7 @@ class ButtonCustomizationActivity : AppCompatActivity() {
             enableSound = enableSound
         )
         
-        Toast.makeText(this, "Настройки сохранены", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
         finish()
     }
     

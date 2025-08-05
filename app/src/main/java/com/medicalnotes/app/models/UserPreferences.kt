@@ -1,5 +1,7 @@
 package com.medicalnotes.app.models
 
+import com.medicalnotes.app.utils.LanguageManager
+
 data class UserPreferences(
     val id: Int = 1,
     val buttonSize: ButtonSize = ButtonSize.LARGE,
@@ -17,6 +19,7 @@ data class UserPreferences(
     val emergencyPhoneNumber: String = "103",
     val autoBackupEnabled: Boolean = false,
     val voiceRemindersEnabled: Boolean = false,
+    val language: LanguageManager.Language = LanguageManager.Language.ENGLISH,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) 

@@ -46,6 +46,24 @@ class BootReceiver : BroadcastReceiver() {
         try {
             android.util.Log.d("BootReceiver", "Начинаем восстановление уведомлений о лекарствах")
             
+            //  ИСПРАВЛЕНО: Используем ту же логику, что и "Лекарства на сегодня"
+            val dataManager = DataManager(context)
+            val allMedicines = dataManager.loadMedicines()
+            val today = java.time.LocalDate.now()
+            val todayMedicines = com.medicalnotes.app.utils.DosageCalculator.getActiveMedicinesForDate(allMedicines, today)
+            
+            android.util.Log.d("BootReceiver", "Всего лекарств в базе: ${allMedicines.size}")
+            android.util.Log.d("BootReceiver", "Лекарств на сегодня (для восстановления): ${todayMedicines.size}")
+            
+            // Подробное логирование для отладки
+            todayMedicines.forEach { medicine ->
+                android.util.Log.d("BootReceiver", "Восстанавливаем уведомление для: ${medicine.name}")
+                android.util.Log.d("BootReceiver", "  - Время: ${medicine.time}")
+                android.util.Log.d("BootReceiver", "  - Частота: ${medicine.frequency}")
+                android.util.Log.d("BootReceiver", "  - Группа: ${medicine.groupName}")
+                android.util.Log.d("BootReceiver", "  - Порядок в группе: ${medicine.groupOrder}")
+            }
+            
             //  ИЗМЕНЕНО: Используем новую утилиту для восстановления уведомлений
             val restorationManager = com.medicalnotes.app.utils.NotificationRestorationManager(context)
             restorationManager.checkAndRestoreNotifications()

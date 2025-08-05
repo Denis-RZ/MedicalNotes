@@ -7,11 +7,11 @@
     <TextView android:id="@+id/title"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:textStyle="bold" android:textSize="20sp"
-        android:text="Время принять лекарство"/>
+        android:text="@string/time_to_take_medicine_card"/>
 
     <TextView android:id="@+id/subtitle"
         android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:paddingTop="8dp" android:text="Название / время"/>
+        android:paddingTop="8dp" android:text="@string/name_time"/>
 
     <LinearLayout android:orientation="horizontal"
         android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -19,14 +19,14 @@
 
         <Button android:id="@+id/btnSnooze"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="Отложить 10 мин"/>
+            android:text="@string/snooze_10_min"/>
 
         <Button android:id="@+id/btnSkip"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="8dp" android:text="Пропустить"/>
+            android:layout_marginStart="8dp" android:text="@string/skip_medicine"/>
 
         <Button android:id="@+id/btnTaken"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="8dp" android:text="Принял"/>
+            android:layout_marginStart="8dp" android:text="@string/taken_medicine"/>
     </LinearLayout>
 </LinearLayout> 

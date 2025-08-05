@@ -65,15 +65,15 @@ class MedicineGroupAdapter(
             when {
                 group.isTaken -> {
                     binding.textGroupMissedStatus.visibility = android.view.View.GONE
-                    binding.buttonTakeGroup.text = "ПРИНЯТО"
+                    binding.buttonTakeGroup.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_taken_uppercase)
                     binding.buttonTakeGroup.backgroundTintList = android.content.res.ColorStateList.valueOf(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.medical_blue)
                     )
                 }
                 group.isOverdue -> {
                     binding.textGroupMissedStatus.visibility = android.view.View.VISIBLE
-                    binding.textGroupMissedStatus.text = "ПРОСРОЧЕНО"
-                    binding.buttonTakeGroup.text = "ПРИНЯТЬ ВСЕ"
+                    binding.textGroupMissedStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_overdue_uppercase)
+                    binding.buttonTakeGroup.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_take_uppercase) + " ВСЕ"
                     binding.buttonTakeGroup.backgroundTintList = android.content.res.ColorStateList.valueOf(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.medical_red)
                     )
@@ -85,7 +85,7 @@ class MedicineGroupAdapter(
                 }
                 else -> {
                     binding.textGroupMissedStatus.visibility = android.view.View.GONE
-                    binding.buttonTakeGroup.text = "ПРИНЯТЬ ВСЕ"
+                    binding.buttonTakeGroup.text = binding.root.context.getString(com.medicalnotes.app.R.string.status_take_uppercase) + " ВСЕ"
                     binding.buttonTakeGroup.backgroundTintList = android.content.res.ColorStateList.valueOf(
                         binding.root.context.getColor(com.medicalnotes.app.R.color.button_success)
                     )
@@ -105,9 +105,9 @@ class MedicineGroupAdapter(
         
         private fun getMedicineWord(count: Int): String {
             return when {
-                count == 1 -> "лекарство"
-                count in 2..4 -> "лекарства"
-                else -> "лекарств"
+                count == 1 -> binding.root.context.getString(com.medicalnotes.app.R.string.medicine_count_one)
+                count in 2..4 -> binding.root.context.getString(com.medicalnotes.app.R.string.medicine_count_few)
+                else -> binding.root.context.getString(com.medicalnotes.app.R.string.medicine_count_many)
             }
         }
     }
@@ -148,12 +148,12 @@ class MedicineInGroupAdapter : ListAdapter<Medicine, MedicineInGroupAdapter.Medi
             
             // Иконка типа лекарства
             val iconRes = when (medicine.medicineType) {
-                "Уколы" -> android.R.drawable.ic_menu_edit
-                "Капли" -> android.R.drawable.ic_menu_view
-                "Сироп" -> android.R.drawable.ic_menu_help
-                "Ингаляции" -> android.R.drawable.ic_menu_send
-                "Мази" -> android.R.drawable.ic_menu_edit
-                "Свечи" -> android.R.drawable.ic_menu_help
+                binding.root.context.getString(com.medicalnotes.app.R.string.medicine_type_injections) -> android.R.drawable.ic_menu_edit
+                binding.root.context.getString(com.medicalnotes.app.R.string.medicine_type_drops) -> android.R.drawable.ic_menu_view
+                binding.root.context.getString(com.medicalnotes.app.R.string.medicine_type_syrup) -> android.R.drawable.ic_menu_help
+                binding.root.context.getString(com.medicalnotes.app.R.string.medicine_type_inhalations) -> android.R.drawable.ic_menu_send
+                binding.root.context.getString(com.medicalnotes.app.R.string.medicine_type_ointments) -> android.R.drawable.ic_menu_edit
+                binding.root.context.getString(com.medicalnotes.app.R.string.medicine_type_suppositories) -> android.R.drawable.ic_menu_help
                 else -> android.R.drawable.ic_menu_help
             }
             binding.imageMedicineType.setImageResource(iconRes)

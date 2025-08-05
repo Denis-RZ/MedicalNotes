@@ -36,7 +36,7 @@
             android:clickable="true"
             android:focusable="true"
             app:buttonTint="@color/medicine_accent"
-            android:contentDescription="Выбрать лекарство" />
+                            android:contentDescription="@string/select_medicine" />
 
         <!-- Иконка лекарства -->
         <FrameLayout
@@ -74,7 +74,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Название лекарства"
+                    android:text="@string/medicine_name_placeholder"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/medicine_text_primary"
@@ -102,7 +102,7 @@
                 android:id="@+id/textMedicineDosage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Дозировка"
+                android:text="@string/dosage_label"
                 android:textSize="13sp"
                 android:textColor="@color/medicine_text_secondary"
                 android:maxLines="1"
@@ -115,7 +115,7 @@
                 android:id="@+id/textMedicineQuantity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Осталось: 0 таблеток"
+                android:text="@string/remaining_tablets_format"
                 android:textSize="12sp"
                 android:textColor="@color/medicine_text_secondary"
                 android:maxLines="1"
@@ -138,7 +138,7 @@
                 android:id="@+id/textStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="АКТИВНО"
+                android:text="@string/active_status"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
@@ -154,7 +154,7 @@
                 android:id="@+id/textLowStockStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="МАЛО"
+                android:text="@string/low_status"
                 android:textSize="9sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
@@ -176,7 +176,7 @@
             android:src="@drawable/ic_check"
             app:tint="@color/medicine_success"
             android:visibility="gone"
-            android:contentDescription="Лекарство принято"
+                            android:contentDescription="@string/medicine_taken"
             tools:visibility="visible" />
 
     </LinearLayout>
@@ -186,7 +186,7 @@
         android:id="@+id/buttonTakeAll"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="ПРИНЯТЬ ВСЕ ВЫБРАННЫЕ"
+        android:text="@string/take_all_selected"
         android:textSize="13sp"
         android:textStyle="bold"
         android:textColor="@color/white"
@@ -199,14 +199,14 @@
         app:cornerRadius="12dp"
         android:layout_margin="16dp"
         android:layout_marginTop="0dp"
-        android:contentDescription="Принять все выбранные лекарства" />
+                        android:contentDescription="@string/take_all_selected_medicines" />
 
     <!-- Статус пропущенных лекарств -->
     <TextView
         android:id="@+id/textMissedStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ПРОПУЩЕНО 2 ЛЕКАРСТВА"
+        android:text="@string/missed_medicines_format"
         android:textSize="11sp"
         android:textStyle="bold"
         android:textColor="@color/white"

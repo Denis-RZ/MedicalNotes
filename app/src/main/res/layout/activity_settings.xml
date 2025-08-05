@@ -21,7 +21,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurface"
             app:contentInsetStartWithNavigation="0dp"
-            app:title="Настройки"
+            app:title="@string/settings"
             app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             app:titleTextColor="?attr/colorOnSurface"
             app:navigationIcon="@drawable/ic_arrow_back"
@@ -47,7 +47,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Настройки приложения"
+            android:text="@string/app_settings"
             android:textSize="@dimen/text_size_extra_large"
             android:textStyle="bold"
             android:gravity="center"
@@ -69,7 +69,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Уведомления"
+                    android:text="@string/notifications_section"
                     android:textSize="@dimen/text_size_large"
                     android:textStyle="bold"
                     android:layout_marginBottom="@dimen/margin_medium" />
@@ -78,27 +78,27 @@
                     android:id="@+id/switchNotifications"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Включить уведомления"
+                    android:text="@string/enable_notifications"
                     android:layout_marginBottom="@dimen/margin_small" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchVibration"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Вибрация"
+                    android:text="@string/vibration"
                     android:layout_marginBottom="@dimen/margin_small" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchSound"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Звук"
+                    android:text="@string/sound"
                     android:layout_marginBottom="@dimen/margin_small" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Напоминать за (минут):"
+                    android:text="@string/remind_before_minutes"
                     android:layout_marginBottom="@dimen/margin_small" />
 
                 <com.google.android.material.slider.Slider
@@ -137,7 +137,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Пороги уведомлений"
+                    android:text="@string/notification_thresholds"
                     android:textSize="@dimen/text_size_large"
                     android:textStyle="bold"
                     android:layout_marginBottom="@dimen/margin_medium" />
@@ -145,7 +145,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Предупреждение о низком запасе (шт.):"
+                    android:text="@string/low_stock_warning_pcs"
                     android:layout_marginBottom="@dimen/margin_small" />
 
                 <com.google.android.material.slider.Slider
@@ -184,7 +184,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Резервное копирование"
+                    android:text="@string/backup_section"
                     android:textSize="@dimen/text_size_large"
                     android:textStyle="bold"
                     android:layout_marginBottom="@dimen/margin_medium" />
@@ -193,20 +193,20 @@
                     android:id="@+id/switchAutoBackup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Автоматическое резервное копирование"
+                    android:text="@string/auto_backup"
                     android:layout_marginBottom="@dimen/margin_small" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchDataCompression"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Сжатие данных"
+                    android:text="@string/data_compression"
                     android:layout_marginBottom="@dimen/margin_small" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Максимум резервных копий:"
+                    android:text="@string/max_backups"
                     android:layout_marginBottom="@dimen/margin_small" />
 
                 <com.google.android.material.slider.Slider
@@ -230,7 +230,7 @@
                     android:id="@+id/buttonDataBackup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Резервное копирование данных"
+                    android:text="@string/data_backup_section"
                     android:maxLines="1"
                     android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
@@ -240,7 +240,7 @@
                     android:id="@+id/buttonCreateBackup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Создать копию"
+                    android:text="@string/create_backup_button"
                     android:maxLines="1"
                     android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
@@ -250,7 +250,7 @@
                     android:id="@+id/buttonRestoreBackup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Восстановить"
+                    android:text="@string/restore_button"
                     android:maxLines="1"
                     android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
@@ -260,7 +260,7 @@
                     android:id="@+id/buttonBackupList"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Список копий"
+                    android:text="@string/backup_list"
                     android:maxLines="1"
                     android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
@@ -284,7 +284,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Интерфейс"
+                    android:text="@string/interface_section"
                     android:textSize="@dimen/text_size_large"
                     android:textStyle="bold"
                     android:layout_marginBottom="@dimen/margin_medium" />
@@ -293,7 +293,27 @@
                     android:id="@+id/buttonCustomizeButtons"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Настроить кнопки"
+                    android:text="@string/customize_buttons_button"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonLanguageSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/language_settings"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonLanguageTest"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/language_test_button"
                     android:maxLines="1"
                     android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
@@ -303,7 +323,7 @@
                     android:id="@+id/buttonNotificationManager"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Уведомления"
+                    android:text="@string/notifications_button"
                     android:maxLines="1"
                     android:ellipsize="end"
                     style="@style/Widget.Material3.Button.OutlinedButton"
@@ -313,7 +333,7 @@
                     android:id="@+id/switchHighContrast"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Высокий контраст"
+                    android:text="@string/high_contrast_button"
                     android:layout_marginBottom="@dimen/margin_small" />
 
             </LinearLayout>
@@ -335,7 +355,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Данные"
+                    android:text="@string/data_section"
                     android:textSize="@dimen/text_size_large"
                     android:textStyle="bold"
                     android:layout_marginBottom="@dimen/margin_medium" />
@@ -344,7 +364,7 @@
                     android:id="@+id/buttonDataStatistics"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Статистика"
+                    android:text="@string/statistics"
                     android:textSize="@dimen/text_size_mobile_medium"
                     android:maxLines="1"
                     android:ellipsize="end"
@@ -355,7 +375,7 @@
                     android:id="@+id/buttonValidateData"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Проверить целостность данных"
+                    android:text="@string/check_data_integrity"
                     android:textSize="@dimen/text_size_mobile_medium"
                     android:maxLines="2"
                     android:ellipsize="end"
@@ -366,7 +386,7 @@
                     android:id="@+id/buttonClearData"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Очистить все данные"
+                    android:text="@string/clear_all_data"
                     android:textSize="@dimen/text_size_mobile_medium"
                     android:maxLines="1"
                     android:ellipsize="end"
@@ -392,7 +412,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Тестирование уведомлений"
+                    android:text="@string/notification_testing"
                     android:textSize="@dimen/text_size_large"
                     android:textStyle="bold"
                     android:layout_marginBottom="@dimen/margin_medium" />
@@ -400,7 +420,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Создает тестовое лекарство на 2 минуты вперед и закрывает приложение для проверки уведомлений"
+                    android:text="@string/test_notification_description"
                     android:textSize="@dimen/text_size_small"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginBottom="@dimen/margin_medium" />
@@ -409,7 +429,7 @@
                     android:id="@+id/buttonTestOverdueMedicine"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Тест просроченного лекарства"
+                    android:text="@string/test_overdue_medicine"
                     android:textSize="@dimen/text_size_mobile_medium"
                     android:maxLines="1"
                     android:ellipsize="end"
@@ -427,7 +447,7 @@
                     android:id="@+id/buttonStopNotifications"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Остановить вибрацию и звук"
+                    android:text="@string/stop_vibration_sound"
                     android:textSize="@dimen/text_size_mobile_medium"
                     android:maxLines="1"
                     android:ellipsize="end"
@@ -459,7 +479,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="О приложении"
+                    android:text="@string/about_app"
                     android:textSize="@dimen/text_size_large"
                     android:textStyle="bold"
                     android:layout_marginBottom="@dimen/margin_medium" />
@@ -468,7 +488,7 @@
                     android:id="@+id/textViewVersion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Версия: v1.2 (3)"
+                    android:text="@string/version_info"
                     android:textSize="@dimen/text_size_medium"
                     android:layout_marginBottom="@dimen/margin_small" />
 
@@ -476,7 +496,7 @@
                     android:id="@+id/textViewBuildTime"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Обновлено: 27.12.2024 15:30"
+                    android:text="@string/updated_info"
                     android:textSize="@dimen/text_size_medium"
                     android:layout_marginBottom="@dimen/margin_small" />
 
@@ -484,7 +504,7 @@
                     android:id="@+id/textViewInstallTime"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Установлено: 27.12.2024 15:30"
+                    android:text="@string/installed_info"
                     android:textSize="@dimen/text_size_medium"
                     android:layout_marginBottom="@dimen/margin_medium" />
 
@@ -492,7 +512,7 @@
                     android:id="@+id/buttonCrashReport"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Отчет об ошибках"
+                    android:text="@string/crash_report_section"
                     android:textSize="@dimen/text_size_mobile_medium"
                     android:maxLines="1"
                     android:ellipsize="end"
@@ -512,7 +532,7 @@
             android:id="@+id/buttonSaveSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Сохранить настройки"
+            android:text="@string/save_settings"
             android:textSize="@dimen/text_size_mobile_large"
             android:maxLines="1"
             android:ellipsize="end"

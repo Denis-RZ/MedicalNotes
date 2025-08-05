@@ -187,26 +187,26 @@ class NotificationScheduler(private val context: Context) {
             android.util.Log.d("NotificationScheduler", "Планирование уведомлений для всех лекарств")
             
             val dataManager = DataManager(context)
-            val allActiveMedicines = dataManager.getActiveMedicines()
+            val allMedicines = dataManager.loadMedicines()
             
-            android.util.Log.d("NotificationScheduler", "Найдено активных лекарств: ${allActiveMedicines.size}")
+            android.util.Log.d("NotificationScheduler", "Всего лекарств в базе: ${allMedicines.size}")
             
-            // ИСПРАВЛЕНО: Фильтруем лекарства с учетом групповой логики
+            // ИСПРАВЛЕНО: Используем ту же логику, что и "Лекарства на сегодня"
             val today = java.time.LocalDate.now()
+            val todayMedicines = DosageCalculator.getActiveMedicinesForDate(allMedicines, today)
             
-            val medicinesToSchedule = allActiveMedicines.filter { medicine ->
-                val shouldTake = DosageCalculator.shouldTakeMedicine(medicine, today)
-                android.util.Log.d("NotificationScheduler", "Лекарство: ${medicine.name}")
-                android.util.Log.d("NotificationScheduler", "  - Группа: ${medicine.groupName}")
-                android.util.Log.d("NotificationScheduler", "  - Порядок: ${medicine.groupOrder}")
+            android.util.Log.d("NotificationScheduler", "Лекарств на сегодня (для уведомлений): ${todayMedicines.size}")
+            
+            // Подробное логирование для отладки
+            todayMedicines.forEach { medicine ->
+                android.util.Log.d("NotificationScheduler", "Планируем уведомление для: ${medicine.name}")
+                android.util.Log.d("NotificationScheduler", "  - Время: ${medicine.time}")
                 android.util.Log.d("NotificationScheduler", "  - Частота: ${medicine.frequency}")
-                android.util.Log.d("NotificationScheduler", "  - Нужно принимать сегодня: $shouldTake")
-                shouldTake
+                android.util.Log.d("NotificationScheduler", "  - Группа: ${medicine.groupName}")
+                android.util.Log.d("NotificationScheduler", "  - Порядок в группе: ${medicine.groupOrder}")
             }
             
-            android.util.Log.d("NotificationScheduler", "Лекарств для планирования сегодня: ${medicinesToSchedule.size}")
-            
-            medicinesToSchedule.forEach { medicine ->
+            todayMedicines.forEach { medicine ->
                 scheduleConsideringEdit(medicine, isEdit = false)
             }
             
@@ -285,5 +285,55 @@ class NotificationScheduler(private val context: Context) {
     fun scheduleAll() {
         val dm = com.medicalnotes.app.utils.DataManager(context)
         dm.loadMedicines().filter { it.isActive }.forEach { scheduleForMedicine(it) }
+    }
+    
+    /**
+     * Планирует уведомление для лекарства с задержкой
+     */
+    fun scheduleMedicineNotification(medicine: Medicine, delayMinutes: Int = 0) {
+        try {
+            android.util.Log.d("NotificationScheduler", "Планирование уведомления для ${medicine.name} с задержкой $delayMinutes минут")
+            
+            val intent = Intent(context, MedicineAlarmReceiver::class.java).apply {
+                action = "ACTION_SHOW_MEDICINE_CARD"
+                putExtra("medicine_id", medicine.id)
+                putExtra("is_overdue", false)
+            }
+            
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                medicine.id.toInt(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            val triggerTime = if (delayMinutes > 0) {
+                System.currentTimeMillis() + (delayMinutes * 60 * 1000L)
+            } else {
+                // Планируем на следующее время приема
+                val now = LocalDateTime.now()
+                val targetTime = medicine.time
+                val targetDateTime = now.toLocalDate().atTime(targetTime)
+                
+                if (targetDateTime.isBefore(now)) {
+                    // Если время уже прошло, переносим на завтра
+                    now.toLocalDate().plusDays(1).atTime(targetTime)
+                        .atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                } else {
+                    targetDateTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                }
+            }
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
+            } else {
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
+            }
+            
+            android.util.Log.d("NotificationScheduler", "Уведомление запланировано для ${medicine.name} на ${java.time.Instant.ofEpochMilli(triggerTime)}")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationScheduler", "Ошибка планирования уведомления для ${medicine.name}", e)
+        }
     }
 } 

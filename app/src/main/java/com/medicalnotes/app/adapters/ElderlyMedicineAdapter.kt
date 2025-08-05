@@ -45,7 +45,7 @@ class ElderlyMedicineAdapter(
             binding.textMedicineTime.text = timeText
 
             // Дозировка с схемой приема
-            val dosageDescription = com.medicalnotes.app.utils.DosageCalculator.getDosageDescription(medicine)
+            val dosageDescription = com.medicalnotes.app.utils.DosageCalculator.getDosageDescription(medicine, binding.root.context)
             val groupInfo = if (medicine.groupName.isNotEmpty()) {
                 " (${medicine.groupName}, №${medicine.groupOrder})"
             } else {

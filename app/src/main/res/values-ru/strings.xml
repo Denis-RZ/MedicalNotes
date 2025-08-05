@@ -1,0 +1,660 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Медицинские заметки</string>
+    <string name="service_description">Сервис уведомлений о лекарствах</string>
+    <string name="quick_settings_tile_description">Открыть приложение для управления лекарствами</string>
+    
+    <!-- Главный экран -->
+    <string name="today_medicines">Лекарства на сегодня</string>
+    <string name="add_medicine">Добавить лекарство</string>
+    <string name="settings">Настройки</string>
+    <string name="customize_buttons">Настроить кнопки</string>
+    
+    <!-- Лекарства -->
+    <string name="medicine_name">Название лекарства</string>
+    <string name="medicine_dosage">Дозировка</string>
+    <string name="medicine_quantity">Количество</string>
+    <string name="medicine_time">Время приема</string>
+    <string name="medicine_notes">Заметки</string>
+    <string name="save_medicine">Сохранить</string>
+    <string name="delete_medicine">Удалить</string>
+    
+    <!-- Действия -->
+    <string name="taken">Принял</string>
+    <string name="skipped">Пропустил</string>
+    <string name="button_take_medicine">Принять лекарство</string>
+    <string name="button_medicine_taken">Принято</string>
+
+
+    <string name="emergency_call">Экстренный вызов</string>
+    <string name="check_supply">Проверить запас</string>
+    
+    <!-- Настройки кнопок -->
+    <string name="button_size">Размер кнопок</string>
+    <string name="button_color">Цвет кнопок</string>
+    <string name="button_actions">Действия кнопок</string>
+    <string name="small_buttons">Маленькие</string>
+    <string name="medium_buttons">Средние</string>
+    <string name="large_buttons">Большие</string>
+    <string name="extra_large_buttons">Очень большие</string>
+    
+    <!-- Уведомления -->
+    <string name="medicine_reminder">Напоминание о лекарстве</string>
+    <string name="time_to_take">Время принимать</string>
+    <string name="time_to_take_medicine">Время принять лекарство</string>
+    <string name="medicine_reminder_text">Время принимать %1$s</string>
+    <string name="low_supply_warning">Заканчиваются таблетки</string>
+    <string name="low_supply_text">Осталось мало таблеток %1$s</string>
+    
+    <!-- Диабет -->
+    <string name="insulin_reminder">Напоминание об инсулине</string>
+    <string name="blood_sugar">Уровень сахара</string>
+    <string name="record_sugar">Записать сахар</string>
+    
+    <!-- Общие -->
+    <string name="ok">ОК</string>
+    <string name="cancel">Отмена</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="edit">Изменить</string>
+    <string name="delete">Удалить</string>
+    <string name="back">Назад</string>
+    
+    <!-- Управление лекарствами -->
+    <string name="manage_medicines">Управление лекарствами</string>
+    <string name="sos_button">КНОПКА SOS</string>
+    <string name="son">СЫН</string>
+    <string name="journal">ЖУРНАЛ</string>
+    <string name="my_medicines">МОИ ЛЕКАРСТВА</string>
+    <string name="remaining">Осталось</string>
+    <string name="tablets">таблеток</string>
+    <string name="taken_status">ПРИНЯТО</string>
+    <string name="missed_status">ПРОПУЩЕНО</string>
+    <string name="skip_dose">ПРОПУСТИТЬ ПРИЕМ</string>
+    <string name="elderly_mode">Режим для пожилых</string>
+    <string name="disable_elderly_mode">Выключить режим для пожилых</string>
+    
+    <!-- Частоты приема -->
+    <string name="daily">Каждый день</string>
+    <string name="every_other_day">Через день</string>
+    <string name="twice_a_week">2 раза в неделю</string>
+    <string name="three_times_a_week">3 раза в неделю</string>
+    <string name="weekly">Раз в неделю</string>
+    <string name="custom_schedule">По расписанию</string>
+    
+    <!-- Времена дня -->
+    <string name="morning">Утром</string>
+    <string name="afternoon">Днем</string>
+    <string name="evening">Вечером</string>
+    <string name="night">Ночью</string>
+    <string name="custom_time">Пользовательское время</string>
+    
+    <!-- Настройки -->
+    <string name="language_settings">Язык приложения</string>
+    <string name="current_language">Текущий язык</string>
+    <string name="select_language">Выберите язык</string>
+    <string name="russian">Русский</string>
+    <string name="english">English</string>
+    <string name="language_changed">Язык изменен</string>
+    <string name="restart_required">Требуется перезапуск приложения</string>
+    
+    <!-- Ошибки и сообщения -->
+    <string name="error_initialization">Ошибка инициализации данных</string>
+    <string name="error_ui_setup">Ошибка настройки интерфейса</string>
+    <string name="error_loading_data">Ошибка загрузки данных</string>
+    <string name="error_starting_services">Ошибка запуска сервисов</string>
+    <string name="test_crash_reporter">Тест CrashReporter</string>
+    <string name="settings_saved">Настройки сохранены</string>
+    <string name="no_backups_available">Нет доступных резервных копий</string>
+    <string name="select_backup_restore">Выберите резервную копию для восстановления</string>
+    <string name="confirm_restore">Подтверждение восстановления</string>
+    <string name="restore_backup_message">Восстановить данные из резервной копии \'%1$s\'? Текущие данные будут заменены.</string>
+    <string name="restore">Восстановить</string>
+    <string name="no_backups">Нет резервных копий</string>
+
+    <string name="clear_old">Очистить старые</string>
+    <string name="close">Закрыть</string>
+    <string name="data_statistics">Статистика данных</string>
+    <string name="total_medicines">Всего лекарств</string>
+    <string name="active_medicines">Активных лекарств</string>
+    <string name="total_buttons">Всего кнопок</string>
+    <string name="visible_buttons">Видимых кнопок</string>
+    <string name="low_stock_medicines">Лекарств с низким запасом</string>
+    <string name="backup_count">Резервных копий</string>
+    <string name="config_version">Версия конфигурации</string>
+    <string name="clear_data">Очистка данных</string>
+    <string name="clear_data_confirm">Вы уверены, что хотите удалить ВСЕ данные? Это действие нельзя отменить.</string>
+    <string name="delete_all">Удалить все</string>
+
+    <string name="test_overdue_message">Создать тестовое лекарство на 2 минуты вперед и закрыть приложение?\n\nЧерез 2 минуты появится уведомление с вибрацией и звуком.</string>
+    <string name="create_and_close">Создать и закрыть</string>
+    <string name="test_medicine_created">Тестовое лекарство создано!\nВремя приема: %1$s\nПриложение закроется через 3 секунды...</string>
+    <string name="stop_notifications">Остановить уведомления</string>
+    <string name="stop_notifications_message">Принудительно остановить все вибрации, звуки и уведомления?\n\nЭто может быть полезно, если стандартные кнопки на карточке лекарства не работают.</string>
+    <string name="stop_all">Остановить все</string>
+    <string name="all_notifications_stopped">Все уведомления, вибрации и звуки остановлены!</string>
+    <string name="emergency_notification">Экстренное уведомление</string>
+    <string name="medicine">Лекарство</string>
+    <string name="button_customization">Настройка кнопок</string>
+    <string name="small">Маленькие</string>
+    <string name="medium">Средние</string>
+    <string name="large">Большие</string>
+    <string name="extra_large">Очень большие</string>
+    <string name="blue">Синий</string>
+    <string name="gray">Серый</string>
+    <string name="green">Зеленый</string>
+    <string name="orange">Оранжевый</string>
+    <string name="red">Красный</string>
+    <string name="reset_to_defaults">Сбросить к настройкам по умолчанию</string>
+    <string name="reset_confirm">Сбросить все настройки кнопок к значениям по умолчанию?</string>
+    <string name="reset">Сбросить</string>
+    <string name="version">Версия</string>
+    <string name="updated">Обновлено</string>
+    <string name="installed">Установлено</string>
+
+    <string name="pieces">шт.</string>
+    <string name="copies">копий</string>
+    <string name="size">Размер</string>
+    <string name="date">Дата</string>
+    <string name="kb">KB</string>
+    
+    <!-- Дополнительные строки для поддержки языка -->
+    <string name="edit_medicine">Редактировать лекарство</string>
+    <string name="quantity">Количество</string>
+    <string name="notes">Заметки</string>
+
+    <string name="enter_medicine_name">Введите название лекарства</string>
+    <string name="enter_quantity">Введите количество</string>
+    <string name="enter_notes">Введите заметки</string>
+    <string name="save">Сохранить</string>
+    <string name="create_group">Создать группу</string>
+    <string name="add_to_group">Добавить в группу</string>
+    <string name="change_group">Изменить группу</string>
+    <string name="time_section">Время</string>
+    <string name="frequency_section">Частота</string>
+    
+    <!-- Frequency options -->
+    <string name="frequency_daily">Каждый день</string>
+    <string name="frequency_every_other_day">Через день</string>
+    <string name="frequency_twice_a_week">2 раза в неделю</string>
+    <string name="frequency_three_times_a_week">3 раза в неделю</string>
+    <string name="frequency_weekly">Раз в неделю</string>
+    <string name="frequency_custom">По расписанию</string>
+    <string name="frequency_selection_dialog">Выберите схему приема</string>
+    
+    <string name="group_section">Группа</string>
+    <string name="overdue">ПРОСРОЧЕНО</string>
+    <string name="today">СЕГОДНЯ</string>
+    <string name="snooze">Отложить</string>
+    <string name="skip">Пропустить</string>
+    <string name="groups">Группы</string>
+    <string name="backup_restore">Резервное копирование</string>
+    <string name="about">О приложении</string>
+    <string name="app_description">Приложение для управления лекарствами</string>
+    <string name="data_backup">Резервное копирование данных</string>
+    <string name="language_test">Тест языка</string>
+    <string name="notification_manager">Менеджер уведомлений</string>
+    <string name="create_backup">Создать резервную копию</string>
+    <string name="restore_backup">Восстановить резервную копию</string>
+    <string name="export_data">Экспорт данных</string>
+    <string name="import_data">Импорт данных</string>
+    <string name="crash_report">Отчет об ошибках</string>
+    <string name="test_medicine">Тестовое лекарство</string>
+    <string name="system_logs">Логи системы</string>
+    <string name="test_groups">Тестирование групп</string>
+    <string name="medicines">Лекарства</string>
+    
+    <!-- Множественные числа -->
+    <plurals name="medicines_count">
+        <item quantity="one">%d лекарство</item>
+        <item quantity="few">%d лекарства</item>
+        <item quantity="many">%d лекарств</item>
+        <item quantity="other">%d лекарств</item>
+    </plurals>
+    
+    <!-- Format strings -->
+    <string name="and_more">%1$s и еще %2$d</string>
+    
+    <!-- Activity titles -->
+    <string name="notification_manager_title">Менеджер уведомлений</string>
+    <string name="medicine_manager_title">Управление лекарствами</string>
+    <string name="group_management_title">Управление группами</string>
+    <string name="edit_medicine_title">Редактировать лекарство</string>
+    <string name="data_backup_title">Резервное копирование</string>
+    <string name="crash_report_title">Отчет об ошибке</string>
+    <string name="button_customization_title">Настройка кнопок</string>
+    <string name="add_medicine_title">Добавить лекарство</string>
+    
+    <!-- Form sections -->
+    <string name="basic_information">Основная информация</string>
+    <string name="additional_information">Дополнительная информация</string>
+    <string name="medicine_grouping">Группировка лекарств</string>
+    <string name="schedule_section">Расписание приема</string>
+    <string name="weekdays">Дни недели</string>
+    <string name="select_days">Выбрать дни</string>
+    <string name="multiple_times_per_day">Несколько приемов в день</string>
+    <string name="add_time">Добавить время</string>
+    <string name="times_taken">Времена приема: %1$s</string>
+    <string name="related_medicines">Связанные лекарства</string>
+
+    <string name="not_selected">Не выбрано</string>
+    <string name="saving">Сохранение...</string>
+    
+    <!-- Form fields -->
+    <string name="enter_medicine_name_hint">Название лекарства</string>
+    <string name="enter_dosage_hint">Дозировка</string>
+    <string name="enter_medicine_type_hint">Тип лекарства</string>
+    <string name="enter_quantity_hint">Количество</string>
+    <string name="enter_notes_hint">Заметки</string>
+    <string name="enter_group_name_hint">Название группы</string>
+    <string name="enter_group_order_hint">Порядок в группе (1, 2, 3...)</string>
+    <string name="search_medicines_hint">Поиск лекарств...</string>
+    
+    <!-- Checkboxes and options -->
+    <string name="this_is_insulin">Это инсулин</string>
+    <string name="high_contrast">Высокий контраст</string>
+    <string name="vibration_on_notifications">Вибрация при уведомлениях</string>
+    <string name="sound_on_notifications">Звук при уведомлениях</string>
+    
+    <!-- Buttons -->
+    <string name="copy">Копировать</string>
+    <string name="send">Отправить</string>
+    <string name="refresh">Обновить</string>
+    <string name="clear">Очистить</string>
+    <string name="export_data_button">Экспортировать данные</string>
+    <string name="select_backup">Выбрать копию</string>
+    <string name="auto_import">Автоимпорт</string>
+    <string name="available_backups">Доступные копии</string>
+    <string name="no_backups_found">Резервные копии не найдены</string>
+    
+    <!-- Status and messages -->
+    <string name="status">Статус</string>
+    <string name="checking">Проверка...</string>
+    <string name="actions">Действия</string>
+    <string name="report_details">Детали отчета</string>
+    <string name="loading_report">Загрузка отчета...</string>
+    <string name="empty_schedule">Расписание пусто</string>
+    <string name="click_plus_to_add">Нажмите + чтобы добавить лекарство</string>
+    <string name="loading_error">Ошибка загрузки</string>
+    <string name="failed_to_load_medicines">Не удалось загрузить лекарства</string>
+    <string name="retry">Повторить</string>
+    <string name="system_logs_header">ЛОГИ СИСТЕМЫ:</string>
+    <string name="loading_logs">Логи загрузки...</string>
+    <string name="clear_logs">ОЧИСТИТЬ ЛОГИ</string>
+    <string name="copy_log">КОПИРОВАТЬ ЛОГ</string>
+    <string name="diagnostics">🔍 ДИАГНОСТИКА</string>
+    <string name="fix_problems">🔧 ИСПРАВИТЬ ПРОБЛЕМЫ</string>
+    
+    <!-- Elderly mode -->
+    <string name="my_medicines_elderly">🏥 МОИ ЛЕКАРСТВА</string>
+    <string name="today_medicines_elderly">📋 ЛЕКАРСТВА НА СЕГОДНЯ</string>
+    <string name="medicine_management_elderly">💊 УПРАВЛЕНИЕ ЛЕКАРСТВАМИ</string>
+    <string name="toggle_elderly_mode">👴 ПЕРЕКЛЮЧИТЬ РЕЖИМ ДЛЯ ПОЖИЛЫХ</string>
+    <string name="journal_elderly">ЖУРНАЛ</string>
+    <string name="add_elderly">ДОБАВИТЬ</string>
+    
+    <!-- Medicine management -->
+    <string name="medicine_management">Управление лекарствами</string>
+    <string name="add_button">+ Добавить</string>
+    <string name="all_medicines">Все</string>
+    <string name="active_medicines_filter">Активные</string>
+    <string name="low_stock_filter">Заканчиваются</string>
+    <string name="no_medicines">Нет лекарств</string>
+    <string name="add_first_medicine">Добавьте первое лекарство</string>
+    <string name="groups_count">Групп</string>
+    <string name="medicines_in_groups">Лекарств в группах</string>
+    <string name="average_in_group">Среднее в группе</string>
+    <string name="auto_grouping">Автогруппировка</string>
+    <string name="clear_groups">Очистить группы</string>
+    <string name="no_groups_found">Группы не найдены</string>
+    <string name="create_first_group">Создайте первую группу для организации лекарств</string>
+    
+    <!-- Navigation menu -->
+    <string name="manage_medicines_menu">Управление лекарствами</string>
+    <string name="manage_groups_menu">Управление группами</string>
+    <string name="settings_menu">Настройки</string>
+    <string name="elderly_mode_menu">Режим для пожилых</string>
+    <string name="tools">Инструменты</string>
+    <string name="system_logs_menu">Логи системы</string>
+    <string name="export_data_menu">Экспорт данных</string>
+    <string name="test_groups_menu">Тестирование групп</string>
+    
+    <!-- Menu actions -->
+    <string name="save_action">Сохранить</string>
+    <string name="delete_action">Удалить</string>
+    <string name="export_groups">Экспорт групп</string>
+    <string name="import_groups">Импорт групп</string>
+    <string name="settings_action">Настройки</string>
+    
+    <!-- Medicine card -->
+    <string name="time_to_take_medicine_card">Время принять лекарство</string>
+    <string name="name_time">Название / время</string>
+    <string name="snooze_10_min">Отложить 10 мин</string>
+    <string name="skip_medicine">Пропустить</string>
+    <string name="taken_medicine">Принял</string>
+    
+    <!-- Preview -->
+    <string name="preview">Предварительный просмотр</string>
+    
+    <!-- Notification cards -->
+    <string name="take_medicine">Примите: %1$s</string>
+    <string name="active">Активно</string>
+    <string name="dosage_format">Дозировка: %1$s</string>
+    <string name="remaining_format">Остаток: %1$d шт.</string>
+    <string name="group_format">Группа: %1$s</string>
+    <string name="time_to_take_medicine_exclamation">Время принять лекарство!</string>
+    <string name="medicine_name_label">Название лекарства</string>
+    <string name="time_format">Время: %1$s</string>
+    <string name="click_taken_to_mark">Нажмите \'Выпил\' чтобы отметить прием лекарства</string>
+    
+    <!-- Medicine item labels -->
+    <string name="medicine_name_placeholder">Название лекарства</string>
+    <string name="dosage_label">Дозировка</string>
+    <string name="remaining_tablets_format">Осталось: %1$d таблеток</string>
+    <string name="active_status">АКТИВНО</string>
+    <string name="low_status">МАЛО</string>
+    <string name="take_all_selected">ПРИНЯТЬ ВСЕ ВЫБРАННЫЕ</string>
+    <string name="missed_medicines_format">ПРОПУЩЕНО %1$d ЛЕКАРСТВ</string>
+    <string name="every_other_day_time">через день в %1$s</string>
+    <string name="taken_status_short">ПРИНЯТ</string>
+    <string name="notes_label">Заметки</string>
+    <string name="overdue_status">ПРОСРОЧЕНО</string>
+    <string name="take_action">ПРИНЯТЬ</string>
+    <string name="remaining_pcs_format">Осталось: %1$d шт</string>
+    <string name="remaining_short_format">Осталось: %1$d</string>
+    <string name="running_out">ЗАКАНЧИВАЕТСЯ!</string>
+    <string name="missed_status_short">ПРОПУЩЕНО</string>
+    <string name="skip_action">ПРОПУСТИТЬ</string>
+    <string name="change_action">ИЗМЕНИТЬ</string>
+    <string name="delete_action_short">УДАЛИТЬ</string>
+    
+    <!-- Group items -->
+    <string name="group_name_placeholder">Название группы</string>
+    <string name="order_format">Порядок: %1$d</string>
+    <string name="active_female">АКТИВНА</string>
+    <string name="medicines_in_group_format">Лекарств в группе: %1$d</string>
+    <string name="intake_time_format">Время приема: %1$s</string>
+    <string name="missed_group_format">ПРОПУЩЕНО %1$d ЛЕКАРСТВ</string>
+    <string name="take_all_group_medicines">ПРИНЯТЬ ВСЮ ГРУППУ ЛЕКАРСТВ</string>
+    <string name="group_notes">Заметки группы</string>
+    <string name="change_action_short">ИЗМЕНИТЬ</string>
+    <string name="delete_action_short_alt">УДАЛИТЬ</string>
+    <string name="medicine_list">Список лекарств</string>
+    <string name="add_medicine_to_group">ДОБАВИТЬ ЛЕКАРСТВО</string>
+    
+    <!-- Grid items -->
+    <string name="name_label">Название</string>
+    <string name="taken_status_grid">ПРИНЯТО</string>
+    <string name="running_out_grid">ЗАКАНЧИВАЕТСЯ</string>
+    
+    <!-- Elderly items -->
+    <string name="skip_action_elderly">ПРОПУСТИТЬ</string>
+    
+    <!-- Dialog elements -->
+    <string name="select_time">Выберите время</string>
+    <string name="hours">Часы</string>
+    <string name="minutes">Минуты</string>
+    <string name="selected_time">Выбранное время:</string>
+    
+    <!-- Search and hints -->
+    <string name="search_medicines_placeholder">Поиск лекарств...</string>
+    <string name="medicine_name_hint">Название лекарства</string>
+    <string name="dosage_hint">Дозировка</string>
+    <string name="remaining_pcs_hint">Осталось (шт.)</string>
+    <string name="notes_hint">Заметки</string>
+    
+    <!-- Status indicators -->
+    <string name="order_short">Порядок: %1$d</string>
+    <string name="active_short">АКТИВНО</string>
+    <string name="missed_short">ПРОПУЩЕНО</string>
+    <string name="change_short">ИЗМ</string>
+    <string name="delete_short">УДАЛ</string>
+    
+    <!-- Dialog titles and labels -->
+    <string name="edit_medicine_dialog_title">Редактировать лекарство</string>
+    <string name="intake_time_label">Время приема:</string>
+    <string name="active_notifications">Активно (уведомления включены)</string>
+    
+    <!-- Settings sections -->
+    <string name="app_settings">Настройки приложения</string>
+    <string name="notifications_section">Уведомления</string>
+    <string name="enable_notifications">Включить уведомления</string>
+    <string name="vibration">Вибрация</string>
+    <string name="sound">Звук</string>
+    <string name="remind_before_minutes">Напоминать за (минут):</string>
+    <string name="notification_thresholds">Пороги уведомлений</string>
+    <string name="low_stock_warning_pcs">Предупреждение о низком запасе (шт.):</string>
+    <string name="backup_section">Резервное копирование</string>
+    <string name="auto_backup">Автоматическое резервное копирование</string>
+    <string name="data_compression">Сжатие данных</string>
+    <string name="max_backups">Максимум резервных копий:</string>
+    <string name="data_backup_section">Резервное копирование данных</string>
+    <string name="create_backup_button">Создать копию</string>
+    <string name="restore_button">Восстановить</string>
+    <string name="backup_list">Список копий</string>
+    <string name="interface_section">Интерфейс</string>
+    <string name="customize_buttons_button">Настроить кнопки</string>
+    <string name="language_test_button">Тест языка</string>
+    <string name="notifications_button">Уведомления</string>
+    <string name="high_contrast_button">Высокий контраст</string>
+    <string name="data_section">Данные</string>
+    <string name="statistics">Статистика</string>
+    <string name="check_data_integrity">Проверить целостность данных</string>
+    <string name="clear_all_data">Очистить все данные</string>
+    <string name="notification_testing">Тестирование уведомлений</string>
+    <string name="test_notification_description">Создает тестовое лекарство на 2 минуты вперед и закрывает приложение для проверки уведомлений</string>
+    <string name="test_overdue_medicine">Тест просроченного лекарства</string>
+    <string name="stop_vibration_sound">Остановить вибрацию и звук</string>
+    <string name="about_app">О приложении</string>
+    <string name="version_info">Версия: v1.2 (3)</string>
+    <string name="updated_info">Обновлено: 27.12.2024 15:30</string>
+    <string name="installed_info">Установлено: 27.12.2024 15:30</string>
+    <string name="crash_report_section">Отчет об ошибках</string>
+    <string name="save_settings">Сохранить настройки</string>
+    
+    <!-- Notification manager -->
+    <string name="notification_manager_header">Менеджер уведомлений</string>
+    <string name="all_medicines_filter">Все</string>
+    <string name="active_medicines_filter_alt">Активные</string>
+    <string name="inactive_medicines_filter">Неактивные</string>
+    <string name="medicines_summary">Всего: %1$d | Активных: %2$d | Низкий запас: %3$d</string>
+    <string name="test_notification">Тест уведомления</string>
+    <string name="cancel_all">Отменить все</string>
+    <string name="refresh_button">Обновить</string>
+    <string name="no_medicines_found">Лекарства не найдены</string>
+    
+    <!-- Medicine modern -->
+    <string name="today_medicines_header">Лекарства на сегодня</string>
+    
+    <!-- Medicine management elderly -->
+    <string name="medicine_management_elderly_header">УПРАВЛЕНИЕ ЛЕКАРСТВАМИ</string>
+    <string name="change_action_elderly">ИЗМЕНИТЬ</string>
+    <string name="settings_action_elderly">НАСТРОЙКИ</string>
+    <string name="app_settings_elderly">НАСТРОЙКИ ПРИЛОЖЕНИЯ</string>
+    <string name="notification_settings_elderly">НАСТРОЙКИ УВЕДОМЛЕНИЙ</string>
+    <string name="group_management_elderly">УПРАВЛЕНИЕ ГРУППАМИ</string>
+    <string name="back_action_elderly">НАЗАД</string>
+    
+    <!-- Data backup -->
+    <string name="export_data_section">Экспорт данных</string>
+    <string name="create_backup_description">Создайте резервную копию всех данных приложения (лекарства, настройки, кнопки)</string>
+    <string name="export_data_button_alt">Экспортировать данные</string>
+    <string name="import_data_section">Импорт данных</string>
+    <string name="restore_data_description">Восстановите данные из резервной копии</string>
+    <string name="select_backup_button">Выбрать копию</string>
+    <string name="auto_import_button">Автоимпорт</string>
+    <string name="available_backups_section">Доступные копии</string>
+    <string name="refresh_backups">Обновить</string>
+    <string name="no_backups_found_alt">Резервные копии не найдены</string>
+    
+    <!-- Crash report -->
+    <string name="clear_button">Очистить</string>
+    <string name="report_details_section">Детали отчета</string>
+    <string name="loading_report_alt">Загрузка отчета...</string>
+    
+    <!-- Add medicine -->
+    <string name="not_selected_alt">Не выбрано</string>
+    <string name="saving_alt">Сохранение...</string>
+    
+    <!-- Medicine manager -->
+    <string name="medicine_manager_header">Управление лекарствами</string>
+    
+    <!-- Content descriptions for accessibility -->
+    <string name="select_medicine">Выбрать лекарство</string>
+    <string name="medicine_taken">Лекарство принято</string>
+    <string name="take_all_selected_medicines">Принять все выбранные лекарства</string>
+    <string name="medicine_type">Тип лекарства</string>
+    <string name="take_all_group_medicines_desc">Принять все лекарства в группе</string>
+    <string name="medicine_intake_time">Время приема лекарства</string>
+
+    <string name="mark_as_taken">Отметить как принято</string>
+    <string name="mark_as_skipped">Отметить как пропущено</string>
+    <string name="edit_medicine_desc">Редактировать лекарство</string>
+    <string name="delete_medicine_desc">Удалить лекарство</string>
+    <string name="loading_medicines">Загрузка лекарств</string>
+    <string name="clear_system_logs">Очистить логи системы</string>
+    <string name="copy_logs_to_clipboard">Копировать логи в буфер обмена</string>
+    <string name="run_app_diagnostics">Запустить диагностику приложения</string>
+    <string name="auto_fix_problems">Автоматически исправить проблемы</string>
+    <string name="add_medicine_desc">Добавить лекарство</string>
+    <string name="auto_group_medicines">Автоматическая группировка лекарств</string>
+    <string name="clear_all_groups">Очистить все группы</string>
+    <string name="create_new_group">Создать новую группу</string>
+    <string name="medicine_name_input_field">Поле для ввода названия лекарства</string>
+    <string name="dosage_input_field">Поле для ввода дозировки лекарства</string>
+    <string name="medicine_type_selection">Выбор типа лекарства</string>
+    <string name="quantity_input_field">Поле для ввода количества лекарства</string>
+    <string name="frequency_selection">Выбор частоты приема</string>
+    <string name="notes_input_field">Поле для ввода заметок о лекарстве</string>
+    <string name="mark_as_insulin">Отметить, если это инсулин</string>
+    <string name="group_name_input_field">Поле для ввода названия группы лекарств</string>
+    <string name="order_input_field">Поле для ввода порядка лекарства в группе</string>
+    <string name="saving_changes">Сохранение изменений</string>
+    <string name="time_selection">Выбор времени приема</string>
+    <string name="weekday_selection">Выбор дней недели</string>
+    <string name="change_medicine_group">Изменить группу лекарства</string>
+    <string name="enable_multiple_intakes">Включить несколько приемов в день</string>
+    <string name="add_intake_time">Добавить время приема</string>
+    <string name="select_related_medicines">Выбрать связанные лекарства</string>
+    <string name="saving_medicine">Сохранение лекарства</string>
+    <string name="cancel_adding_medicine">Отменить добавление лекарства</string>
+
+    <!-- Статусы лекарств -->
+    <string name="status_taken">Принято</string>
+    <string name="status_taken_uppercase">ПРИНЯТО</string>
+    <string name="status_overdue">Просрочено</string>
+    <string name="status_overdue_uppercase">ПРОСРОЧЕНО</string>
+    <string name="status_active">Активно</string>
+    <string name="status_active_uppercase">АКТИВНО</string>
+    <string name="status_today">Сегодня</string>
+    <string name="status_today_uppercase">СЕГОДНЯ</string>
+    <string name="status_skip">Пропустить</string>
+    <string name="status_skip_uppercase">ПРОПУСТИТЬ</string>
+    <string name="status_take">Принять</string>
+    <string name="status_take_uppercase">ПРИНЯТЬ</string>
+    <string name="status_cancel">Отменить</string>
+    <string name="status_disable">Отключить</string>
+
+    <!-- Типы лекарств -->
+    <string name="medicine_type_tablets">Таблетки</string>
+    <string name="medicine_type_capsules">Капсулы</string>
+    <string name="medicine_type_injections">Уколы</string>
+    <string name="medicine_type_drops">Капли</string>
+    <string name="medicine_type_syrup">Сироп</string>
+    <string name="medicine_type_inhalations">Ингаляции</string>
+    <string name="medicine_type_ointments">Мази</string>
+    <string name="medicine_type_gels">Гели</string>
+    <string name="medicine_type_creams">Кремы</string>
+    <string name="medicine_type_suppositories">Свечи</string>
+    <string name="medicine_type_sprays">Спреи</string>
+    <string name="medicine_type_aerosols">Аэрозоли</string>
+    <string name="medicine_type_powders">Порошки</string>
+    <string name="medicine_type_suspensions">Суспензии</string>
+    <string name="medicine_type_emulsions">Эмульсии</string>
+    <string name="medicine_type_insulin">Инсулин</string>
+    <string name="medicine_type_ozempic">Оземпик</string>
+    <string name="medicine_type_mounjaro">Мунджаро</string>
+    <string name="medicine_type_other">Другое</string>
+
+    <!-- Дни недели -->
+    <string name="monday">Понедельник</string>
+    <string name="tuesday">Вторник</string>
+    <string name="wednesday">Среда</string>
+    <string name="thursday">Четверг</string>
+    <string name="friday">Пятница</string>
+    <string name="saturday">Суббота</string>
+    <string name="sunday">Воскресенье</string>
+    <string name="monday_short">Пн</string>
+    <string name="tuesday_short">Вт</string>
+    <string name="wednesday_short">Ср</string>
+    <string name="thursday_short">Чт</string>
+    <string name="friday_short">Пт</string>
+    <string name="saturday_short">Сб</string>
+    <string name="sunday_short">Вс</string>
+
+    <!-- Действия и кнопки -->
+    <string name="action_drank">Выпил</string>
+    <string name="action_skip">Пропустить</string>
+    <string name="action_snooze">Отложить</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_close">Закрыть</string>
+    <string name="action_create">Создать</string>
+    <string name="action_add">Добавить</string>
+    <string name="action_remove">Убрать</string>
+    <string name="action_rename">Переименовать</string>
+    <string name="action_clear">Очистить</string>
+    <string name="action_understood">ПОНЯТНО</string>
+    <string name="action_export">ЭКСПОРТ</string>
+    <string name="action_error">ОШИБКА</string>
+    <string name="action_edit">РЕДАКТИРОВАТЬ</string>
+    <string name="action_ok">ОК</string>
+
+    <!-- Сообщения и уведомления -->
+    <string name="medicine_generic">Лекарство</string>
+    <string name="action_taken">Принял</string>
+    <string name="action_skipped">Пропустил</string>
+    <string name="action_copy">Копировать</string>
+    <string name="unknown">Неизвестно</string>
+    <string name="none">Нет</string>
+    <string name="critical">КРИТИЧНО</string>
+    <string name="normal">ОБЫЧНО</string>
+    <string name="settings_uppercase">НАСТРОЙКИ</string>
+    <string name="enabled">ВКЛЮЧЕНО</string>
+    <string name="disabled">ОТКЛЮЧЕНО</string>
+
+    <!-- Множественные формы -->
+    <string name="medicine_count_one">лекарство</string>
+    <string name="medicine_count_few">лекарства</string>
+    <string name="medicine_count_many">лекарств</string>
+    <string name="preparation_count_one">препарат</string>
+    <string name="preparation_count_few">препарата</string>
+    <string name="preparation_count_many">препаратов</string>
+
+    <!-- Группы лекарств -->
+    <string name="group_vitamins">Витамины</string>
+    <string name="group_heart">Сердце</string>
+    <string name="group_1">Группа 1</string>
+    <string name="group_2">Группа 2</string>
+
+    <!-- Log messages -->
+    <string name="warning_low_supply">ВНИМАНИЕ: Заканчиваются %1$s</string>
+    <string name="critical_no_supply">КРИТИЧНО: %1$s закончились!</string>
+    <string name="medicine_successfully_updated">✓ Лекарство успешно обновлено</string>
+    <string name="error_updating_medicine">Ошибка обновления лекарства: %1$s</string>
+    <string name="medicine_taken_success">Лекарство %1$s принято!</string>
+    <string name="immediate_update_list">🔄 НЕМЕДЛЕННОЕ ОБНОВЛЕНИЕ СПИСКА</string>
+    <string name="card_immediately_removed">🔄 Карточка лекарства %1$s немедленно удалена из списка</string>
+    <string name="error_immediate_removal">ОШИБКА немедленного удаления карточки: %1$s</string>
+    <string name="adapter_updated">✓ Адаптер обновлен</string>
+    <string name="error_adapter_update">ОШИБКА обновления адаптера: %1$s</string>
+    <string name="medicine_list_updated">✓ Список лекарств обновлен</string>
+    <string name="update_completed">=== ОБНОВЛЕНИЕ ЗАВЕРШЕНО ===</string>
+    <string name="medicine_info">Лекарство: %1$s (ID: %2$d)</string>
+    <string name="status_taken_today">Статус: takenToday = true</string>
+    <string name="update_time">Время обновления: %1$s</string>
+    <string name="restarting_periodic_check">ПЕРЕЗАПУСКАЕМ периодическую проверку через 10 секунд</string>
+    <string name="periodic_check_restarted">Периодическая проверка перезапущена</string>
+
+</resources> 

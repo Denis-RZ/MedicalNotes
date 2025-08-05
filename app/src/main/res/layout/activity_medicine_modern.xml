@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/white"
-            app:title="Медицинские заметки"
+            app:title="@string/app_name"
             app:titleTextColor="@color/medicine_text_primary"
             app:titleTextAppearance="@style/TextAppearance.Material3.HeadlineMedium"
             app:navigationIcon="@drawable/ic_menu"
@@ -47,7 +47,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Лекарства на сегодня"
+                android:text="@string/today_medicines_header"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@color/medicine_text_primary"

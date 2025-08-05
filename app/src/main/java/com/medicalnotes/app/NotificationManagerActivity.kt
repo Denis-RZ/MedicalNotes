@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.medicalnotes.app.adapters.MedicineAdapter
@@ -21,7 +20,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-class NotificationManagerActivity : AppCompatActivity() {
+class NotificationManagerActivity : BaseActivity() {
     
     private lateinit var binding: ActivityNotificationManagerBinding
     private lateinit var dataManager: DataManager
@@ -48,7 +47,7 @@ class NotificationManagerActivity : AppCompatActivity() {
     private fun setupViews() {
         // Настройка toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Менеджер уведомлений"
+        supportActionBar?.title = getString(R.string.notification_manager_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
     
