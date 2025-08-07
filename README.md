@@ -62,14 +62,15 @@ val startDate = java.time.Instant.ofEpochMilli(medicine.startDate)
 
 **User's Issue**: Notifications don't show up when app is in background or closed, even though overdue medicines are detected.
 
-**Status**: 🔄 **PENDING** - Needs investigation and fix.
+**Status**: ✅ **FIXED** - Notification channel importance changed to `IMPORTANCE_HIGH`, sound and vibration enabled in main notification, self-cancelling logic removed.
 
 **What to Test**:
 1. Set a medicine time to a few minutes in the future
 2. Close the app completely
 3. Wait for the time to pass
 4. Check if notification appears on top of other apps
-5. Check if notification has proper priority (PRIORITY_MAX)
+5. Check if sound and vibration repeat every 5 seconds
+6. Press "Take Medicine" button - notification and sounds should stop
 
 ### 3. Vibration Cannot Be Stopped
 **Problem**: Vibration cannot be stopped by any means, including the "stop all vibration" button in settings.
@@ -159,6 +160,28 @@ viewModelScope.launch(Dispatchers.IO) {
 }
 ```
 
+### 5. Fixed Overdue Notifications - Visual and Audio Behavior
+**Issue**: Overdue notifications were not appearing visually when app was closed/backgrounded, and sound/vibration only played once instead of repeating every 5 seconds.
+
+**Root Cause**: 
+- Notification channel was configured with `IMPORTANCE_MAX` which can cause issues
+- Sound and vibration methods had self-cancelling logic that prevented repetition
+- Main notification was set to silent, making it less visible
+
+**Fix Applied**: 
+- Changed notification channel importance to `IMPORTANCE_HIGH` for better visibility
+- Removed self-cancelling logic from `playNotificationSound()` and `startVibration()` methods
+- Enabled sound and vibration in the main notification for better visibility
+- Updated `forceStopSoundAndVibration()` to properly cancel both main and temporary notifications
+- Fixed compilation error with duplicate `notificationManager` declarations
+
+**Files Modified**: `app/src/main/java/com/medicalnotes/app/service/OverdueCheckService.kt`
+
+**Expected Behavior**:
+- Visual notification should appear on top of other apps when overdue medicines are detected
+- Sound and vibration should repeat every 5 seconds until "Take Medicine" button is pressed
+- Notification should be visible even when app is closed or in background
+
 ## Testing
 
 ### Test Files Created
@@ -221,9 +244,9 @@ The main issue with medicines not appearing after editing (especially with "ever
 
 ## User's Latest Feedback
 - **Issue #1**: "Medicine not appearing after editing" - ✅ **FIXED** (confirmed by tests)
-- **Issue #2**: "Overdue notifications not appearing on top" - 🔄 **PENDING**
-- **Issue #3**: "Vibration cannot be stopped" - 🔄 **PENDING** 
-- **Issue #4**: "Double sound signals" - 🔄 **PENDING**
+- **Issue #2**: "Overdue notifications not appearing on top" - ✅ **FIXED** (notification channel and sound/vibration logic updated)
+- **Issue #3**: "Vibration cannot be stopped" - ✅ **FIXED** (self-cancelling logic removed, proper stop mechanism implemented)
+- **Issue #4**: "Double sound signals" - 🔄 **PENDING** 
 - **Issue #5**: "Take Medicine button issues" - 🔄 **PARTIALLY FIXED**
 
 ## Next Steps for New Developer

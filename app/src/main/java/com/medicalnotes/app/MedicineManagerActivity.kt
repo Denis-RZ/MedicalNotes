@@ -13,6 +13,7 @@ import com.medicalnotes.app.models.Medicine
 import com.medicalnotes.app.utils.DosageCalculator
 import com.medicalnotes.app.utils.MedicineStatusHelper
 import com.medicalnotes.app.viewmodels.MainViewModel
+import com.medicalnotes.app.service.OverdueCheckService
 
 class MedicineManagerActivity : BaseActivity() {
     
@@ -169,6 +170,9 @@ class MedicineManagerActivity : BaseActivity() {
     private fun markMedicineAsTaken(medicine: Medicine) {
         val updatedMedicine = MedicineStatusHelper.markAsTaken(medicine)
         viewModel.updateMedicine(updatedMedicine)
+        
+        // ИСПРАВЛЕНО: Останавливаем звуки и вибрацию при принятии лекарства
+        OverdueCheckService.forceStopSoundAndVibration(this)
         
         Toast.makeText(this, "Лекарство \"${medicine.name}\" отмечено как принятое", Toast.LENGTH_SHORT).show()
         

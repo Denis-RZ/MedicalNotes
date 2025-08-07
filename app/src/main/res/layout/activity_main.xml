@@ -82,6 +82,49 @@
                         android:drawablePadding="0dp"
                         android:gravity="center_vertical" />
 
+                    <!-- Test Calendar Section -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:background="@drawable/info_light_background"
+                        android:padding="@dimen/padding_medium"
+                        android:minHeight="48dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Тестовая дата:"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:id="@+id/textSelectedDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Сегодня"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                            android:textColor="?attr/colorPrimary"
+                            android:layout_marginEnd="@dimen/margin_small"
+                            android:background="@drawable/status_pill_background"
+                            android:paddingHorizontal="@dimen/padding_small"
+                            android:paddingVertical="4dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonSelectDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📅"
+                            android:textSize="16sp"
+                            android:minWidth="48dp"
+                            android:minHeight="40dp"
+                            style="@style/Widget.Material3.Button.IconButton" />
+
+                    </LinearLayout>
+
                     <!-- Medicines RecyclerView -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerViewTodayMedicines"

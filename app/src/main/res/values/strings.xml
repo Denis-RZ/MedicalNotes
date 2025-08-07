@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Medical Notes</string>
+    <string name="app_name">Медицинские заметки</string>
     <string name="service_description">Medicine notification service</string>
     <string name="quick_settings_tile_description">Open medicine management app</string>
     
@@ -97,6 +97,10 @@
     <string name="english">English</string>
     <string name="language_changed">Language Changed</string>
     <string name="restart_required">Application restart required</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
     
     <!-- Errors and messages -->
     <string name="error_initialization">Data initialization error</string>
@@ -433,7 +437,11 @@
     <string name="interface_section">Interface</string>
     <string name="customize_buttons_button">Customize buttons</string>
     <string name="language_test_button">Language test</string>
-    <string name="notifications_button">Notifications</string>
+    <string name="notifications_button">Notification Manager</string>
+    <string name="check_permissions">Check Permissions</string>
+    <string name="permissions_status">Permissions Status</string>
+    <string name="permissions_configured">All permissions configured</string>
+    <string name="permissions_missing">Some permissions not configured</string>
     <string name="high_contrast_button">High contrast</string>
     <string name="data_section">Data</string>
     <string name="statistics">Statistics</string>

@@ -23,6 +23,7 @@ import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
 import com.medicalnotes.app.utils.DosageCalculator
+import com.medicalnotes.app.service.OverdueCheckService
 
 class MainActivity : BaseActivity() {
 
@@ -34,6 +35,9 @@ class MainActivity : BaseActivity() {
     
     //  ДОБАВЛЕНО: Список для хранения логов
     private val logs = mutableListOf<String>()
+    
+    //  ДОБАВЛЕНО: Переменная для тестовой даты
+    private var selectedTestDate: LocalDate = LocalDate.now()
     
     //  ДОБАВЛЕНО: Обработчик результата от EditMedicineActivity
     private val editMedicineLauncher = registerForActivityResult(
@@ -62,6 +66,77 @@ class MainActivity : BaseActivity() {
         }
     }
     
+    // ИСПРАВЛЕНО: Обработка intent extras для уведомлений
+    private fun handleNotificationIntent() {
+        try {
+            val takeMedicine = intent.getBooleanExtra("take_medicine", false)
+            val showOverdueMedicines = intent.getBooleanExtra("show_overdue_medicines", false)
+            val alarmNotification = intent.getBooleanExtra("alarm_notification", false)
+            
+            if (takeMedicine) {
+                val overdueMedicineIds = intent.getParcelableArrayListExtra("overdue_medicines", Long::class.java)
+                if (!overdueMedicineIds.isNullOrEmpty()) {
+                    // Останавливаем звуки и вибрацию
+                    OverdueCheckService.forceStopSoundAndVibration(this@MainActivity)
+                    
+                    // Помечаем лекарства как принятые
+                    markOverdueMedicinesAsTaken(overdueMedicineIds)
+                    
+                    android.widget.Toast.makeText(this, "Лекарства помечены как принятые", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+            
+            if (showOverdueMedicines) {
+                // Показываем список просроченных лекарств
+                android.widget.Toast.makeText(this, "Показаны просроченные лекарства", android.widget.Toast.LENGTH_SHORT).show()
+            }
+            
+            // ИСПРАВЛЕНО: Обработка уведомления от AlarmManager
+            if (alarmNotification) {
+                android.util.Log.d("MainActivity", "Получено уведомление от AlarmManager")
+                
+                // Принудительно проверяем просроченные лекарства
+                checkOverdueMedicines()
+                
+                // Показываем уведомление пользователю
+                android.widget.Toast.makeText(this, "🚨 Проверьте просроченные лекарства!", android.widget.Toast.LENGTH_LONG).show()
+                
+                // Дополнительно запускаем сервис для показа уведомления
+                OverdueCheckService.startService(this@MainActivity)
+            }
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error handling notification intent", e)
+        }
+    }
+    
+    // Помечаем просроченные лекарства как принятые
+    private fun markOverdueMedicinesAsTaken(medicineIds: ArrayList<Long>) {
+        try {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val dataManager = com.medicalnotes.app.utils.DataManager(this@MainActivity)
+                val allMedicines = dataManager.loadMedicines()
+                
+                val updatedMedicines = allMedicines.map { medicine ->
+                    if (medicineIds.contains(medicine.id)) {
+                        medicine.copy(takenToday = true)
+                    } else {
+                        medicine
+                    }
+                }
+                
+                dataManager.saveMedicines(updatedMedicines)
+                
+                // Обновляем UI на главном потоке
+                lifecycleScope.launch(Dispatchers.Main) {
+                    loadTodayMedicines()
+                    checkOverdueMedicines()
+                }
+            }
+        } catch (e: Exception) {
+            com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error marking medicines as taken", e)
+        }
+    }
+
     //  ДОБАВЛЕНО: Тестовая функция для проверки CrashReporter
     private fun testCrashReporter() {
         try {
@@ -85,24 +160,72 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // ИСПРАВЛЕНО: Инициализация binding перед setContentView
         try {
-            //  ДОБАВЛЕНО: Проверка инициализации CrashReporter
-            try {
-                com.medicalnotes.app.utils.CrashReporter.initialize(this)
-                com.medicalnotes.app.utils.LogCollector.i("MainActivity", " CrashReporter проверен")
-                
-            } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", " Ошибка проверки CrashReporter", e)
-                e.printStackTrace()
-            }
-            
-            // Инициализация системы логирования
-            com.medicalnotes.app.utils.LogCollector.initialize(this)
-            com.medicalnotes.app.utils.LogCollector.i("MainActivity", "onCreate started")
-            
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root)
+            android.util.Log.d("MainActivity", "Binding успешно инициализирован")
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Критическая ошибка инициализации binding", e)
+            
+            // ДОБАВЛЕНО: Показываем диалог с информацией об ошибке
+            showErrorDialog("Ошибка инициализации binding", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
+            
+            // Fallback - используем обычный setContentView
+            setContentView(R.layout.activity_main)
+            android.widget.Toast.makeText(this, "Ошибка инициализации интерфейса", android.widget.Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+        
+        // Инициализация компонентов ПЕРЕД проверкой разрешений
+        try {
+            initializeComponents()
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка инициализации компонентов", e)
+            showErrorDialog("Ошибка инициализации компонентов", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
+            finish()
+            return
+        }
+        
+        // ДОБАВЛЕНО: Диагностика UI состояния
+        try {
+            diagnoseUIState()
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка диагностики UI", e)
+            showErrorDialog("Ошибка диагностики UI", "Детали ошибки:\n${e.message}")
+        }
+        
+        // ДОБАВЛЕНО: Проверка разрешений после инициализации UI
+        try {
+            checkAndRequestPermissions()
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка проверки разрешений", e)
+            showErrorDialog("Ошибка проверки разрешений", "Детали ошибки:\n${e.message}")
+        }
+        
+        // Обработка входящих интентов
+        try {
+            handleNotificationIntent()
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка обработки интентов", e)
+            showErrorDialog("Ошибка обработки интентов", "Детали ошибки:\n${e.message}")
+        }
+    }
 
+    private fun initializeComponents() {
+        try {
+            // ИСПРАВЛЕНО: Проверка инициализации binding
+            if (!::binding.isInitialized) {
+                android.util.Log.e("MainActivity", "Binding не инициализирован в initializeComponents")
+                android.widget.Toast.makeText(this, "Ошибка инициализации интерфейса", android.widget.Toast.LENGTH_LONG).show()
+                finish()
+                return
+            }
+            
+            android.util.Log.d("MainActivity", "Binding проверен, продолжаем инициализацию")
+            
             // Инициализация ViewModel и Repository с проверками
             try {
                 viewModel = ViewModelProvider(this)[MainViewModel::class.java]
@@ -110,7 +233,7 @@ class MainActivity : BaseActivity() {
                 com.medicalnotes.app.utils.LogCollector.i("MainActivity", "ViewModel and Repository initialized")
             } catch (e: Exception) {
                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error initializing ViewModel/Repository", e)
-                android.widget.Toast.makeText(this, getString(R.string.error_initialization), android.widget.Toast.LENGTH_LONG).show()
+                showErrorDialog("Ошибка инициализации ViewModel/Repository", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
                 finish()
                 return
             }
@@ -118,12 +241,13 @@ class MainActivity : BaseActivity() {
             // Настройка UI с дополнительными проверками
             try {
                 setupViews()
+                setupNavigationDrawer()
                 setupButtons()
                 observeData()
                 com.medicalnotes.app.utils.LogCollector.i("MainActivity", "UI setup completed")
             } catch (e: Exception) {
                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in UI setup", e)
-                android.widget.Toast.makeText(this, getString(R.string.error_ui_setup), android.widget.Toast.LENGTH_LONG).show()
+                showErrorDialog("Ошибка настройки UI", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
                 finish()
                 return
             }
@@ -135,7 +259,7 @@ class MainActivity : BaseActivity() {
                 com.medicalnotes.app.utils.LogCollector.i("MainActivity", "Data loading completed")
             } catch (e: Exception) {
                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error loading data", e)
-                android.widget.Toast.makeText(this, getString(R.string.error_loading_data), android.widget.Toast.LENGTH_LONG).show()
+                showErrorDialog("Ошибка загрузки данных", "Детали ошибки:\n${e.message}")
             }
             
             //  ИСПРАВЛЕНО: Запуск сервисов в фоновом потоке для предотвращения ANR
@@ -180,18 +304,32 @@ class MainActivity : BaseActivity() {
             
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Critical error in onCreate", e)
-            android.widget.Toast.makeText(this, "Критическая ошибка инициализации: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+            showErrorDialog("Критическая ошибка инициализации", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
             finish()
         }
     }
 
     private fun setupViews() {
         try {
+            android.util.Log.d("MainActivity", "setupViews: Начало настройки UI")
+            
             // Настройка toolbar с проверками
             try {
+                android.util.Log.d("MainActivity", "setupViews: Настройка toolbar")
                 setSupportActionBar(binding.toolbar)
                 binding.toolbar.setTitle(getString(R.string.app_name))
                 binding.toolbar.subtitle = VersionUtils.getShortVersionInfo(this)
+                
+                // ДОБАВЛЕНО: Настройка ActionBarDrawerToggle для работы с navigation drawer
+                val toggle = androidx.appcompat.app.ActionBarDrawerToggle(
+                    this, 
+                    binding.drawerLayout, 
+                    binding.toolbar, 
+                    R.string.navigation_drawer_open, 
+                    R.string.navigation_drawer_close
+                )
+                binding.drawerLayout.addDrawerListener(toggle)
+                toggle.syncState()
                 
                 // ДОБАВЛЕНО: Отладочная информация
                 com.medicalnotes.app.utils.LogCollector.d("MainActivity", "setupViews: Setting toolbar title to: ${getString(R.string.app_name)}")
@@ -200,83 +338,81 @@ class MainActivity : BaseActivity() {
                 // ДОБАВЛЕНО: Принудительное обновление toolbar
                 binding.toolbar.invalidate()
                 
-                // ДОБАВЛЕНО: Устанавливаем заголовок после полной инициализации view
-                binding.toolbar.post {
-                    binding.toolbar.setTitle(getString(R.string.app_name))
-                    com.medicalnotes.app.utils.LogCollector.d("MainActivity", "setupViews: Post-set toolbar title to: ${getString(R.string.app_name)}")
-                }
-                
-                // ВАЖНО: Настройка кнопки меню (гамбургер) - ИСПРАВЛЕНО
-                supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu)
-                
-                // Настройка навигации для MaterialToolbar
-                binding.toolbar.setNavigationOnClickListener {
-                    com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Кнопка навигации нажата - открываем drawer")
-                    try {
-                        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                            com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Drawer уже открыт - закрываем")
-                            binding.drawerLayout.closeDrawer(GravityCompat.START)
-                        } else {
-                            com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Drawer закрыт - открываем")
-                            binding.drawerLayout.openDrawer(GravityCompat.START)
-                        }
-                    } catch (e: Exception) {
-                        com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Ошибка при работе с drawer", e)
-                    }
-                }
-                
-                com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Toolbar настроен, кнопка навигации установлена")
-                
+                android.util.Log.d("MainActivity", "setupViews: Toolbar настроен успешно")
             } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting version info", e)
-                binding.toolbar.subtitle = "v?.?"
-            }
-            
-            // Настройка Navigation Drawer с проверками
-            try {
-                setupNavigationDrawer()
-            } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up navigation drawer", e)
+                android.util.Log.e("MainActivity", "setupViews: Ошибка настройки toolbar", e)
+                showErrorDialog("Ошибка настройки toolbar", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
+                throw e
             }
             
             // Настройка RecyclerView с проверками
             try {
+                android.util.Log.d("MainActivity", "setupViews: Настройка RecyclerView")
+                binding.recyclerViewTodayMedicines.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
                 todayMedicineAdapter = MainMedicineAdapter(
-                    onMedicineClick = { medicine -> 
+                    onMedicineClick = { medicine ->
                         try {
-                            takeMedicine(medicine) 
+                            val intent = android.content.Intent(this, EditMedicineActivity::class.java)
+                            intent.putExtra("medicine_id", medicine.id)
+                            startActivity(intent)
                         } catch (e: Exception) {
-                            com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in medicine click", e)
-                            android.widget.Toast.makeText(this, "Ошибка при приеме лекарства", android.widget.Toast.LENGTH_SHORT).show()
+                            android.util.Log.e("MainActivity", "Ошибка открытия редактирования лекарства", e)
+                            showErrorDialog("Ошибка открытия редактирования", "Детали ошибки:\n${e.message}")
+                        }
+                    },
+                    onTakeMedicineClick = { medicine ->
+                        try {
+                            // Отмечаем лекарство как принятое
+                            val updatedMedicine = com.medicalnotes.app.utils.MedicineStatusHelper.markAsTaken(medicine)
+                            viewModel.updateMedicine(updatedMedicine)
+                            
+                            // Останавливаем звуки и вибрацию
+                            com.medicalnotes.app.service.OverdueCheckService.forceStopSoundAndVibration(this)
+                            
+                            // Показываем уведомление
+                            android.widget.Toast.makeText(
+                                this, 
+                                "Лекарство \"${medicine.name}\" отмечено как принятое", 
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                            
+                            // Перезагружаем список
+                            loadTodayMedicines()
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "Ошибка отметки лекарства как принятого", e)
+                            showErrorDialog("Ошибка отметки лекарства", "Детали ошибки:\n${e.message}")
                         }
                     }
                 )
-
-                binding.recyclerViewTodayMedicines.apply {
-                    layoutManager = LinearLayoutManager(this@MainActivity)
-                    adapter = todayMedicineAdapter
-                }
+                binding.recyclerViewTodayMedicines.adapter = todayMedicineAdapter
+                android.util.Log.d("MainActivity", "setupViews: RecyclerView настроен успешно")
             } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up RecyclerView", e)
-            }
-
-            // Настройка кнопки повтора с проверками
-            try {
-                binding.buttonRetry.setOnClickListener {
-                    try {
-                        loadTodayMedicines()
-                    } catch (e: Exception) {
-                        com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in retry button click", e)
-                        android.widget.Toast.makeText(this, "Ошибка при повторной загрузке", android.widget.Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up retry button", e)
+                android.util.Log.e("MainActivity", "setupViews: Ошибка настройки RecyclerView", e)
+                showErrorDialog("Ошибка настройки RecyclerView", "Детали ошибки:\n${e.message}")
+                throw e
             }
             
+            // ДОБАВЛЕНО: Настройка кнопки календаря для тестирования
+            try {
+                android.util.Log.d("MainActivity", "setupViews: Настройка кнопки календаря")
+                binding.buttonSelectDate.setOnClickListener {
+                    showDatePickerDialog()
+                }
+                
+                // Обновляем отображение выбранной даты
+                updateSelectedDateDisplay()
+                
+                android.util.Log.d("MainActivity", "setupViews: Кнопка календаря настроена успешно")
+            } catch (e: Exception) {
+                android.util.Log.e("MainActivity", "setupViews: Ошибка настройки кнопки календаря", e)
+                showErrorDialog("Ошибка настройки кнопки календаря", "Детали ошибки:\n${e.message}")
+                throw e
+            }
+            
+            android.util.Log.d("MainActivity", "setupViews: Все компоненты UI настроены успешно")
         } catch (e: Exception) {
-            com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Critical error in setupViews", e)
+            android.util.Log.e("MainActivity", "setupViews: Критическая ошибка настройки UI", e)
+            showErrorDialog("Критическая ошибка настройки UI", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
             throw e
         }
     }
@@ -358,81 +494,65 @@ class MainActivity : BaseActivity() {
 
     private fun setupButtons() {
         try {
-            // Настройка FAB с проверками
+            android.util.Log.d("MainActivity", "setupButtons: Начало настройки кнопок")
+            
+            // Настройка FAB добавления лекарства
             try {
                 binding.fabAddMedicine.setOnClickListener {
                     try {
+                        android.util.Log.d("MainActivity", "FAB добавления лекарства нажата")
                         val intent = android.content.Intent(this, AddMedicineActivity::class.java)
                         startActivity(intent)
                     } catch (e: Exception) {
-                        com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error starting AddMedicineActivity", e)
-                        android.widget.Toast.makeText(this, "Ошибка открытия добавления лекарства", android.widget.Toast.LENGTH_SHORT).show()
+                        android.util.Log.e("MainActivity", "Ошибка при нажатии FAB добавления", e)
+                        showErrorDialog("Ошибка FAB добавления", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
                     }
                 }
+                android.util.Log.d("MainActivity", "setupButtons: FAB добавления настроена")
             } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up FAB", e)
+                android.util.Log.e("MainActivity", "setupButtons: Ошибка настройки FAB добавления", e)
+                showErrorDialog("Ошибка настройки FAB добавления", "Детали ошибки:\n${e.message}")
             }
-
-            // Настройка кнопки очистки логов с проверками
+            
+            // Настройка кнопки очистки логов
             try {
                 binding.buttonClearLogs.setOnClickListener {
                     try {
+                        android.util.Log.d("MainActivity", "Кнопка очистки логов нажата")
                         clearLogs()
                         android.widget.Toast.makeText(this, "Логи очищены", android.widget.Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
-                        com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error clearing logs", e)
-                        android.widget.Toast.makeText(this, "Ошибка очистки логов", android.widget.Toast.LENGTH_SHORT).show()
+                        android.util.Log.e("MainActivity", "Ошибка при нажатии кнопки очистки логов", e)
+                        showErrorDialog("Ошибка очистки логов", "Детали ошибки:\n${e.message}")
                     }
                 }
+                android.util.Log.d("MainActivity", "setupButtons: Кнопка очистки логов настроена")
             } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up clear logs button", e)
+                android.util.Log.e("MainActivity", "setupButtons: Ошибка настройки кнопки очистки логов", e)
+                showErrorDialog("Ошибка настройки кнопки очистки логов", "Детали ошибки:\n${e.message}")
             }
             
-            // Настройка кнопки копирования лога с проверками
+            // Настройка кнопки копирования лога
             try {
                 binding.buttonCopyLog.setOnClickListener {
                     try {
+                        android.util.Log.d("MainActivity", "Кнопка копирования лога нажата")
                         copyLogToClipboard()
                     } catch (e: Exception) {
-                        com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error copying log", e)
-                        android.widget.Toast.makeText(this, "Ошибка копирования лога", android.widget.Toast.LENGTH_SHORT).show()
+                        android.util.Log.e("MainActivity", "Ошибка при нажатии кнопки копирования лога", e)
+                        showErrorDialog("Ошибка копирования лога", "Детали ошибки:\n${e.message}")
                     }
                 }
+                android.util.Log.d("MainActivity", "setupButtons: Кнопка копирования лога настроена")
             } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up copy log button", e)
+                android.util.Log.e("MainActivity", "setupButtons: Ошибка настройки кнопки копирования лога", e)
+                showErrorDialog("Ошибка настройки кнопки копирования лога", "Детали ошибки:\n${e.message}")
             }
             
-            //  ДОБАВЛЕНО: Кнопка диагностики
-            try {
-                binding.buttonDiagnostic.setOnClickListener {
-                    try {
-                        performDiagnostic()
-                    } catch (e: Exception) {
-                        com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error performing diagnostic", e)
-                        android.widget.Toast.makeText(this, "Ошибка диагностики", android.widget.Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up diagnostic button", e)
-            }
-            
-            //  ДОБАВЛЕНО: Кнопка исправления проблем
-            try {
-                binding.buttonFixIssues.setOnClickListener {
-                    try {
-                        fixIssues()
-                    } catch (e: Exception) {
-                        com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error fixing issues", e)
-                        android.widget.Toast.makeText(this, "Ошибка исправления проблем", android.widget.Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } catch (e: Exception) {
-                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error setting up fix issues button", e)
-            }
-            
+            android.util.Log.d("MainActivity", "setupButtons: Все кнопки настроены успешно")
         } catch (e: Exception) {
-            com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Critical error in setupButtons", e)
-            throw e
+            android.util.Log.e("MainActivity", "setupButtons: Критическая ошибка настройки кнопок", e)
+            showErrorDialog("Критическая ошибка настройки кнопок", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
         }
     }
 
@@ -442,15 +562,16 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
-        com.medicalnotes.app.utils.LogCollector.d("MainActivity", "onOptionsItemSelected: ${item.itemId}")
         return when (item.itemId) {
-            android.R.id.home -> {
-                com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Нажата кнопка home - открываем drawer")
-                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    binding.drawerLayout.closeDrawer(GravityCompat.START)
-                } else {
-                    binding.drawerLayout.openDrawer(GravityCompat.START)
-                }
+            R.id.action_check_permissions -> {
+                // ДОБАВЛЕНО: Проверка разрешений по нажатию кнопки
+                checkAndRequestPermissions()
+                true
+            }
+            R.id.action_settings -> {
+                // Открываем настройки
+                val intent = android.content.Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -459,167 +580,64 @@ class MainActivity : BaseActivity() {
 
     private fun observeData() {
         try {
+            android.util.Log.d("MainActivity", "observeData: Начало настройки наблюдателей")
+            
+            // Наблюдаем за изменениями в списке лекарств
             viewModel.todayMedicines.observe(this) { medicines ->
                 try {
-                    //  ДОБАВЛЕНО: Подробное логирование для отладки
-                    addLog("=== ОБСЕРВЕР ЛЕКАРСТВ НА СЕГОДНЯ ===")
-                    addLog("Получено лекарств из ViewModel: ${medicines.size}")
-                    addLog("Время обновления: ${LocalDateTime.now()}")
-                    
-                    // Логируем каждое лекарство для отладки
-                    medicines.forEach { medicine ->
-                        addLog("  - ${medicine.name} (ID: ${medicine.id})")
-                    }
+                    android.util.Log.d("MainActivity", "📋 MainActivity: Получено ${medicines.size} лекарств в наблюдателе")
+                    addLog("📋 Получено ${medicines.size} лекарств в наблюдателе")
                     
                     if (medicines.isEmpty()) {
+                        binding.progressBarTodayMedicines.visibility = android.view.View.GONE
+                        binding.recyclerViewTodayMedicines.visibility = android.view.View.GONE
+                        // Показываем пустое состояние
                         showEmptyState()
-                        addLog("Нет лекарств на сегодня")
                     } else {
+                        binding.progressBarTodayMedicines.visibility = android.view.View.GONE
+                        binding.recyclerViewTodayMedicines.visibility = android.view.View.VISIBLE
+                        // Скрываем пустое состояние
                         showContentState()
-                        addLog("=== ОБНОВЛЕНИЕ СПИСКА ЛЕКАРСТВ ===")
-                        addLog("Получено лекарств: ${medicines.size}")
-                        addLog("Текущее время: ${LocalDateTime.now()}")
                         
-                        // Отслеживаем просроченные лекарства для логирования
-                        var overdueCount = 0
-                        
-                        medicines.forEach { medicine ->
-                            try {
-                                val status = com.medicalnotes.app.utils.DosageCalculator.getMedicineStatus(medicine)
-                                addLog("Отображается: ${medicine.name} - Статус: $status")
-                                addLog("  Время приема: ${medicine.time}")
-                                addLog("  Частота: ${medicine.frequency}")
-                                
-                                if (status == MedicineStatus.OVERDUE) {
-                                    overdueCount++
-                                    addLog(" ПРОСРОЧЕНО: ${medicine.name}")
-                                } else if (status == MedicineStatus.UPCOMING) {
-                                    addLog("📅 ПРЕДСТОИТ: ${medicine.name} - время еще не пришло")
-                                } else if (status == MedicineStatus.TAKEN_TODAY) {
-                                    addLog(" ПРИНЯТО: ${medicine.name} - уже принято сегодня")
-                                } else {
-                                    addLog(" НЕ СЕГОДНЯ: ${medicine.name} - не по расписанию")
-                                }
-                            } catch (e: Exception) {
-                                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error processing medicine ${medicine.name}", e)
-                                addLog(" ОШИБКА обработки: ${medicine.name}")
-                            }
-                        }
-                        
-                        // Логируем итоговую статистику
-                        addLog("📊 ИТОГО: просроченных лекарств: $overdueCount")
-                        
-                        // Проверяем, нужно ли показывать группированные карточки
-                        try {
-                            //  ИСПРАВЛЕНО: medicines уже отфильтрованы в MainViewModel
-                            // НЕ вызываем DosageCalculator.getActiveMedicinesForDate() повторно!
-                            addLog("=== ОБРАБОТКА УЖЕ ОТФИЛЬТРОВАННЫХ ДАННЫХ ===")
-                            addLog("Входные данные (уже отфильтрованы): ${medicines.size} лекарств")
-                            medicines.forEach { medicine ->
-                                addLog("  - ${medicine.name}: активен=${medicine.isActive}, принято=${medicine.takenToday}")
-                            }
-                            
-                            // Проверяем, есть ли лекарства в группах среди активных
-                            val groupedMedicines = medicines.filter { it.groupName.isNotEmpty() }
-                            val shouldShowGrouped = groupedMedicines.isNotEmpty()
-                            
-                            addLog("Лекарств в группах: ${groupedMedicines.size}")
-                            addLog("Показывать группированные карточки: $shouldShowGrouped")
-                            
-                            if (shouldShowGrouped) {
-                                // Группируем активные лекарства по названию группы
-                                val groupedByGroupName = groupedMedicines.groupBy { it.groupName }
-                                addLog("Групп лекарств: ${groupedByGroupName.size}")
-                                
-                                // Создаем список для отображения
-                                val displayList = mutableListOf<Medicine>()
-                                
-                                groupedByGroupName.forEach { (groupName, groupMedicines) ->
-                                    // Сортируем лекарства в группе по порядку
-                                    val sortedGroupMedicines = groupMedicines.sortedBy { it.groupOrder }
-                                    addLog("Группа '$groupName': ${sortedGroupMedicines.size} лекарств")
-                                    
-                                    // ИСПРАВЛЕНО: Показываем только те лекарства, которые должны приниматься сегодня
-                                    // В группе "через день" только одно лекарство должно приниматься в день
-                                    val today = java.time.LocalDate.now()
-                                    addLog("=== ПОВТОРНАЯ ФИЛЬТРАЦИЯ ГРУППОВЫХ ЛЕКАРСТВ ===")
-                                    addLog("Группа: $groupName")
-                                    addLog("Сегодня: $today")
-                                    
-                                    val medicinesForToday = sortedGroupMedicines.filter { medicine ->
-                                        addLog("Проверяем: ${medicine.name}")
-                                        addLog("  - groupId: ${medicine.groupId}")
-                                        addLog("  - groupName: ${medicine.groupName}")
-                                        addLog("  - groupOrder: ${medicine.groupOrder}")
-                                        addLog("  - groupStartDate: ${medicine.groupStartDate}")
-                                        addLog("  - groupFrequency: ${medicine.groupFrequency}")
-                                        addLog("  - frequency: ${medicine.frequency}")
-                                        
-                                        val shouldTake = com.medicalnotes.app.utils.DosageCalculator.shouldTakeMedicine(medicine, today)
-                                        addLog("  - shouldTakeMedicine: $shouldTake")
-                                        
-                                        shouldTake
-                                    }
-                                    
-                                    addLog("В группе '$groupName' на сегодня: ${medicinesForToday.size} лекарств")
-                                    medicinesForToday.forEach { medicine ->
-                                        addLog("  - ${medicine.name} (groupOrder=${medicine.groupOrder})")
-                                    }
-                                    
-                                    // Добавляем только лекарства, которые должны приниматься сегодня
-                                    displayList.addAll(medicinesForToday)
-                                }
-                                
-                                // Добавляем лекарства без групп
-                                val nonGroupedMedicines = medicines.filter { it.groupName.isEmpty() }
-                                displayList.addAll(nonGroupedMedicines)
-                                
-                                addLog("Итого для отображения: ${displayList.size} лекарств")
-                                binding.recyclerViewTodayMedicines.adapter = todayMedicineAdapter
-                                todayMedicineAdapter.submitList(displayList)
-                                
-                                addLog("Показаны группированные карточки")
-                            } else {
-                                // Показываем обычные карточки
-                                binding.recyclerViewTodayMedicines.adapter = todayMedicineAdapter
-                                todayMedicineAdapter.submitList(medicines)
-                                
-                                addLog("Показаны обычные карточки")
-                            }
-                        } catch (e: Exception) {
-                            com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error with grouping logic", e)
-                            // Fallback - показываем обычные карточки
-                            binding.recyclerViewTodayMedicines.adapter = todayMedicineAdapter
-                            todayMedicineAdapter.submitList(medicines)
-                            addLog("Ошибка группировки, показываем обычные карточки")
-                        }
+                        todayMedicineAdapter.submitList(medicines)
                     }
+                    
+                    android.util.Log.d("MainActivity", "observeData: UI обновлен успешно")
                 } catch (e: Exception) {
-                    com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in medicines observer", e)
-                    showErrorState("Ошибка обработки данных: ${e.message}")
+                    android.util.Log.e("MainActivity", "observeData: Ошибка обновления UI", e)
+                    showErrorDialog("Ошибка обновления UI", "Детали ошибки:\n${e.message}")
                 }
             }
+            
+            android.util.Log.d("MainActivity", "observeData: Наблюдатели настроены успешно")
         } catch (e: Exception) {
-            com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in observeData", e)
-            android.widget.Toast.makeText(this, "Ошибка обновления данных", android.widget.Toast.LENGTH_SHORT).show()
+            android.util.Log.e("MainActivity", "observeData: Критическая ошибка настройки наблюдателей", e)
+            showErrorDialog("Критическая ошибка настройки наблюдателей", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
+            throw e
         }
     }
 
     override fun onResume() {
         super.onResume()
+        
+        // ДОБАВЛЕНО: Проверяем и восстанавливаем службу при возвращении в приложение
+        try {
+            android.util.Log.d("MainActivity", "Проверка службы при возвращении в приложение")
+            com.medicalnotes.app.utils.ServiceStatusChecker.checkAndRestoreService(this@MainActivity)
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка проверки службы", e)
+        }
+        
+        // Обновляем список лекарств
         try {
             viewModel.loadAllMedicines()
             loadTodayMedicines()
-            
-            //  ДОБАВЛЕНО: Проверка просроченных лекарств при возвращении в приложение
-            checkOverdueMedicines()
-            
-            //  ДОБАВЛЕНО: Перезапуск периодической проверки при возвращении в приложение
-            startPeriodicOverdueCheck()
         } catch (e: Exception) {
-            com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in onResume", e)
-            android.widget.Toast.makeText(this, "Ошибка обновления данных", android.widget.Toast.LENGTH_SHORT).show()
+            android.util.Log.e("MainActivity", "Ошибка обновления данных", e)
         }
+        
+        // Проверяем просроченные лекарства
+        checkOverdueMedicines()
     }
     
 
@@ -641,6 +659,11 @@ class MainActivity : BaseActivity() {
         try {
             com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_НАЖАТА", "Кнопка 'принял лекарство' нажата для: ${medicine.name} (ID: ${medicine.id})")
             addLog(" КНОПКА_НАЖАТА: Кнопка 'принял лекарство' нажата для: ${medicine.name}")
+            
+            // ИСПРАВЛЕНО: Останавливаем повторяющиеся звуки и вибрацию
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ДЕЙСТВИЕ", "Останавливаем звуки и вибрацию для: ${medicine.name}")
+            addLog(" ОСТАНАВЛИВАЕМ звуки и вибрацию для: ${medicine.name}")
+            OverdueCheckService.forceStopSoundAndVibration(this@MainActivity)
             
             val notificationManager = com.medicalnotes.app.utils.NotificationManager(this@MainActivity)
             addLog(" NotificationManager создан")
@@ -890,10 +913,19 @@ class MainActivity : BaseActivity() {
 
     private fun loadTodayMedicines() {
         addLog("=== ВЫЗОВ loadTodayMedicines() ===")
+        addLog("📋 MainActivity: viewModel доступен: ${viewModel != null}")
+        addLog("📋 MainActivity: viewModel.todayMedicines доступен: ${viewModel.todayMedicines != null}")
         showLoadingState()
         addLog("Вызываем viewModel.loadTodayMedicines()")
-        viewModel.loadTodayMedicines()
-        addLog("viewModel.loadTodayMedicines() вызван")
+        android.util.Log.d("MainActivity", "🚀 MainActivity: Вызываем viewModel.loadTodayMedicines()")
+        try {
+            viewModel.loadTodayMedicines()
+            addLog("viewModel.loadTodayMedicines() вызван успешно")
+            android.util.Log.d("MainActivity", "✅ MainActivity: viewModel.loadTodayMedicines() вызван успешно")
+        } catch (e: Exception) {
+            addLog("❌ ОШИБКА при вызове viewModel.loadTodayMedicines(): ${e.message}")
+            android.util.Log.e("MainActivity", "❌ ОШИБКА при вызове viewModel.loadTodayMedicines()", e)
+        }
     }
 
     private fun showLoadingState() {
@@ -952,21 +984,69 @@ class MainActivity : BaseActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val medicines = viewModel.allMedicines.value ?: emptyList()
-                val exportData = medicines.joinToString("\n") { medicine ->
-                    "${medicine.name} - ${medicine.dosage} - ${medicine.time}"
+                
+                // Создаем XML экспорт
+                val xmlData = buildString {
+                    appendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+                    appendLine("<medicines>")
+                    medicines.forEach { medicine ->
+                        appendLine("  <medicine>")
+                        appendLine("    <id>${medicine.id}</id>")
+                        appendLine("    <name>${medicine.name}</name>")
+                        appendLine("    <dosage>${medicine.dosage}</dosage>")
+                        appendLine("    <quantity>${medicine.quantity}</quantity>")
+                        appendLine("    <remainingQuantity>${medicine.remainingQuantity}</remainingQuantity>")
+                        appendLine("    <medicineType>${medicine.medicineType}</medicineType>")
+                        appendLine("    <time>${medicine.time}</time>")
+                        appendLine("    <frequency>${medicine.frequency}</frequency>")
+                        appendLine("    <startDate>${medicine.startDate}</startDate>")
+                        appendLine("    <isActive>${medicine.isActive}</isActive>")
+                        appendLine("    <takenToday>${medicine.takenToday}</takenToday>")
+                        appendLine("    <lastTakenTime>${medicine.lastTakenTime}</lastTakenTime>")
+                        appendLine("    <takenAt>${medicine.takenAt}</takenAt>")
+                        appendLine("    <isMissed>${medicine.isMissed}</isMissed>")
+                        appendLine("    <missedCount>${medicine.missedCount}</missedCount>")
+                        appendLine("    <isOverdue>${medicine.isOverdue}</isOverdue>")
+                        appendLine("    <groupId>${medicine.groupId ?: ""}</groupId>")
+                        appendLine("    <groupName>${medicine.groupName}</groupName>")
+                        appendLine("    <groupOrder>${medicine.groupOrder}</groupOrder>")
+                        appendLine("    <groupStartDate>${medicine.groupStartDate}</groupStartDate>")
+                        appendLine("    <groupFrequency>${medicine.groupFrequency}</groupFrequency>")
+                        appendLine("    <multipleDoses>${medicine.multipleDoses}</multipleDoses>")
+                        appendLine("    <doseTimes>${medicine.doseTimes.joinToString(",")}</doseTimes>")
+                        appendLine("    <customDays>${medicine.customDays.joinToString(",")}</customDays>")
+                        appendLine("    <updatedAt>${medicine.updatedAt}</updatedAt>")
+                        appendLine("  </medicine>")
+                    }
+                    appendLine("</medicines>")
                 }
                 
-                val fileName = "medical_notes_export_${LocalDate.now()}.txt"
+                val fileName = "medical_notes_data_${LocalDate.now()}.xml"
                 val file = File(getExternalFilesDir(null), fileName)
-                file.writeText(exportData)
+                file.writeText(xmlData)
                 
+                // Копируем XML в буфер обмена
                 lifecycleScope.launch(Dispatchers.Main) {
-                    android.widget.Toast.makeText(
-                        this@MainActivity,
-                        "Данные экспортированы в $fileName",
-                        android.widget.Toast.LENGTH_LONG
-                    ).show()
-                    addLog("Экспорт данных: $fileName")
+                    try {
+                        val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        val clip = android.content.ClipData.newPlainText("MedicalNotes XML Data", xmlData)
+                        clipboardManager.setPrimaryClip(clip)
+                        
+                        android.widget.Toast.makeText(
+                            this@MainActivity,
+                            "XML данные скопированы в буфер обмена и сохранены в $fileName",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                        addLog("XML экспорт: $fileName (${xmlData.length} символов)")
+                        addLog("XML данные скопированы в буфер обмена")
+                    } catch (e: Exception) {
+                        android.widget.Toast.makeText(
+                            this@MainActivity,
+                            "Данные сохранены в $fileName, но ошибка копирования: ${e.message}",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                        addLog("Ошибка копирования XML: ${e.message}")
+                    }
                 }
             } catch (e: Exception) {
                 lifecycleScope.launch(Dispatchers.Main) {
@@ -1002,6 +1082,91 @@ class MainActivity : BaseActivity() {
             "Тест групп завершен. Проверьте логи.",
             android.widget.Toast.LENGTH_SHORT
         ).show()
+    }
+    
+    // ДОБАВЛЕНО: Экспорт JSON данных для анализа
+    private fun exportJsonData() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val medicines = viewModel.allMedicines.value ?: emptyList()
+                
+                // Создаем JSON экспорт
+                val jsonData = buildString {
+                    appendLine("[")
+                    medicines.forEachIndexed { index, medicine ->
+                        appendLine("  {")
+                        appendLine("    \"id\": ${medicine.id},")
+                        appendLine("    \"name\": \"${medicine.name}\",")
+                        appendLine("    \"dosage\": \"${medicine.dosage}\",")
+                        appendLine("    \"quantity\": ${medicine.quantity},")
+                        appendLine("    \"remainingQuantity\": ${medicine.remainingQuantity},")
+                        appendLine("    \"medicineType\": \"${medicine.medicineType}\",")
+                        appendLine("    \"time\": \"${medicine.time}\",")
+                        appendLine("    \"frequency\": \"${medicine.frequency}\",")
+                        appendLine("    \"startDate\": ${medicine.startDate},")
+                        appendLine("    \"isActive\": ${medicine.isActive},")
+                        appendLine("    \"takenToday\": ${medicine.takenToday},")
+                        appendLine("    \"lastTakenTime\": ${medicine.lastTakenTime},")
+                        appendLine("    \"takenAt\": ${medicine.takenAt},")
+                        appendLine("    \"isMissed\": ${medicine.isMissed},")
+                        appendLine("    \"missedCount\": ${medicine.missedCount},")
+                        appendLine("    \"isOverdue\": ${medicine.isOverdue},")
+                        appendLine("    \"groupId\": ${medicine.groupId ?: "null"},")
+                        appendLine("    \"groupName\": \"${medicine.groupName}\",")
+                        appendLine("    \"groupOrder\": ${medicine.groupOrder},")
+                        appendLine("    \"groupStartDate\": ${medicine.groupStartDate},")
+                        appendLine("    \"groupFrequency\": \"${medicine.groupFrequency}\",")
+                        appendLine("    \"multipleDoses\": ${medicine.multipleDoses},")
+                        appendLine("    \"doseTimes\": [${medicine.doseTimes.joinToString(",") { "\"$it\"" }}],")
+                        appendLine("    \"customDays\": [${medicine.customDays.joinToString(",")}],")
+                        appendLine("    \"updatedAt\": ${medicine.updatedAt}")
+                        if (index < medicines.size - 1) {
+                            appendLine("  },")
+                        } else {
+                            appendLine("  }")
+                        }
+                    }
+                    appendLine("]")
+                }
+                
+                val fileName = "medical_notes_data_${LocalDate.now()}.json"
+                val file = File(getExternalFilesDir(null), fileName)
+                file.writeText(jsonData)
+                
+                // Копируем JSON в буфер обмена
+                lifecycleScope.launch(Dispatchers.Main) {
+                    try {
+                        val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        val clip = android.content.ClipData.newPlainText("MedicalNotes JSON Data", jsonData)
+                        clipboardManager.setPrimaryClip(clip)
+                        
+                        android.widget.Toast.makeText(
+                            this@MainActivity,
+                            "JSON данные скопированы в буфер обмена и сохранены в $fileName",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                        addLog("JSON экспорт: $fileName (${jsonData.length} символов)")
+                        addLog("JSON данные скопированы в буфер обмена")
+                    } catch (e: Exception) {
+                        android.widget.Toast.makeText(
+                            this@MainActivity,
+                            "Данные сохранены в $fileName, но ошибка копирования: ${e.message}",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                        addLog("Ошибка копирования JSON: ${e.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    android.widget.Toast.makeText(
+                        this@MainActivity,
+                        "Ошибка экспорта JSON: ${e.message}",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                    addLog("Ошибка экспорта JSON: ${e.message}")
+                }
+            }
+        }
     }
     
     //  ДОБАВЛЕНО: Метод копирования лога в буфер обмена
@@ -1065,10 +1230,19 @@ class MainActivity : BaseActivity() {
                 
                 lifecycleScope.launch(Dispatchers.Main) { addLog("Всего лекарств в базе: ${medicines.size}") }
                 
+                // ДОБАВЛЕНО: Детальная диагностика каждого лекарства
                 medicines.forEach { medicine ->
                     val status = com.medicalnotes.app.utils.MedicineStatusHelper.getMedicineStatus(medicine)
+                    val shouldTake = com.medicalnotes.app.utils.MedicineStatusHelper.shouldTakeToday(medicine)
+                    
                     lifecycleScope.launch(Dispatchers.Main) { 
                         addLog("ПРОВЕРКА: ${medicine.name} - Статус: $status, Время: ${medicine.time}, Принято сегодня: ${medicine.takenToday}")
+                        addLog("  - Должно принимать сегодня: $shouldTake")
+                        addLog("  - Частота: ${medicine.frequency}")
+                        addLog("  - Активно: ${medicine.isActive}")
+                        addLog("  - Группа: ${medicine.groupName} (ID: ${medicine.groupId}, Порядок: ${medicine.groupOrder})")
+                        addLog("  - Дата начала: ${medicine.startDate}")
+                        addLog("  - Последний прием: ${medicine.lastTakenTime}")
                     }
                     
                     if (status == com.medicalnotes.app.utils.MedicineStatus.OVERDUE) {
@@ -1484,11 +1658,360 @@ class MainActivity : BaseActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
+        android.util.Log.d("MainActivity", "MainActivity уничтожается")
+        
+        // ИСПРАВЛЕНО: Принудительно запускаем службу при закрытии приложения
         try {
-            // Останавливаем периодическую проверку
-            stopPeriodicOverdueCheck()
+            android.util.Log.d("MainActivity", "Принудительный запуск службы при закрытии приложения")
+            OverdueCheckService.startService(this@MainActivity)
+            
+            // Дополнительная проверка через 2 секунды
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                try {
+                    android.util.Log.d("MainActivity", "Повторная проверка службы через 2 секунды")
+                    OverdueCheckService.startService(this@MainActivity)
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "Ошибка повторного запуска службы", e)
+                }
+            }, 2000)
+            
         } catch (e: Exception) {
-            com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error in onDestroy", e)
+            android.util.Log.e("MainActivity", "Ошибка запуска службы при закрытии", e)
+        }
+    }
+
+    /**
+     * ДОБАВЛЕНО: Проверка и запрос разрешений
+     */
+    private fun checkAndRequestPermissions() {
+        android.util.Log.d("MainActivity", "🔐 НАЧАЛО ПРОВЕРКИ РАЗРЕШЕНИЙ В MainActivity")
+        
+        try {
+            // Проверяем, что activity еще активна
+            if (isFinishing || isDestroyed) {
+                android.util.Log.w("MainActivity", "⚠️ Activity завершается, пропускаем проверку разрешений")
+                return
+            }
+            
+            android.util.Log.d("MainActivity", "📞 Вызываем PermissionManager.requestMissingPermissions")
+            com.medicalnotes.app.utils.PermissionManager.requestMissingPermissions(this) { status ->
+                android.util.Log.d("MainActivity", "📥 Получен результат от PermissionManager")
+                android.util.Log.d("MainActivity", "  Все разрешено: ${status.isAllGranted()}")
+                android.util.Log.d("MainActivity", "  Отсутствующие: ${status.missingPermissions}")
+                android.util.Log.d("MainActivity", "  System Alert: ${status.systemAlertWindowGranted}")
+                android.util.Log.d("MainActivity", "  Уведомления: ${status.notificationsEnabled}")
+                android.util.Log.d("MainActivity", "  Батарея: ${status.batteryOptimizationIgnored}")
+                
+                // Проверяем, что activity еще активна перед обновлением UI
+                if (!isFinishing && !isDestroyed) {
+                    runOnUiThread {
+                        try {
+                            if (status.isAllGranted()) {
+                                android.util.Log.d("MainActivity", "✅ Все разрешения предоставлены - показываем успех")
+                                showPermissionStatusMessage("Все разрешения настроены корректно", true)
+                            } else {
+                                android.util.Log.w("MainActivity", "⚠️ Не все разрешения предоставлены - показываем предупреждение")
+                                showPermissionStatusMessage("Некоторые разрешения не настроены. Уведомления могут работать некорректно.", false)
+                                
+                                // Показываем кнопку для повторной проверки
+                                showPermissionCheckButton()
+                            }
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "❌ Ошибка обновления UI разрешений", e)
+                        }
+                    }
+                } else {
+                    android.util.Log.w("MainActivity", "⚠️ Activity завершилась, пропускаем обновление UI")
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "❌ КРИТИЧЕСКАЯ ОШИБКА проверки разрешений", e)
+        }
+    }
+    
+    /**
+     * Показывает сообщение о статусе разрешений
+     */
+    private fun showPermissionStatusMessage(message: String, isSuccess: Boolean) {
+        try {
+            // Проверяем, что binding инициализирован
+            if (!::binding.isInitialized) {
+                android.util.Log.w("MainActivity", "Binding не инициализирован, пропускаем показ сообщения")
+                return
+            }
+            
+            val snackbar = com.google.android.material.snackbar.Snackbar.make(
+                binding.root,
+                message,
+                com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+            )
+            
+            if (isSuccess) {
+                snackbar.setBackgroundTint(resources.getColor(com.google.android.material.R.color.design_default_color_primary, null))
+            } else {
+                snackbar.setBackgroundTint(resources.getColor(com.google.android.material.R.color.design_default_color_error, null))
+                snackbar.setAction("Настройки") {
+                    com.medicalnotes.app.utils.PermissionManager.openAppSettings(this@MainActivity)
+                }
+            }
+            
+            snackbar.show()
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка показа сообщения о разрешениях", e)
+        }
+    }
+    
+    /**
+     * Показывает кнопку для проверки разрешений
+     */
+    private fun showPermissionCheckButton() {
+        try {
+            // Добавляем кнопку в меню или показываем в интерфейсе
+            // Здесь можно добавить кнопку в toolbar или floating action button
+            android.util.Log.d("MainActivity", "Кнопка проверки разрешений добавлена")
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка добавления кнопки разрешений", e)
+        }
+    }
+    
+    /**
+     * Обрабатывает результат запроса разрешений
+     */
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        android.util.Log.d("MainActivity", "📋 onRequestPermissionsResult вызван")
+        android.util.Log.d("MainActivity", "  RequestCode: $requestCode")
+        android.util.Log.d("MainActivity", "  Permissions: ${permissions.joinToString(", ")}")
+        android.util.Log.d("MainActivity", "  GrantResults: ${grantResults.joinToString(", ")}")
+        
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        
+        com.medicalnotes.app.utils.PermissionManager.onRequestPermissionsResult(
+            requestCode,
+            permissions,
+            grantResults
+        ) { status ->
+            android.util.Log.d("MainActivity", "📥 Получен результат обработки разрешений")
+            android.util.Log.d("MainActivity", "  Все разрешено: ${status.isAllGranted()}")
+            android.util.Log.d("MainActivity", "  Отсутствующие: ${status.missingPermissions}")
+            
+            runOnUiThread {
+                if (status.isAllGranted()) {
+                    showPermissionStatusMessage("Все разрешения предоставлены!", true)
+                } else {
+                    showPermissionStatusMessage("Некоторые разрешения не предоставлены", false)
+                }
+            }
+        }
+    }
+
+    /**
+     * ДОБАВЛЕНО: Диагностический метод для проверки состояния UI
+     */
+    private fun diagnoseUIState() {
+        try {
+            android.util.Log.d("MainActivity", "=== ДИАГНОСТИКА UI ===")
+            android.util.Log.d("MainActivity", "Binding инициализирован: ${::binding.isInitialized}")
+            
+            if (::binding.isInitialized) {
+                android.util.Log.d("MainActivity", "Toolbar существует: ${binding.toolbar != null}")
+                android.util.Log.d("MainActivity", "RecyclerView существует: ${binding.recyclerViewTodayMedicines != null}")
+                android.util.Log.d("MainActivity", "ProgressBar существует: ${binding.progressBarTodayMedicines != null}")
+                
+                try {
+                    android.util.Log.d("MainActivity", "Toolbar title: ${binding.toolbar.title}")
+                    android.util.Log.d("MainActivity", "Toolbar subtitle: ${binding.toolbar.subtitle}")
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "Ошибка получения свойств toolbar", e)
+                }
+            }
+            
+            android.util.Log.d("MainActivity", "Activity finishing: $isFinishing")
+            android.util.Log.d("MainActivity", "Activity destroyed: $isDestroyed")
+            android.util.Log.d("MainActivity", "=== КОНЕЦ ДИАГНОСТИКИ ===")
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка диагностики UI", e)
+        }
+    }
+
+    /**
+     * ДОБАВЛЕНО: Показывает диалог с информацией об ошибке
+     */
+    private fun showErrorDialog(title: String, message: String) {
+        try {
+            // Проверяем, что activity еще активна
+            if (isFinishing || isDestroyed) {
+                android.util.Log.w("MainActivity", "Activity завершается, пропускаем показ диалога ошибки")
+                return
+            }
+            
+            // Показываем диалог на главном потоке
+            runOnUiThread {
+                try {
+                    androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle(title)
+                        .setMessage(message)
+                        .setPositiveButton("Копировать") { _, _ ->
+                            try {
+                                // Копируем текст в буфер обмена
+                                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                val clip = android.content.ClipData.newPlainText("Ошибка", message)
+                                clipboard.setPrimaryClip(clip)
+                                android.widget.Toast.makeText(this@MainActivity, "Текст скопирован в буфер обмена", android.widget.Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                android.util.Log.e("MainActivity", "Ошибка копирования в буфер", e)
+                            }
+                        }
+                        .setNegativeButton("Закрыть") { dialog, _ ->
+                            try {
+                                dialog.dismiss()
+                            } catch (e: Exception) {
+                                android.util.Log.e("MainActivity", "Ошибка закрытия диалога", e)
+                            }
+                        }
+                        .setCancelable(false)
+                        .show()
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "Ошибка показа диалога", e)
+                    // Fallback - показываем Toast
+                    android.widget.Toast.makeText(this@MainActivity, "$title: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Критическая ошибка показа диалога", e)
+        }
+    }
+    
+    /**
+     * ДОБАВЛЕНО: Показывает диалог выбора даты для тестирования
+     */
+    private fun showDatePickerDialog() {
+        try {
+            val currentYear = selectedTestDate.year
+            val currentMonth = selectedTestDate.monthValue - 1 // Calendar использует 0-based месяцы
+            val currentDay = selectedTestDate.dayOfMonth
+            
+            val datePickerDialog = android.app.DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    try {
+                        val newDate = LocalDate.of(year, month + 1, dayOfMonth)
+                        selectedTestDate = newDate
+                        updateSelectedDateDisplay()
+                        
+                        addLog("=== ИЗМЕНЕНИЕ ТЕСТОВОЙ ДАТЫ ===")
+                        addLog("Новая тестовая дата: $newDate")
+                        
+                        // Перезагружаем лекарства для новой даты
+                        loadTodayMedicinesForDate(newDate)
+                        
+                        android.widget.Toast.makeText(
+                            this,
+                            "Тестовая дата изменена на: ${formatDate(newDate)}",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    } catch (e: Exception) {
+                        android.util.Log.e("MainActivity", "Ошибка обработки выбранной даты", e)
+                        showErrorDialog("Ошибка выбора даты", "Детали ошибки:\n${e.message}")
+                    }
+                },
+                currentYear,
+                currentMonth,
+                currentDay
+            )
+            
+            datePickerDialog.show()
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка показа диалога выбора даты", e)
+            showErrorDialog("Ошибка календаря", "Детали ошибки:\n${e.message}")
+        }
+    }
+    
+    /**
+     * ДОБАВЛЕНО: Обновляет отображение выбранной даты
+     */
+    private fun updateSelectedDateDisplay() {
+        try {
+            val displayText = when {
+                selectedTestDate == LocalDate.now() -> "Сегодня"
+                selectedTestDate == LocalDate.now().minusDays(1) -> "Вчера"
+                selectedTestDate == LocalDate.now().plusDays(1) -> "Завтра"
+                else -> formatDate(selectedTestDate)
+            }
+            
+            binding.textSelectedDate.text = displayText
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка обновления отображения даты", e)
+        }
+    }
+    
+    /**
+     * ДОБАВЛЕНО: Форматирует дату для отображения
+     */
+    private fun formatDate(date: LocalDate): String {
+        return try {
+            val formatter = java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")
+            date.format(formatter)
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка форматирования даты", e)
+            date.toString()
+        }
+    }
+    
+    /**
+     * ДОБАВЛЕНО: Загружает лекарства для указанной даты
+     */
+    private fun loadTodayMedicinesForDate(date: LocalDate) {
+        try {
+            addLog("=== ЗАГРУЗКА ЛЕКАРСТВ ДЛЯ ДАТЫ: $date ===")
+            showLoadingState()
+            
+            // Запускаем загрузку в фоновом потоке
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val dataManager = com.medicalnotes.app.utils.DataManager(this@MainActivity)
+                    val allMedicines = dataManager.loadMedicines()
+                    
+                    addLog("Всего лекарств в базе: ${allMedicines.size}")
+                    
+                    // Используем DosageCalculator для получения лекарств на указанную дату
+                    val medicinesForDate = com.medicalnotes.app.utils.DosageCalculator.getActiveMedicinesForDate(allMedicines, date)
+                    
+                    addLog("Лекарств для даты $date: ${medicinesForDate.size}")
+                    
+                    medicinesForDate.forEach { medicine ->
+                        addLog("✅ Для даты $date: ${medicine.name} (${medicine.time})")
+                    }
+                    
+                    // Обновляем UI на главном потоке
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        try {
+                            if (medicinesForDate.isNotEmpty()) {
+                                todayMedicineAdapter.submitList(medicinesForDate)
+                                showContentState()
+                                addLog("📋 Отображено ${medicinesForDate.size} лекарств для даты $date")
+                            } else {
+                                showEmptyState()
+                                addLog("📋 Нет лекарств для отображения на дату $date")
+                            }
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "Ошибка обновления UI для даты $date", e)
+                            showErrorState("Ошибка отображения лекарств для даты $date")
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "Ошибка загрузки лекарств для даты $date", e)
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        showErrorState("Ошибка загрузки лекарств для даты $date")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Критическая ошибка загрузки лекарств для даты", e)
+            showErrorState("Критическая ошибка загрузки")
         }
     }
 }  

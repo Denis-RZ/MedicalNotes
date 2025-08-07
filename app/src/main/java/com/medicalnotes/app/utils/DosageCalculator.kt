@@ -104,6 +104,7 @@ object DosageCalculator {
     fun getActiveMedicinesForDate(medicines: List<Medicine>, date: LocalDate): List<Medicine> {
         //  ИСПРАВЛЕНО: Убрано избыточное логирование для предотвращения ANR
         android.util.Log.d("DosageCalculator", "Фильтрация лекарств: ${medicines.size} лекарств для даты $date")
+        android.util.Log.e("DosageCalculator", "📋 DosageCalculator: Фильтрация ${medicines.size} лекарств для даты $date")
         
         android.util.Log.d("DosageCalculator", "=== ФИЛЬТРАЦИЯ АКТИВНЫХ ЛЕКАРСТВ С ВАЛИДАЦИЕЙ ГРУПП ===")
         val activeMedicines = medicines.filter { medicine ->
@@ -128,6 +129,7 @@ object DosageCalculator {
         }
         
         android.util.Log.d("DosageCalculator", "Активных лекарств: ${activeMedicines.size}")
+        android.util.Log.e("DosageCalculator", "📋 DosageCalculator: Активных лекарств: ${activeMedicines.size}")
         
         // ИСПРАВЛЕНО: Принятые лекарства должны исчезать из списка "на сегодня"
         val medicinesForToday = activeMedicines.filter { medicine ->
@@ -136,6 +138,7 @@ object DosageCalculator {
         }
         
         android.util.Log.d("DosageCalculator", "Результат: ${medicinesForToday.size} лекарств на сегодня")
+        android.util.Log.e("DosageCalculator", "📋 DosageCalculator: Результат: ${medicinesForToday.size} лекарств на сегодня")
         
         //  ДОБАВЛЕНО: Подробное логирование для отладки
         activeMedicines.forEach { medicine ->
@@ -144,6 +147,17 @@ object DosageCalculator {
             android.util.Log.d("DosageCalculator", "  - lastTakenTime: ${medicine.lastTakenTime}")
             android.util.Log.d("DosageCalculator", "  - В списке 'на сегодня': ${medicinesForToday.contains(medicine)}")
             android.util.Log.d("DosageCalculator", "  - Причина исключения: ${if (!medicinesForToday.contains(medicine)) "takenToday = true" else "включено"}")
+        }
+        
+        // ДОБАВЛЕНО: Логирование всех лекарств, которые не прошли фильтрацию
+        medicines.forEach { medicine ->
+            if (!activeMedicines.contains(medicine)) {
+                android.util.Log.e("DosageCalculator", "❌❌❌ ИСКЛЮЧЕНО: ${medicine.name} ❌❌❌")
+                android.util.Log.e("DosageCalculator", "  - isActive: ${medicine.isActive}")
+                android.util.Log.e("DosageCalculator", "  - shouldTakeMedicine: ${shouldTakeMedicine(medicine, date, medicines)}")
+                android.util.Log.e("DosageCalculator", "  - takenToday: ${medicine.takenToday}")
+                android.util.Log.e("DosageCalculator", "  - Причина: ${if (!medicine.isActive) "не активно" else if (!shouldTakeMedicine(medicine, date, medicines)) "не должно приниматься сегодня" else "неизвестно"}")
+            }
         }
         
         return medicinesForToday.map { medicine ->
@@ -358,8 +372,18 @@ object DosageCalculator {
             }
         }
         
-        // Используем groupStartDate вместо startDate для групповых лекарств
-        val startDate = LocalDate.ofEpochDay(medicine.groupStartDate / (24 * 60 * 60 * 1000))
+        // ИСПРАВЛЕНО: Используем правильное преобразование groupStartDate
+        val startDate = if (medicine.groupStartDate > 0) {
+            java.time.Instant.ofEpochMilli(medicine.groupStartDate)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+        } else {
+            // Если groupStartDate не установлен, используем обычный startDate
+            java.time.Instant.ofEpochMilli(medicine.startDate)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+        }
+        
         val daysSinceStart = ChronoUnit.DAYS.between(startDate, date)
         
         android.util.Log.d("DosageCalculator", "  - Дата начала группы: $startDate")
@@ -367,10 +391,24 @@ object DosageCalculator {
         android.util.Log.d("DosageCalculator", "  - Дней с начала: $daysSinceStart")
         android.util.Log.d("DosageCalculator", "  - Частота группы: ${medicine.groupFrequency}")
         
-        // Логика группы "через день"
+        // ИСПРАВЛЕНО: Логика группы "через день" - учитываем, что лекарство могло быть принято вчера
         if (medicine.groupFrequency == DosageFrequency.EVERY_OTHER_DAY) {
             // Определяем, какой день группы сегодня (0, 1, 2, 3...)
             val groupDay = (daysSinceStart % 2).toInt()
+            
+            // ИСПРАВЛЕНО: Проверяем, было ли лекарство принято вчера
+            val yesterday = date.minusDays(1)
+            val wasTakenYesterday = if (medicine.lastTakenTime > 0) {
+                val lastTakenDate = java.time.Instant.ofEpochMilli(medicine.lastTakenTime)
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDate()
+                lastTakenDate == yesterday
+            } else {
+                false
+            }
+            
+            android.util.Log.d("DosageCalculator", "  - Вчерашняя дата: $yesterday")
+            android.util.Log.d("DosageCalculator", "  - Принято вчера: $wasTakenYesterday")
             
             // Для группы "через день":
             // - Лекарство с groupOrder = 1 принимается в дни 0, 2, 4, 6... (четные дни группы)
@@ -383,12 +421,26 @@ object DosageCalculator {
                 else -> false  // Неподдерживаемый порядок
             }
             
+            // ИСПРАВЛЕНО: Если лекарство было принято вчера и сегодня не должно приниматься по расписанию,
+            // то не показываем его как пропущенное
+            val finalResult = if (wasTakenYesterday && !shouldTake) {
+                android.util.Log.d("DosageCalculator", "  - Лекарство принято вчера и сегодня не по расписанию - не показываем")
+                false
+            } else if (wasTakenYesterday && shouldTake) {
+                // Если лекарство было принято вчера, но сегодня должно приниматься по расписанию,
+                // то показываем его (возможно, нужно принять еще раз)
+                android.util.Log.d("DosageCalculator", "  - Лекарство принято вчера, но сегодня тоже по расписанию - показываем")
+                true
+            } else {
+                shouldTake
+            }
+            
             android.util.Log.d("DosageCalculator", "  - День группы: $groupDay")
             android.util.Log.d("DosageCalculator", "  - Порядок лекарства: ${medicine.groupOrder}")
             android.util.Log.d("DosageCalculator", "  - Нужно принимать: $shouldTake")
-            android.util.Log.d("DosageCalculator", "  - Логика: groupOrder=${medicine.groupOrder}, groupDay=$groupDay")
-            android.util.Log.d("DosageCalculator", "  - Результат: $shouldTake")
-            return shouldTake
+            android.util.Log.d("DosageCalculator", "  - Итоговый результат: $finalResult")
+            android.util.Log.d("DosageCalculator", "  - Логика: groupOrder=${medicine.groupOrder}, groupDay=$groupDay, wasTakenYesterday=$wasTakenYesterday")
+            return finalResult
         }
         
         // Для других частот используем обычную логику

@@ -97,6 +97,11 @@ class SettingsActivity : BaseActivity() {
             startActivity(Intent(this, NotificationManagerActivity::class.java))
         }
         
+        // ДОБАВЛЕНО: Кнопка проверки разрешений
+        binding.buttonCheckPermissions.setOnClickListener {
+            checkAndRequestPermissions()
+        }
+        
         binding.buttonCreateBackup.setOnClickListener {
             viewModel.createBackup()
         }
@@ -389,6 +394,46 @@ class SettingsActivity : BaseActivity() {
             android.util.Log.e("SettingsActivity", "Ошибка принудительной остановки", e)
             Toast.makeText(this, "Ошибка остановки: ${e.message}", Toast.LENGTH_LONG).show()
         }
+    }
+
+    /**
+     * ДОБАВЛЕНО: Проверка и запрос разрешений
+     */
+    private fun checkAndRequestPermissions() {
+        try {
+            android.util.Log.d("SettingsActivity", "Проверка разрешений")
+            
+            com.medicalnotes.app.utils.PermissionManager.requestMissingPermissions(this) { status ->
+                runOnUiThread {
+                    if (status.isAllGranted()) {
+                        Toast.makeText(this@SettingsActivity, "Все разрешения настроены корректно", Toast.LENGTH_LONG).show()
+                    } else {
+                        showPermissionStatusDialog(status)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsActivity", "Ошибка проверки разрешений", e)
+            Toast.makeText(this, "Ошибка проверки разрешений", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    /**
+     * Показывает диалог со статусом разрешений
+     */
+    private fun showPermissionStatusDialog(status: com.medicalnotes.app.utils.PermissionManager.PermissionStatus) {
+        val message = "Статус разрешений:\n\n" + status.getMissingPermissionsDescription()
+        
+        AlertDialog.Builder(this)
+            .setTitle("Проверка разрешений")
+            .setMessage(message)
+            .setPositiveButton("Настройки") { _, _ ->
+                com.medicalnotes.app.utils.PermissionManager.openAppSettings(this)
+            }
+            .setNegativeButton("Закрыть") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     override fun updateUIAfterLanguageChange() {

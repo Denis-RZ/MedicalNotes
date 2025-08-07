@@ -579,11 +579,28 @@ class EditMedicineActivity : BaseActivity() {
 
         viewModel.getMedicineById(medicineId) { originalMedicine ->
             if (originalMedicine != null) {
-                // ВРЕМЕННО: Упрощенная обработка групповых данных
-                val groupId = if (groupName.isNotEmpty()) System.currentTimeMillis() else null
-                val groupStartDate = if (groupName.isNotEmpty()) System.currentTimeMillis() else 0L
+                // ИСПРАВЛЕНО: Правильная обработка групповых данных с сохранением истории
+                val groupId = if (groupName.isNotEmpty()) {
+                    if (originalMedicine.groupId != null) originalMedicine.groupId else System.currentTimeMillis()
+                } else null
+                val groupStartDate = if (groupName.isNotEmpty()) {
+                    if (originalMedicine.groupStartDate > 0) {
+                        // Если частота изменилась, обновляем groupStartDate, но сохраняем lastTakenTime
+                        if (originalMedicine.frequency != selectedFrequency) {
+                            val today = java.time.LocalDate.now()
+                            val startOfDay = today.atStartOfDay(java.time.ZoneId.systemDefault())
+                            startOfDay.toInstant().toEpochMilli()
+                        } else {
+                            originalMedicine.groupStartDate
+                        }
+                    } else {
+                        System.currentTimeMillis()
+                    }
+                } else 0L
                 val groupFrequency = if (groupName.isNotEmpty()) selectedFrequency else DosageFrequency.DAILY
-                val groupValidationHash = if (groupName.isNotEmpty()) "temp" else ""
+                val groupValidationHash = if (groupName.isNotEmpty()) {
+                    "$groupId:$groupName:$groupStartDate:$groupFrequency".hashCode().toString()
+                } else ""
                 val groupMetadata = if (groupName.isNotEmpty()) GroupMetadata(
                     groupId = groupId!!,
                     groupName = groupName,
@@ -653,13 +670,13 @@ class EditMedicineActivity : BaseActivity() {
                     },
                     customTimes = emptyList(),
                     startDate = if (originalMedicine.frequency != selectedFrequency) {
-                        //  ИСПРАВЛЕНО: Изменяем startDate при изменении частоты приема
+                        //  ИСПРАВЛЕНО: Изменяем startDate при изменении частоты приема, но сохраняем историю приема
                         val today = java.time.LocalDate.now()
                         val startOfDay = today.atStartOfDay(java.time.ZoneId.systemDefault())
                         startOfDay.toInstant().toEpochMilli()
                     } else {
                         originalMedicine.startDate
-                    }, //  ИСПРАВЛЕНО: Изменяем startDate при изменении частоты
+                    }, //  ИСПРАВЛЕНО: Изменяем startDate при изменении частоты, но сохраняем lastTakenTime
                     multipleDoses = false,
                     dosesPerDay = 1,
                     doseTimes = listOf(saveTime),
@@ -670,7 +687,7 @@ class EditMedicineActivity : BaseActivity() {
                     groupFrequency = groupFrequency,
                     groupValidationHash = groupValidationHash,
                     groupMetadata = groupMetadata,
-                    lastTakenTime = if (shouldResetStatus) 0 else originalMedicine.lastTakenTime, //  ИСПРАВЛЕНО: Сбрасываем время последнего приема
+                    lastTakenTime = if (shouldResetStatus) 0 else originalMedicine.lastTakenTime, //  ИСПРАВЛЕНО: Сбрасываем время последнего приема при любом сбросе статуса
                     takenToday = if (shouldResetStatus && originalMedicine.takenToday) false else originalMedicine.takenToday, //  ИСПРАВЛЕНО: Сбрасываем статус принятия только если лекарство было принято
                     takenAt = if (shouldResetStatus && originalMedicine.takenToday) 0 else originalMedicine.takenAt, //  ИСПРАВЛЕНО: Сбрасываем время принятия только если лекарство было принято
                     isMissed = if (shouldResetStatus) false else originalMedicine.isMissed, //  ИСПРАВЛЕНО: Сбрасываем статус пропуска

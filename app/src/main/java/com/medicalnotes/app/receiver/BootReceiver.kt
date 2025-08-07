@@ -19,6 +19,8 @@ class BootReceiver : BroadcastReceiver() {
                 android.util.Log.i("BootReceiver", "Boot completed, restoring medicine alarms")
                 // Запускаем сервис уведомлений
                 com.medicalnotes.app.service.NotificationService.startService(context)
+                // ДОБАВЛЕНО: Запускаем службу проверки просроченных лекарств
+                com.medicalnotes.app.service.OverdueCheckService.startService(context)
                 // Восстанавливаем будильники
                 restoreMedicineAlarms(context)
             }
@@ -26,6 +28,8 @@ class BootReceiver : BroadcastReceiver() {
                 android.util.Log.i("BootReceiver", "Package replaced, restoring medicine alarms")
                 // Запускаем сервис уведомлений
                 com.medicalnotes.app.service.NotificationService.startService(context)
+                // ДОБАВЛЕНО: Запускаем службу проверки просроченных лекарств
+                com.medicalnotes.app.service.OverdueCheckService.startService(context)
                 // Восстанавливаем будильники
                 restoreMedicineAlarms(context)
             }
@@ -35,6 +39,8 @@ class BootReceiver : BroadcastReceiver() {
                     android.util.Log.i("BootReceiver", "Package replaced via data, restoring medicine alarms")
                     // Запускаем сервис уведомлений
                     com.medicalnotes.app.service.NotificationService.startService(context)
+                    // ДОБАВЛЕНО: Запускаем службу проверки просроченных лекарств
+                    com.medicalnotes.app.service.OverdueCheckService.startService(context)
                     // Восстанавливаем будильники
                     restoreMedicineAlarms(context)
                 }

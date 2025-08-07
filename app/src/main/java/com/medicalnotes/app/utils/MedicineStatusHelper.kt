@@ -16,6 +16,12 @@ object MedicineStatusHelper {
     fun shouldTakeToday(medicine: Medicine): Boolean {
         android.util.Log.d("MedicineStatusHelper", "=== ПРОВЕРКА РАСПИСАНИЯ ===")
         android.util.Log.d("MedicineStatusHelper", "Лекарство: ${medicine.name}")
+        android.util.Log.d("MedicineStatusHelper", "  - ID: ${medicine.id}")
+        android.util.Log.d("MedicineStatusHelper", "  - Активно: ${medicine.isActive}")
+        android.util.Log.d("MedicineStatusHelper", "  - groupId: ${medicine.groupId}")
+        android.util.Log.d("MedicineStatusHelper", "  - groupName: ${medicine.groupName}")
+        android.util.Log.d("MedicineStatusHelper", "  - groupOrder: ${medicine.groupOrder}")
+        android.util.Log.d("MedicineStatusHelper", "  - groupFrequency: ${medicine.groupFrequency}")
         
         val today = LocalDate.now()
         val startDate = LocalDateTime.ofInstant(
@@ -26,6 +32,15 @@ object MedicineStatusHelper {
         android.util.Log.d("MedicineStatusHelper", "  - Сегодня: $today")
         android.util.Log.d("MedicineStatusHelper", "  - Дата начала: $startDate")
         android.util.Log.d("MedicineStatusHelper", "  - Частота: ${medicine.frequency}")
+        android.util.Log.d("MedicineStatusHelper", "  - startDate в миллисекундах: ${medicine.startDate}")
+        
+        // Проверяем, не в группе ли лекарство
+        if (medicine.groupId != null) {
+            android.util.Log.d("MedicineStatusHelper", "  - Лекарство в группе, используем DosageCalculator")
+            val groupResult = DosageCalculator.shouldTakeMedicine(medicine, today)
+            android.util.Log.d("MedicineStatusHelper", "  - Результат DosageCalculator: $groupResult")
+            return groupResult
+        }
         
         val result = when (medicine.frequency) {
             DosageFrequency.DAILY -> {
@@ -42,24 +57,28 @@ object MedicineStatusHelper {
                 val dayOfWeek = today.dayOfWeek.value
                 val shouldTake = medicine.customDays.contains(dayOfWeek)
                 android.util.Log.d("MedicineStatusHelper", "  - Дважды в неделю: день недели = $dayOfWeek, принимать = $shouldTake")
+                android.util.Log.d("MedicineStatusHelper", "  - Настроенные дни: ${medicine.customDays}")
                 shouldTake
             }
             DosageFrequency.THREE_TIMES_A_WEEK -> {
                 val dayOfWeek = today.dayOfWeek.value
                 val shouldTake = medicine.customDays.contains(dayOfWeek)
                 android.util.Log.d("MedicineStatusHelper", "  - Трижды в неделю: день недели = $dayOfWeek, принимать = $shouldTake")
+                android.util.Log.d("MedicineStatusHelper", "  - Настроенные дни: ${medicine.customDays}")
                 shouldTake
             }
             DosageFrequency.WEEKLY -> {
                 val dayOfWeek = today.dayOfWeek.value
                 val shouldTake = medicine.customDays.contains(dayOfWeek)
                 android.util.Log.d("MedicineStatusHelper", "  - Еженедельно: день недели = $dayOfWeek, принимать = $shouldTake")
+                android.util.Log.d("MedicineStatusHelper", "  - Настроенные дни: ${medicine.customDays}")
                 shouldTake
             }
             DosageFrequency.CUSTOM -> {
                 val dayOfWeek = today.dayOfWeek.value
                 val shouldTake = medicine.customDays.contains(dayOfWeek)
                 android.util.Log.d("MedicineStatusHelper", "  - Пользовательское: день недели = $dayOfWeek, принимать = $shouldTake")
+                android.util.Log.d("MedicineStatusHelper", "  - Настроенные дни: ${medicine.customDays}")
                 shouldTake
             }
         }
@@ -115,10 +134,17 @@ object MedicineStatusHelper {
     fun getMedicineStatus(medicine: Medicine): MedicineStatus {
         android.util.Log.d("MedicineStatusHelper", "=== ОПРЕДЕЛЕНИЕ СТАТУСА ===")
         android.util.Log.d("MedicineStatusHelper", "Лекарство: ${medicine.name}")
+        android.util.Log.d("MedicineStatusHelper", "  - ID: ${medicine.id}")
         android.util.Log.d("MedicineStatusHelper", "  - Активно: ${medicine.isActive}")
         android.util.Log.d("MedicineStatusHelper", "  - Принято сегодня: ${medicine.takenToday}")
         android.util.Log.d("MedicineStatusHelper", "  - Время приема: ${medicine.time}")
         android.util.Log.d("MedicineStatusHelper", "  - Текущее время: ${LocalTime.now()}")
+        android.util.Log.d("MedicineStatusHelper", "  - Частота: ${medicine.frequency}")
+        android.util.Log.d("MedicineStatusHelper", "  - Дата начала: ${medicine.startDate}")
+        android.util.Log.d("MedicineStatusHelper", "  - groupId: ${medicine.groupId}")
+        android.util.Log.d("MedicineStatusHelper", "  - groupName: ${medicine.groupName}")
+        android.util.Log.d("MedicineStatusHelper", "  - groupOrder: ${medicine.groupOrder}")
+        android.util.Log.d("MedicineStatusHelper", "  - groupFrequency: ${medicine.groupFrequency}")
         
         val shouldTake = shouldTakeToday(medicine)
         val overdue = isOverdue(medicine)
@@ -129,6 +155,7 @@ object MedicineStatusHelper {
         val status = when {
             !medicine.isActive -> {
                 android.util.Log.d("MedicineStatusHelper", "  - СТАТУС: NOT_TODAY (не активно)")
+                android.util.Log.d("MedicineStatusHelper", "  - ПРИЧИНА: isActive = false")
                 MedicineStatus.NOT_TODAY
             }
             medicine.takenToday -> {
@@ -145,6 +172,8 @@ object MedicineStatusHelper {
             }
             else -> {
                 android.util.Log.d("MedicineStatusHelper", "  - СТАТУС: NOT_TODAY (не по расписанию)")
+                android.util.Log.d("MedicineStatusHelper", "  - ПРИЧИНА: shouldTakeToday = false")
+                android.util.Log.d("MedicineStatusHelper", "  - ДЕТАЛИ: частота=${medicine.frequency}, группа=${medicine.groupId != null}")
                 MedicineStatus.NOT_TODAY
             }
         }
@@ -170,9 +199,16 @@ object MedicineStatusHelper {
      * Отмечает лекарство как принятое
      */
     fun markAsTaken(medicine: Medicine): Medicine {
+        val currentTime = System.currentTimeMillis()
+        android.util.Log.d("MedicineStatusHelper", "=== ОТМЕТКА КАК ПРИНЯТОЕ ===")
+        android.util.Log.d("MedicineStatusHelper", "Лекарство: ${medicine.name}")
+        android.util.Log.d("MedicineStatusHelper", "  - Старый lastTakenTime: ${medicine.lastTakenTime}")
+        android.util.Log.d("MedicineStatusHelper", "  - Новый lastTakenTime: $currentTime")
+        
         return medicine.copy(
             takenToday = true,
-            takenAt = System.currentTimeMillis(),
+            takenAt = currentTime,
+            lastTakenTime = currentTime, // ДОБАВЛЕНО: обновляем lastTakenTime
             isOverdue = false
         )
     }

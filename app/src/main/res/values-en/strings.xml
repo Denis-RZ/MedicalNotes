@@ -153,4 +153,11 @@
     <string name="size">Size</string>
     <string name="date">Date</string>
     <string name="kb">KB</string>
+    
+    <!-- Permission strings -->
+    <string name="notifications_button">Notification Manager</string>
+    <string name="check_permissions">Check Permissions</string>
+    <string name="permissions_status">Permissions Status</string>
+    <string name="permissions_configured">All permissions configured</string>
+    <string name="permissions_missing">Some permissions not configured</string>
 </resources> 

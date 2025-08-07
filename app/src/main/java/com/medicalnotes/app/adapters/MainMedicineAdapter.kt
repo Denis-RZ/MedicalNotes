@@ -13,7 +13,8 @@ import java.time.format.DateTimeFormatter
 import com.medicalnotes.app.utils.DataLocalizationHelper
 
 class MainMedicineAdapter(
-    private val onMedicineClick: (Medicine) -> Unit
+    private val onMedicineClick: (Medicine) -> Unit,
+    private val onTakeMedicineClick: (Medicine) -> Unit
 ) : ListAdapter<Medicine, MainMedicineAdapter.MainMedicineViewHolder>(MainMedicineDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainMedicineViewHolder {
@@ -22,7 +23,7 @@ class MainMedicineAdapter(
             parent,
             false
         )
-        return MainMedicineViewHolder(binding, onMedicineClick)
+        return MainMedicineViewHolder(binding, onMedicineClick, onTakeMedicineClick)
     }
 
     override fun onBindViewHolder(holder: MainMedicineViewHolder, position: Int) {
@@ -31,7 +32,8 @@ class MainMedicineAdapter(
 
     class MainMedicineViewHolder(
         private val binding: ItemMedicineMainBinding,
-        private val onMedicineClick: (Medicine) -> Unit
+        private val onMedicineClick: (Medicine) -> Unit,
+        private val onTakeMedicineClick: (Medicine) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -307,6 +309,11 @@ class MainMedicineAdapter(
                     // Для просроченных лекарств цвет уже установлен выше (белый)
                     
                     buttonTakeMedicine.setOnClickListener {
+                        onTakeMedicineClick(localizedMedicine)
+                    }
+                    
+                    // ДОБАВЛЕНО: Клик на карточку для редактирования
+                    binding.root.setOnClickListener {
                         onMedicineClick(localizedMedicine)
                     }
                     

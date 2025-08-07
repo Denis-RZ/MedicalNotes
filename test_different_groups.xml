@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<medicines>
+  <medicine>
+    <id>1</id>
+    <name>Липетор</name>
+    <groupId>1001</groupId>
+    <groupName>Тестер</groupName>
+    <groupOrder>1</groupOrder>
+    <groupStartDate>1754451744031</groupStartDate>
+    <groupFrequency>EVERY_OTHER_DAY</groupFrequency>
+  </medicine>
+  <medicine>
+    <id>2</id>
+    <name>Фубуксусат</name>
+    <groupId>1002</groupId>
+    <groupName>Тестер</groupName>
+    <groupOrder>2</groupOrder>
+    <groupStartDate>1754451755574</groupStartDate>
+    <groupFrequency>EVERY_OTHER_DAY</groupFrequency>
+  </medicine>
+  <medicine>
+    <id>3</id>
+    <name>Аспирин</name>
+    <groupId>2001</groupId>
+    <groupName>Утренние</groupName>
+    <groupOrder>1</groupOrder>
+    <groupStartDate>1754451800000</groupStartDate>
+    <groupFrequency>DAILY</groupFrequency>
+  </medicine>
+  <medicine>
+    <id>4</id>
+    <name>Витамин D</name>
+    <groupId>2002</groupId>
+    <groupName>Утренние</groupName>
+    <groupOrder>2</groupOrder>
+    <groupStartDate>1754451801000</groupStartDate>
+    <groupFrequency>DAILY</groupFrequency>
+  </medicine>
+  <medicine>
+    <id>5</id>
+    <name>Омега-3</name>
+    <groupId>3001</groupId>
+    <groupName>Вечерние</groupName>
+    <groupOrder>1</groupOrder>
+    <groupStartDate>1754451900000</groupStartDate>
+    <groupFrequency>DAILY</groupFrequency>
+  </medicine>
+</medicines>
