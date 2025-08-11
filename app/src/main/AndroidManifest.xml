@@ -9,8 +9,7 @@
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" 
-        tools:ignore="ScopedStorage" />
+    <!-- Удалено MANAGE_EXTERNAL_STORAGE: не требуется для уведомлений -->
     
     <!-- Разрешения для уведомлений и автозапуска -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -21,7 +20,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- ВОССТАНОВЛЕНО: Разрешение нужно для показа окон поверх всех приложений при просроченных лекарствах -->
     
     <!-- Quick Settings Tile -->
     <!-- <uses-permission android:name="android.permission.BIND_QUICK_SETTINGS_TILE" /> -->

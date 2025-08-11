@@ -613,28 +613,27 @@ class EditMedicineActivity : BaseActivity() {
                 val saveTime = selectedTime ?: LocalTime.of(8, 0)
                 val currentTime = LocalTime.now()
                 
-                //  ИСПРАВЛЕНО: Сбрасываем статус принятия только в критических случаях:
-                // 1. Изменена частота приема (это влияет на логику расчета дней)
-                // 2. Лекарство было принято сегодня, но новое время приема уже прошло (нужно сбросить статус)
-                // 3. Лекарство отмечено как принятое, но количество не уменьшилось (не было фактически принято)
-                // 4. Лекарство было принято сегодня, но время изменено на будущее (нужно сбросить статус)
-                // 5. НЕ сбрасываем статус если лекарство еще не было принято сегодня
+                // 4. ИСПРАВЛЕНО: Не сбрасываем статус для "через день" при изменении только времени
                 val wasActuallyTaken = originalMedicine.remainingQuantity < originalMedicine.quantity
                 val timeChangedToFuture = originalMedicine.takenToday && originalMedicine.time != saveTime && saveTime.isAfter(currentTime)
+                val isEveryOtherDay = selectedFrequency == DosageFrequency.EVERY_OTHER_DAY
+                val onlyTimeChanged = originalMedicine.frequency == selectedFrequency && 
+                                    originalMedicine.time != saveTime
+                
+                // Для "через день" не сбрасываем статус при изменении только времени
                 val shouldResetStatus = originalMedicine.frequency != selectedFrequency || 
-                                       (originalMedicine.takenToday && saveTime.isBefore(currentTime)) ||
                                        (originalMedicine.takenToday && !wasActuallyTaken) ||
-                                       timeChangedToFuture
+                                       (timeChangedToFuture && !isEveryOtherDay) // ИСПРАВЛЕНО: Исключаем "через день"
                 
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "=== АНАЛИЗ СБРОСА СТАТУСА ===")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Текущее время: $currentTime")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Новое время приема: $saveTime")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Лекарство принято сегодня: ${originalMedicine.takenToday}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Количество не уменьшилось (не было фактически принято): ${!wasActuallyTaken}")
-                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Новое время уже прошло: ${saveTime.isBefore(currentTime)}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Время изменено на будущее: $timeChangedToFuture")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменена частота: ${originalMedicine.frequency != selectedFrequency}")
-                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменено время И прошло: ${originalMedicine.time != saveTime && saveTime.isBefore(currentTime)}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Частота 'через день': $isEveryOtherDay")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Изменено только время: $onlyTimeChanged")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "Сбрасываем статус: $shouldResetStatus")
                 
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "=== ОБНОВЛЕНИЕ ЛЕКАРСТВА ===")
@@ -689,7 +688,6 @@ class EditMedicineActivity : BaseActivity() {
                     groupMetadata = groupMetadata,
                     lastTakenTime = if (shouldResetStatus) 0 else originalMedicine.lastTakenTime, //  ИСПРАВЛЕНО: Сбрасываем время последнего приема при любом сбросе статуса
                     takenToday = if (shouldResetStatus && originalMedicine.takenToday) false else originalMedicine.takenToday, //  ИСПРАВЛЕНО: Сбрасываем статус принятия только если лекарство было принято
-                    takenAt = if (shouldResetStatus && originalMedicine.takenToday) 0 else originalMedicine.takenAt, //  ИСПРАВЛЕНО: Сбрасываем время принятия только если лекарство было принято
                     isMissed = if (shouldResetStatus) false else originalMedicine.isMissed, //  ИСПРАВЛЕНО: Сбрасываем статус пропуска
                     missedCount = if (shouldResetStatus) 0 else originalMedicine.missedCount, //  ИСПРАВЛЕНО: Сбрасываем счетчик пропусков
                     updatedAt = System.currentTimeMillis()
@@ -704,7 +702,7 @@ class EditMedicineActivity : BaseActivity() {
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "СТАТУС ПРИНЯТИЯ:")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - lastTakenTime: ${updatedMedicine.lastTakenTime}")
                 com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - takenToday: ${updatedMedicine.takenToday}")
-                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - takenAt: ${updatedMedicine.takenAt}")
+                com.medicalnotes.app.utils.LogCollector.d("EditMedicine", "  - takenAt: УДАЛЕНО")
                 
                 //  ИСПРАВЛЕНО: Отменяем старый будильник и планируем новый
                 try {

@@ -24,7 +24,7 @@
     <string name="skipped">Skipped</string>
     <string name="button_take_medicine">Take Medicine</string>
     <string name="button_medicine_taken">Taken</string>
-
+    <string name="button_add_back_today">Add Back to Today</string>
 
     <string name="emergency_call">Emergency Call</string>
     <string name="check_supply">Check Supply</string>

@@ -85,4 +85,29 @@ lint/tmp/
 # lint/reports/
 
 # Android Profiling
-*.hprof 
+*.hprof
+
+# Test and debug files
+*.bat
+*.py
+*.txt
+*.md
+*.java
+*.kt
+test_*
+debug_*
+fix_*
+Test*.java
+UserDataAnalysis.java
+
+# Build outputs
+build_output*.txt
+test_output*.txt
+comprehensive_test_results.txt
+
+# Temporary test files
+test_data*.xml
+test_*.xml
+
+# Test directories
+app/src/test/java/com/medicalnotes/app/backup/ 

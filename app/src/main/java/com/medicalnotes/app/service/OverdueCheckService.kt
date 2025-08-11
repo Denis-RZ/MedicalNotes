@@ -19,6 +19,7 @@ import com.medicalnotes.app.utils.DosageCalculator
 import com.medicalnotes.app.utils.MedicineStatus
 import com.medicalnotes.app.utils.MedicineStatusHelper
 import com.medicalnotes.app.utils.NotificationManager
+import com.medicalnotes.app.utils.UnifiedNotificationManager
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
@@ -31,9 +32,9 @@ class OverdueCheckService : Service() {
         const val CHANNEL_ID_OVERDUE = "overdue_medicines"
         const val NOTIFICATION_ID = 2000
         const val NOTIFICATION_ID_OVERDUE = 2001
-        private const val CHECK_INTERVAL = 300000L //  ИСПРАВЛЕНО: Увеличиваем до 5 минут (было 60 секунд)
-        private const val MIN_CHECK_INTERVAL = 60000L // Минимальный интервал 1 минута (было 30 секунд)
-        private const val EDITING_CHECK_INTERVAL = 120000L // 2 минуты при редактировании
+        private const val CHECK_INTERVAL = 60000L //  ИСПРАВЛЕНО: Уменьшаем до 1 минуты для быстрого обнаружения просроченных
+        private const val MIN_CHECK_INTERVAL = 30000L // Минимальный интервал 30 секунд (уменьшено для непрерывного мониторинга)
+        private const val EDITING_CHECK_INTERVAL = 60000L // 1 минута при редактировании (ускорено)
         
         //  ДОБАВЛЕНО: Флаг для отслеживания активности редактирования
         private val isEditingActive = AtomicBoolean(false)
@@ -63,13 +64,29 @@ class OverdueCheckService : Service() {
         }
         
         /**
+         * Проверяет, запущен ли сервис
+         */
+        fun isServiceRunning(context: Context): Boolean {
+            return try {
+                val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+                @Suppress("DEPRECATION")
+                val runningServices = activityManager.getRunningServices(100)
+                runningServices.any { it.service.className == OverdueCheckService::class.java.name }
+            } catch (e: Exception) {
+                android.util.Log.e("OverdueCheckService", "Ошибка проверки статуса сервиса", e)
+                false
+            }
+        }
+        
+        /**
          * ИСПРАВЛЕНО: Принудительная остановка звуков и вибрации при нажатии "выпил"
          */
         fun forceStopSoundAndVibration(context: Context) {
             try {
                 android.util.Log.d("OverdueCheckService", "=== ПРИНУДИТЕЛЬНАЯ ОСТАНОВКА ЗВУКОВ И ВИБРАЦИИ ===")
                 
-                // Останавливаем вибрацию
+                // 1. Останавливаем вибрацию
+                android.util.Log.d("OverdueCheckService", "1. Останавливаем вибрацию...")
                 val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                     context.getSystemService(android.os.VibratorManager::class.java).defaultVibrator
                 } else {
@@ -91,16 +108,34 @@ class OverdueCheckService : Service() {
                     }
                 }
                 
-                // Отменяем звуковые уведомления и основное уведомление
+                // 2. Отменяем ВСЕ уведомления приложения
+                android.util.Log.d("OverdueCheckService", "2. Отменяем все уведомления...")
                 val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? android.app.NotificationManager
                 notificationManager?.let { nm ->
-                    nm.cancel(NOTIFICATION_ID_OVERDUE + 100) // Отменяем звуковое уведомление
-                    nm.cancel(NOTIFICATION_ID_OVERDUE) // Отменяем основное уведомление
-                    android.util.Log.d("OverdueCheckService", "✓ Звуковые уведомления отменены")
-                    android.util.Log.d("OverdueCheckService", "✓ Основное уведомление о просроченных лекарствах отменено")
+                    // Отменяем все уведомления приложения
+                    nm.cancelAll()
+                    android.util.Log.d("OverdueCheckService", "✓ Все уведомления отменены")
+                    
+                    // Дополнительно отменяем конкретные уведомления
+                    nm.cancel(NOTIFICATION_ID_OVERDUE + 100) // Звуковое уведомление
+                    nm.cancel(NOTIFICATION_ID_OVERDUE) // Основное уведомление
+                    nm.cancel(NOTIFICATION_ID) // Уведомление службы
+                    nm.cancel(1001) // Уведомление о лекарстве
+                    nm.cancel(1002) // Уведомление о просроченных
+                    android.util.Log.d("OverdueCheckService", "✓ Конкретные уведомления отменены")
                 }
                 
-                // ИСПРАВЛЕНО: Скрываем системное уведомление
+                // 3. Используем UnifiedNotificationManager для отмены уведомлений
+                android.util.Log.d("OverdueCheckService", "3. Используем UnifiedNotificationManager...")
+                try {
+                    com.medicalnotes.app.utils.UnifiedNotificationManager.cancelAllNotifications(context)
+                    android.util.Log.d("OverdueCheckService", "✓ UnifiedNotificationManager отменил все уведомления")
+                } catch (e: Exception) {
+                    android.util.Log.e("OverdueCheckService", "Ошибка UnifiedNotificationManager", e)
+                }
+                
+                // 4. Скрываем системное уведомление
+                android.util.Log.d("OverdueCheckService", "4. Скрываем системное уведомление...")
                 try {
                     val systemAlertHelper = com.medicalnotes.app.utils.SystemAlertHelper(context)
                     systemAlertHelper.hideAlert()
@@ -109,17 +144,39 @@ class OverdueCheckService : Service() {
                     android.util.Log.e("OverdueCheckService", "Ошибка скрытия системного уведомления", e)
                 }
                 
-                // Отключаем звук уведомлений
+                // 5. Отключаем звук уведомлений
+                android.util.Log.d("OverdueCheckService", "5. Отключаем звук уведомлений...")
                 val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
                 audioManager?.let { am ->
+                    // Временно отключаем звук уведомлений
+                    val currentVolume = am.getStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION)
                     am.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, 0, 0)
-                    android.util.Log.d("OverdueCheckService", "✓ Звук уведомлений отключен")
+                    
+                    // Восстанавливаем через 1 секунду
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        am.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, currentVolume, 0)
+                    }, 1000)
+                    
+                    android.util.Log.d("OverdueCheckService", "✓ Звук уведомлений временно отключен")
+                }
+                
+                // 6. Останавливаем все медиа-плееры
+                android.util.Log.d("OverdueCheckService", "6. Останавливаем медиа-плееры...")
+                try {
+                    val mediaPlayer = android.media.MediaPlayer()
+                    if (mediaPlayer.isPlaying) {
+                        mediaPlayer.stop()
+                        mediaPlayer.release()
+                    }
+                    android.util.Log.d("OverdueCheckService", "✓ Медиа-плееры остановлены")
+                } catch (e: Exception) {
+                    android.util.Log.e("OverdueCheckService", "Ошибка остановки медиа-плееров", e)
                 }
                 
                 android.util.Log.d("OverdueCheckService", "=== ПРИНУДИТЕЛЬНАЯ ОСТАНОВКА ЗАВЕРШЕНА ===")
                 
             } catch (e: Exception) {
-                android.util.Log.e("OverdueCheckService", "Ошибка принудительной остановки звуков и вибрации", e)
+                android.util.Log.e("OverdueCheckService", "❌ Ошибка принудительной остановки звуков и вибрации", e)
             }
         }
         
@@ -197,7 +254,13 @@ class OverdueCheckService : Service() {
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         handler = Handler(Looper.getMainLooper())
         
+        // Создаем каналы как для сервиса, так и унифицированные, чтобы уведомления были видимы даже в фоне
         createNotificationChannel()
+        try {
+            com.medicalnotes.app.utils.UnifiedNotificationManager.createNotificationChannels(this)
+        } catch (e: Exception) {
+            android.util.Log.e("OverdueCheckService", "Ошибка создания каналов UnifiedNotificationManager", e)
+        }
         
         // Сохраняем оригинальные настройки
         originalNotificationVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
@@ -349,85 +412,74 @@ class OverdueCheckService : Service() {
         android.util.Log.d("OverdueCheckService", "Периодическая проверка остановлена")
     }
     
+    /**
+     * ИСПРАВЛЕНО: Упрощенная проверка просроченных лекарств
+     */
     private fun checkOverdueMedicines() {
         try {
-            //  ДОБАВЛЕНО: Проверка минимального интервала между проверками
+            // Проверка минимального интервала между проверками
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastCheckTime < MIN_CHECK_INTERVAL) {
-                android.util.Log.d("OverdueCheckService", " Пропускаем проверку - слишком часто")
+                android.util.Log.d("OverdueCheckService", "Пропускаем проверку - слишком часто")
                 return
             }
             lastCheckTime = currentTime
             
             android.util.Log.d("OverdueCheckService", "=== ПРОВЕРКА ПРОСРОЧЕННЫХ ЛЕКАРСТВ ===")
             
-            //  ИСПРАВЛЕНО: Добавляем синхронизацию для предотвращения конфликтов
-            synchronized(this) {
-                val allMedicines = dataManager.getActiveMedicines()
-                val today = LocalDate.now()
-                val currentLocalTime = LocalTime.now()
-                
-                //  ИСПРАВЛЕНО: Используем DosageCalculator для правильной фильтрации лекарств на сегодня
-                val todayMedicines = DosageCalculator.getActiveMedicinesForDate(allMedicines, today)
-                
-                android.util.Log.d("OverdueCheckService", "Всего лекарств в базе: ${allMedicines.size}")
-                android.util.Log.d("OverdueCheckService", "Лекарств на сегодня: ${todayMedicines.size}")
-                
-                var foundOverdue = false
-                var overdueCount = 0
-                
-                for (medicine in todayMedicines) {
-                    if (medicine.remainingQuantity > 0) {
-                        val status = MedicineStatusHelper.getMedicineStatus(medicine)
-                        
-                        android.util.Log.d("OverdueCheckService", "ПРОВЕРКА: ${medicine.name} - Статус: $status, Время: ${medicine.time}, Принято сегодня: ${medicine.takenToday}")
-                        
-                        if (status == MedicineStatus.OVERDUE) {
-                            foundOverdue = true
-                            overdueCount++
+            val allMedicines = dataManager.getActiveMedicines()
+            val today = LocalDate.now()
+            
+            // Используем единую логику
+            val overdueMedicines = allMedicines.filter { medicine ->
+                // ИСПРАВЛЕНО: Двойная проверка - принятые лекарства не могут быть просроченными
+                !medicine.takenToday && DosageCalculator.isMedicineOverdue(medicine, today)
+            }
+            
+            android.util.Log.d("OverdueCheckService", "Всего лекарств в базе: ${allMedicines.size}")
+            android.util.Log.d("OverdueCheckService", "Просроченных лекарств: ${overdueMedicines.size}")
+            
+            if (overdueMedicines.isNotEmpty()) {
+                // Выбираем релевантное лекарство (с ближайшим прошедшим временем)
+                val mostRelevant = selectMostRelevantOverdueMedicine(overdueMedicines, today)
+                mostRelevant?.let { medicine ->
+                    val nm = this.notificationManager
+                    try {
+                        // Показываем карточку-диалог И always-on-top уведомление
+                        if (!com.medicalnotes.app.utils.NotificationManager.isNotificationActive(medicine.id)) {
+                            // 1. Показываем карточку-диалог
+                            nm.showMedicineCardNotification(medicine, true)
+                            android.util.Log.d("OverdueCheckService", "Показана карточка-диалог для просроченного: ${medicine.name}")
                             
-                            android.util.Log.d("OverdueCheckService", "НАЙДЕНО ПРОСРОЧЕННОЕ ЛЕКАРСТВО: ${medicine.name}")
-                            android.util.Log.d("OverdueCheckService", "  - Время приема: ${medicine.time}")
-                            android.util.Log.d("OverdueCheckService", "  - Текущее время: $currentLocalTime")
-                            android.util.Log.d("OverdueCheckService", "  - Остаток: ${medicine.remainingQuantity}")
+                            // 2. ДОБАВЛЕНО: Показываем также always-on-top окно для максимальной видимости
+                            try {
+                                nm.showOverdueMedicineNotification(medicine)
+                                android.util.Log.d("OverdueCheckService", "Показано always-on-top окно для: ${medicine.name}")
+                            } catch (e: Exception) {
+                                android.util.Log.e("OverdueCheckService", "Ошибка показа always-on-top окна", e)
+                            }
+                        } else {
+                            android.util.Log.d("OverdueCheckService", "Карточка уже активна для: ${medicine.name}")
                         }
+                    } catch (e: Exception) {
+                        android.util.Log.e("OverdueCheckService", "Ошибка показа карточки-диалога", e)
                     }
                 }
                 
-                android.util.Log.d("OverdueCheckService", "Всего просроченных лекарств: $overdueCount")
-                
-                // ДОБАВЛЕНО: Логирование статистики просроченных лекарств
-                if (overdueCount > 0) {
-                    logOverdueStatistics(todayMedicines.filter { 
-                        MedicineStatusHelper.getMedicineStatus(it) == MedicineStatus.OVERDUE 
-                    })
+                // Запускаем повторяющуюся ВИБРАЦИЮ без отдельного текстового уведомления
+                if (!hasOverdueMedicines) {
+                    android.util.Log.d("OverdueCheckService", "ЗАПУСКАЕМ ПОВТОРЯЮЩУЮСЯ ВИБРАЦИЮ")
+                    startRepeatingSoundAndVibration()
+                    hasOverdueMedicines = true
                 }
-                
-                // ИСПРАВЛЕНО: Показываем уведомления ВСЕГДА при наличии просроченных лекарств
-                if (foundOverdue) {
-                    android.util.Log.d("OverdueCheckService", " ОБНАРУЖЕНЫ ПРОСРОЧЕННЫЕ ЛЕКАРСТВА - ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ")
-                    
-                    // Показываем уведомление о просроченных лекарствах
-                    val overdueMedicines = todayMedicines.filter { 
-                        MedicineStatusHelper.getMedicineStatus(it) == MedicineStatus.OVERDUE 
-                    }
-                    showOverdueNotification(overdueMedicines)
-                    
-                    // ИСПРАВЛЕНО: Запускаем повторяющиеся звуки и вибрацию только если статус изменился
-                    if (!hasOverdueMedicines) {
-                        android.util.Log.d("OverdueCheckService", " ЗАПУСКАЕМ ПОВТОРЯЮЩИЕСЯ ЗВУКИ И ВИБРАЦИЮ")
-                        startRepeatingSoundAndVibration()
-                        hasOverdueMedicines = true
-                    }
-                } else {
-                    // Если статус изменился с "есть просроченные" на "нет просроченных"
-                    if (hasOverdueMedicines) {
-                        android.util.Log.d("OverdueCheckService", " ПРОСРОЧЕННЫХ ЛЕКАРСТВ НЕТ - ОСТАНАВЛИВАЕМ ЗВУК И ВИБРАЦИЮ")
-                        stopRepeatingSoundAndVibration()
-                        restoreOriginalSettings()
-                        cancelOverdueNotification()
-                        hasOverdueMedicines = false
-                    }
+            } else {
+                // Останавливаем звуки и вибрацию если нет просроченных
+                if (hasOverdueMedicines) {
+                    android.util.Log.d("OverdueCheckService", "ПРОСРОЧЕННЫХ ЛЕКАРСТВ НЕТ - ОСТАНАВЛИВАЕМ ЗВУК И ВИБРАЦИЮ")
+                    stopRepeatingSoundAndVibration()
+                    restoreOriginalSettings()
+                    UnifiedNotificationManager.cancelAllNotifications(this)
+                    hasOverdueMedicines = false
                 }
             }
             
@@ -505,10 +557,7 @@ class OverdueCheckService : Service() {
             soundVibrationRunnable = object : Runnable {
                 override fun run() {
                     if (isSoundVibrationActive) {
-                        // Воспроизводим звук
-                        playNotificationSound()
-                        
-                        // Запускаем вибрацию
+                        // Только вибрация, чтобы не плодить дополнительное простое уведомление со звуком
                         startVibration()
                         
                         android.util.Log.d("OverdueCheckService", "✓ Звук и вибрация воспроизведены")
@@ -563,35 +612,7 @@ class OverdueCheckService : Service() {
      * ИСПРАВЛЕНО: Воспроизведение звука уведомления
      */
     private fun playNotificationSound() {
-        try {
-            // Восстанавливаем звук уведомлений на короткое время
-            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
-            if (currentVolume == 0) {
-                audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, originalNotificationVolume, 0)
-                android.util.Log.d("OverdueCheckService", "✓ Звук уведомлений временно восстановлен: $originalNotificationVolume")
-            }
-            
-            // Создаем уведомление со звуком для воспроизведения
-            val soundNotification = NotificationCompat.Builder(this, CHANNEL_ID_OVERDUE)
-                .setContentTitle("🚨 ПРОСРОЧЕННЫЕ ЛЕКАРСТВА!")
-                .setContentText("Звуковое напоминание")
-                .setSmallIcon(R.drawable.ic_medicine)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI)
-                .setAutoCancel(true)
-                .setTimeoutAfter(1000) // Автоматически скрыть через 1 секунду
-                .build()
-            
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-            notificationManager.notify(NOTIFICATION_ID_OVERDUE + 100, soundNotification) // Используем другой ID
-            
-            // НЕ отключаем звук обратно - пусть остается включенным для повторений
-            android.util.Log.d("OverdueCheckService", "✓ Звук воспроизведен (без автоматического отключения)")
-            
-        } catch (e: Exception) {
-            android.util.Log.e("OverdueCheckService", "Ошибка воспроизведения звука", e)
-        }
+        // УДАЛЕНО: не создаем отдельное звуковое уведомление, чтобы не было второго типа уведомления
     }
     
     private fun startVibration() {
@@ -658,29 +679,8 @@ class OverdueCheckService : Service() {
             val medicineNames = overdueMedicines.joinToString(", ") { it.name }
             val overdueCount = overdueMedicines.size
             
-            // ИСПРАВЛЕНО: Используем более агрессивный подход для максимальной видимости
-            val notification = NotificationCompat.Builder(this, CHANNEL_ID_OVERDUE)
-                .setContentTitle("🚨 ПРОСРОЧЕННЫЕ ЛЕКАРСТВА!")
-                .setContentText("У вас $overdueCount просроченных лекарств")
-                .setStyle(NotificationCompat.BigTextStyle()
-                    .bigText("🚨 ПРОСРОЧЕННЫЕ ЛЕКАРСТВА: $medicineNames\n\nПожалуйста, примите их как можно скорее!"))
-                .setSmallIcon(R.drawable.ic_medicine)
-                .setContentIntent(pendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_MAX) // Максимальный приоритет
-                .setCategory(NotificationCompat.CATEGORY_ALARM) // Категория будильника для приоритета
-                .setAutoCancel(false) // Не закрывать автоматически
-                .setOngoing(true) // Постоянное уведомление
-                .setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI) // Звук для привлечения внимания
-                .setVibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000)) // Более интенсивная вибрация
-                .setLights(0xFF0000FF.toInt(), 3000, 3000) // Мигание красным
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // Показывать на экране блокировки
-                .setFullScreenIntent(pendingIntent, true) // Показывать поверх всего
-                .setTimeoutAfter(0) // Не скрывать автоматически
-                .addAction(R.drawable.ic_check, "Принял лекарство", takeMedicinePendingIntent) // Действие
-                .build()
-            
-            // ИСПРАВЛЕНО: Показываем уведомление с максимальным приоритетом
-            notificationManager.notify(NOTIFICATION_ID_OVERDUE, notification)
+            // УБРАНО: групповые уведомления, т.к. используем карточку-диалог по конкретному лекарству
+            return
             android.util.Log.d("OverdueCheckService", "✓ Уведомление о просроченных лекарствах показано с максимальным приоритетом")
             
             // ИСПРАВЛЕНО: Дополнительная проверка и логирование
@@ -697,22 +697,11 @@ class OverdueCheckService : Service() {
                 android.util.Log.e("OverdueCheckService", "❌ Уведомление НЕ показано!")
             }
             
-            // УМНАЯ ЛОГИКА: Системный алерт только если обычное уведомление не показалось
-            if (overdueNotification == null) {
-                android.util.Log.d("OverdueCheckService", "Обычное уведомление не показалось - показываем системный алерт")
-                showSystemAlert(overdueMedicines)
-            } else {
-                android.util.Log.d("OverdueCheckService", "Обычное уведомление показалось - системный алерт не нужен")
-            }
+            // УБРАНО: системный алерт – вместо него карточка-диалог конкретного лекарства
             
         } catch (e: Exception) {
             android.util.Log.e("OverdueCheckService", "Ошибка показа уведомления о просроченных лекарствах", e)
-            // При ошибке показываем системный алерт как запасной вариант
-            try {
-                showSystemAlert(overdueMedicines)
-            } catch (e2: Exception) {
-                android.util.Log.e("OverdueCheckService", "Ошибка показа системного алерта", e2)
-            }
+            // Тихий фоллбек: ничего не делаем – основной механизм карточки в checkOverdueMedicines
         }
     }
     
@@ -720,55 +709,14 @@ class OverdueCheckService : Service() {
      * ДОБАВЛЕНО: Дополнительный способ показа уведомления через AlarmManager
      */
     private fun showAlarmNotification(overdueMedicines: List<Medicine>) {
-        try {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-            val intent = Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                putExtra("show_overdue_medicines", true)
-                putExtra("alarm_notification", true)
-            }
-            
-            val pendingIntent = PendingIntent.getActivity(
-                this,
-                2,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            
-            // Устанавливаем точный будильник для показа уведомления
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    android.app.AlarmManager.RTC_WAKEUP,
-                    System.currentTimeMillis() + 1000, // Через 1 секунду
-                    pendingIntent
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                alarmManager.setExact(
-                    android.app.AlarmManager.RTC_WAKEUP,
-                    System.currentTimeMillis() + 1000,
-                    pendingIntent
-                )
-            }
-            
-            android.util.Log.d("OverdueCheckService", "✓ AlarmManager уведомление запланировано")
-            
-        } catch (e: Exception) {
-            android.util.Log.e("OverdueCheckService", "Ошибка показа AlarmManager уведомления", e)
-        }
+        // УДАЛЕНО: лишний механизм дубляжа уведомления
     }
     
     /**
      * ДОБАВЛЕНО: Показ системного уведомления через SystemAlertHelper
      */
     private fun showSystemAlert(overdueMedicines: List<Medicine>) {
-        try {
-            val systemAlertHelper = com.medicalnotes.app.utils.SystemAlertHelper(this)
-            systemAlertHelper.showOverdueAlert(overdueMedicines)
-            android.util.Log.d("OverdueCheckService", "✓ Системное уведомление показано")
-        } catch (e: Exception) {
-            android.util.Log.e("OverdueCheckService", "Ошибка показа системного уведомления", e)
-        }
+        // УДАЛЕНО: используем карточку-диалог вместо системного алерта
     }
     
     /**
@@ -803,5 +751,19 @@ class OverdueCheckService : Service() {
         } catch (e: Exception) {
             android.util.Log.e("OverdueCheckService", "Ошибка логирования статистики", e)
         }
+    }
+
+    // Выбираем самое релевантное просроченное лекарство: с ближайшим уже прошедшим временем, сегодня
+    private fun selectMostRelevantOverdueMedicine(overdueMedicines: List<Medicine>, today: java.time.LocalDate): Medicine? {
+        val now = java.time.LocalDateTime.now()
+        return overdueMedicines
+            .filter { med ->
+                // Должно приниматься сегодня и время приема уже прошло
+                DosageCalculator.shouldTakeMedicine(med, today) && today.atTime(med.time).isBefore(now)
+            }
+            .minByOrNull { med ->
+                val doseDateTime = today.atTime(med.time)
+                java.time.Duration.between(doseDateTime, now).toMinutes().let { if (it < 0) Long.MAX_VALUE else it }
+            }
     }
 } 

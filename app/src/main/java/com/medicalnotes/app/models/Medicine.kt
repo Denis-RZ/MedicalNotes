@@ -75,9 +75,10 @@ data class Medicine(
     
     // Отслеживание принятых лекарств
     val takenToday: Boolean = false,
-    val takenAt: Long = 0, // Время принятия
-    val shouldTakeToday: Boolean = true, // Нужно ли принимать сегодня
-    val isOverdue: Boolean = false, // Просрочено ли принятие
+    // УДАЛЯЕМ дублирующие поля:
+    // val takenAt: Long = 0, // Дублирует lastTakenTime
+    // val shouldTakeToday: Boolean = true, // Вычисляемое поле
+    // val isOverdue: Boolean = false, // Вычисляемое поле
     
     // УЛУЧШЕННАЯ ГРУППИРОВКА ЛЕКАРСТВ
     val groupId: Long? = null, // ID группы (null = не в группе)

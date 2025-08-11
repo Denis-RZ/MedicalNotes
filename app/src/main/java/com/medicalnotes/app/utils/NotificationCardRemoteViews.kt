@@ -34,16 +34,26 @@ object NotificationCardRemoteViews {
         
         // Set medicine details
         remoteViews.setTextViewText(R.id.medicine_name, medicine.name)
-        remoteViews.setTextViewText(R.id.medicine_dosage, "Дозировка: ${medicine.dosage}")
-        remoteViews.setTextViewText(R.id.medicine_time, medicine.time.format(DateTimeFormatter.ofPattern("HH:mm")))
+        remoteViews.setTextViewText(
+            R.id.medicine_dosage,
+            context.getString(com.medicalnotes.app.R.string.dosage_format, medicine.dosage)
+        )
+        val timeText = medicine.time.format(DateTimeFormatter.ofPattern("HH:mm"))
+        remoteViews.setTextViewText(
+            R.id.medicine_time,
+            context.getString(com.medicalnotes.app.R.string.time_format, timeText)
+        )
         
         // Set additional info
-        remoteViews.setTextViewText(R.id.medicine_remaining, "Остаток: ${medicine.remainingQuantity} шт.")
+        remoteViews.setTextViewText(
+            R.id.medicine_remaining,
+            context.getString(com.medicalnotes.app.R.string.remaining_format, medicine.remainingQuantity)
+        )
         
         val groupInfo = if (medicine.groupName.isNotEmpty()) {
-            "Группа: ${medicine.groupName} (№${medicine.groupOrder})"
+            context.getString(com.medicalnotes.app.R.string.group_format, medicine.groupName)
         } else {
-            "Группа: не указана"
+            context.getString(com.medicalnotes.app.R.string.group_name_placeholder)
         }
         remoteViews.setTextViewText(R.id.medicine_group, groupInfo)
         
@@ -82,8 +92,15 @@ object NotificationCardRemoteViews {
         remoteViews.setTextViewText(R.id.notification_status, status)
         
         remoteViews.setTextViewText(R.id.medicine_name, medicine.name)
-        remoteViews.setTextViewText(R.id.medicine_dosage, "Дозировка: ${medicine.dosage}")
-        remoteViews.setTextViewText(R.id.medicine_time, medicine.time.format(DateTimeFormatter.ofPattern("HH:mm")))
+        remoteViews.setTextViewText(
+            R.id.medicine_dosage,
+            context.getString(com.medicalnotes.app.R.string.dosage_format, medicine.dosage)
+        )
+        val timeText = medicine.time.format(DateTimeFormatter.ofPattern("HH:mm"))
+        remoteViews.setTextViewText(
+            R.id.medicine_time,
+            context.getString(com.medicalnotes.app.R.string.time_format, timeText)
+        )
         
         // Set icon background
         val iconBackgroundRes = if (isOverdue) {
@@ -156,7 +173,13 @@ object NotificationCardRemoteViews {
         medicine: Medicine,
         isOverdue: Boolean = false
     ) {
-        val title = if (isOverdue) "ПРОСРОЧЕНО: ${medicine.name}" else "Примите: ${medicine.name}"
+        val title = if (isOverdue)
+            remoteViews.apply {}.let { // no-op to keep style
+                // We don't have Context here; callers should rebuild via factory methods when locale changes
+                "ПРОСРОЧЕНО: ${medicine.name}"
+            }
+        else
+            "Примите: ${medicine.name}"
         remoteViews.setTextViewText(R.id.notification_title, title)
         
         val status = if (isOverdue) "ПРОСРОЧЕНО" else "Активно"
@@ -164,14 +187,15 @@ object NotificationCardRemoteViews {
         
         remoteViews.setTextViewText(R.id.medicine_name, medicine.name)
         remoteViews.setTextViewText(R.id.medicine_dosage, "Дозировка: ${medicine.dosage}")
-        remoteViews.setTextViewText(R.id.medicine_time, medicine.time.format(DateTimeFormatter.ofPattern("HH:mm")))
+        val timeText2 = medicine.time.format(DateTimeFormatter.ofPattern("HH:mm"))
+        remoteViews.setTextViewText(R.id.medicine_time, "Время: ${timeText2}")
         remoteViews.setTextViewText(R.id.medicine_remaining, "Остаток: ${medicine.remainingQuantity} шт.")
         
-        val groupInfo = if (medicine.groupName.isNotEmpty()) {
-            "Группа: ${medicine.groupName} (№${medicine.groupOrder})"
+        val groupInfo2 = if (medicine.groupName.isNotEmpty()) {
+            "Группа: ${medicine.groupName}"
         } else {
             "Группа: не указана"
         }
-        remoteViews.setTextViewText(R.id.medicine_group, groupInfo)
+        remoteViews.setTextViewText(R.id.medicine_group, groupInfo2)
     }
 } 

@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.medicalnotes.app.databinding.ItemMedicineModernBinding
 import com.medicalnotes.app.models.Medicine
 import com.medicalnotes.app.utils.DosageCalculator
-import com.medicalnotes.app.utils.MedicineStatusHelper
-import com.medicalnotes.app.utils.MedicineStatus
+// import com.medicalnotes.app.utils.MedicineStatus // УДАЛЕНОHelper
+// import com.medicalnotes.app.utils.MedicineStatus // УДАЛЕНО
 import java.time.format.DateTimeFormatter
 
 class ModernMedicineAdapter(
@@ -37,16 +37,16 @@ class ModernMedicineAdapter(
         fun bind(medicine: Medicine) {
             binding.apply {
                 // Обновляем статус лекарства
-                val updatedMedicine = MedicineStatusHelper.updateMedicineStatus(medicine)
-                val status = MedicineStatusHelper.getMedicineStatus(updatedMedicine)
+                val updatedMedicine = medicine
+                val status = DosageCalculator.getMedicineStatus(updatedMedicine)
                 
                 // Название лекарства
                 textMedicineName.text = updatedMedicine.name
                 
                 // Время приема
                 val timeText = if (updatedMedicine.multipleDoses && updatedMedicine.doseTimes.isNotEmpty()) {
-                    val times = updatedMedicine.doseTimes.map { 
-                        it.format(DateTimeFormatter.ofPattern("HH:mm")) 
+                    val times = updatedMedicine.doseTimes.map { time -> 
+                        time.format(DateTimeFormatter.ofPattern("HH:mm")) 
                     }
                     times.joinToString(", ")
                 } else {
@@ -73,25 +73,25 @@ class ModernMedicineAdapter(
                 
                 // Статус в зависимости от состояния
                 when (status) {
-                    MedicineStatus.UPCOMING -> {
+                    DosageCalculator.MedicineStatus.UPCOMING -> {
                         textStatus.text = root.context.getString(com.medicalnotes.app.R.string.status_today_uppercase)
                         textStatus.background = root.context.getDrawable(
                             com.medicalnotes.app.R.drawable.status_active_badge
                         )
                     }
-                    MedicineStatus.OVERDUE -> {
+                    DosageCalculator.MedicineStatus.OVERDUE -> {
                         textStatus.text = root.context.getString(com.medicalnotes.app.R.string.status_overdue_uppercase)
                         textStatus.background = root.context.getDrawable(
                             com.medicalnotes.app.R.drawable.missed_light_background
                         )
                     }
-                    MedicineStatus.TAKEN_TODAY -> {
+                    DosageCalculator.MedicineStatus.TAKEN_TODAY -> {
                         textStatus.text = root.context.getString(com.medicalnotes.app.R.string.status_taken_uppercase)
                         textStatus.background = root.context.getDrawable(
                             com.medicalnotes.app.R.drawable.status_light_background
                         )
                     }
-                    MedicineStatus.NOT_TODAY -> {
+                    DosageCalculator.MedicineStatus.NOT_TODAY -> {
                         textStatus.text = root.context.getString(com.medicalnotes.app.R.string.status_disable)
                         textStatus.background = root.context.getDrawable(
                             com.medicalnotes.app.R.drawable.status_light_background

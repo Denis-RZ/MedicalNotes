@@ -24,6 +24,7 @@
     <string name="skipped">Пропустил</string>
     <string name="button_take_medicine">Принять лекарство</string>
     <string name="button_medicine_taken">Принято</string>
+    <string name="button_add_back_today">Добавить обратно на сегодня</string>
 
 
     <string name="emergency_call">Экстренный вызов</string>

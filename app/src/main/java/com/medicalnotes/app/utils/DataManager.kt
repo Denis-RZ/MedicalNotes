@@ -156,15 +156,12 @@ class DataManager(private val context: Context) {
                         updatedAt = System.currentTimeMillis(),
                         startDate = if (medicine.startDate <= 0) System.currentTimeMillis() else medicine.startDate,
                         lastTakenTime = if (medicine.lastTakenTime < 0) 0 else medicine.lastTakenTime,
-                        takenAt = if (medicine.takenAt < 0) 0 else medicine.takenAt,
                         
                         // Безопасная обработка boolean полей
                         isActive = medicine.isActive,
                         isInsulin = medicine.isInsulin,
                         isMissed = medicine.isMissed,
                         takenToday = medicine.takenToday,
-                        shouldTakeToday = medicine.shouldTakeToday,
-                        isOverdue = medicine.isOverdue,
                         multipleDoses = medicine.multipleDoses,
                         isPartOfGroup = medicine.isPartOfGroup,
                         
@@ -461,8 +458,8 @@ class DataManager(private val context: Context) {
     fun updateMedicine(medicine: Medicine): Boolean {
         return try {
             // Валидация входных данных
-            if (medicine.id <= 0) {
-                Log.e(TAG, "Cannot update medicine with invalid ID: ${medicine.id}")
+            if (medicine.id < 0) {
+                Log.e(TAG, "Cannot update medicine with negative ID: ${medicine.id}")
                 return false
             }
             if (medicine.name.isBlank()) {
@@ -475,7 +472,14 @@ class DataManager(private val context: Context) {
             }
             
             val medicines = loadMedicines().toMutableList()
-            val index = medicines.indexOfFirst { it.id == medicine.id }
+            val index = if (medicine.id > 0) {
+                medicines.indexOfFirst { it.id == medicine.id }
+            } else {
+                // Для лекарств с id = 0 ищем по имени, времени и дозировке
+                medicines.indexOfFirst { 
+                    it.name == medicine.name && it.time == medicine.time && it.dosage == medicine.dosage 
+                }
+            }
             
             if (index == -1) {
                 Log.w(TAG, "Medicine not found for update: ${medicine.name} (ID: ${medicine.id})")
@@ -978,7 +982,6 @@ class DataManager(private val context: Context) {
                 val medicine = medicines[medicineIndex]
                 val updatedMedicine = medicine.copy(
                     takenToday = true,
-                    takenAt = System.currentTimeMillis(),
                     lastTakenTime = System.currentTimeMillis(),
                     remainingQuantity = (medicine.remainingQuantity - 1).coerceAtLeast(0)
                 )
@@ -1242,6 +1245,224 @@ class DataManager(private val context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка миграции групповых данных", e)
             medicines
+        }
+    }
+
+    /**
+     * Копирует XML файл в папку приложения
+     */
+    fun copyXmlFileToApp(): Boolean {
+        return try {
+            Log.d(TAG, "=== КОПИРОВАНИЕ XML ФАЙЛА ===")
+            
+            // Путь к исходному XML файлу (в корне проекта)
+            val sourceFile = File("test_data.xml")
+            if (!sourceFile.exists()) {
+                Log.e(TAG, "Исходный XML файл не найден: ${sourceFile.absolutePath}")
+                return false
+            }
+            
+            Log.d(TAG, "Исходный XML файл найден: ${sourceFile.absolutePath}")
+            
+            // Путь к папке приложения
+            val targetFile = File(context.filesDir, "test_data.xml")
+            
+            // Копируем файл
+            sourceFile.copyTo(targetFile, overwrite = true)
+            
+            Log.d(TAG, "✅ XML файл скопирован в: ${targetFile.absolutePath}")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при копировании XML файла", e)
+            false
+        }
+    }
+
+    /**
+     * Загружает данные из XML файла в JSON хранилище
+     */
+    fun loadFromXmlFile(): Boolean {
+        return try {
+            Log.d(TAG, "=== ЗАГРУЗКА ИЗ XML ФАЙЛА ===")
+            
+            // Сначала копируем XML файл в папку приложения
+            if (!copyXmlFileToApp()) {
+                Log.e(TAG, "Не удалось скопировать XML файл")
+                return false
+            }
+            
+            // Проверяем существование XML файла
+            val xmlFile = File(context.filesDir, "test_data.xml")
+            if (!xmlFile.exists()) {
+                Log.e(TAG, "XML файл не найден: ${xmlFile.absolutePath}")
+                return false
+            }
+            
+            Log.d(TAG, "XML файл найден: ${xmlFile.absolutePath}")
+            
+            // Используем XmlDataManager для загрузки данных
+            val xmlDataManager = com.medicalnotes.app.utils.XmlDataManager(context)
+            val medicines = xmlDataManager.loadMedicines()
+            
+            Log.d(TAG, "Загружено из XML: ${medicines.size} лекарств")
+            
+            if (medicines.isEmpty()) {
+                Log.w(TAG, "Из XML загружено 0 лекарств")
+                return false
+            }
+            
+            // Сбрасываем takenToday статус для всех лекарств
+            val resetMedicines = medicines.map { medicine ->
+                medicine.copy(takenToday = false)
+            }
+            
+            Log.d(TAG, "Сброшен takenToday статус для всех лекарств")
+            
+            // Сохраняем в JSON
+            val success = saveMedicines(resetMedicines)
+            
+            if (success) {
+                Log.d(TAG, "✅ Данные успешно загружены из XML в JSON")
+                Log.d(TAG, "Сохранено лекарств: ${resetMedicines.size}")
+                
+                // Логируем данные для проверки
+                resetMedicines.forEach { medicine ->
+                    Log.d(TAG, "Лекарство: ${medicine.name}")
+                    Log.d(TAG, "  - takenToday: ${medicine.takenToday}")
+                    Log.d(TAG, "  - groupId: ${medicine.groupId}")
+                    Log.d(TAG, "  - groupStartDate: ${medicine.groupStartDate}")
+                    Log.d(TAG, "  - groupOrder: ${medicine.groupOrder}")
+                }
+            } else {
+                Log.e(TAG, "❌ Ошибка сохранения данных в JSON")
+            }
+            
+            success
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при загрузке из XML", e)
+            false
+        }
+    }
+
+    /**
+     * Сбрасывает статус takenToday для всех лекарств
+     */
+    fun resetTakenTodayStatus(): Boolean {
+        return try {
+            Log.d(TAG, "=== СБРОС СТАТУСА takenToday ===")
+
+            val medicines = loadMedicines()
+            Log.d(TAG, "Загружено лекарств: ${medicines.size}")
+
+            var updatedCount = 0
+            medicines.forEach { medicine ->
+                if (medicine.takenToday) {
+                    Log.d(TAG, "Сбрасываем takenToday для: ${medicine.name}")
+                    val updatedMedicine = medicine.copy(takenToday = false)
+                    if (updateMedicine(updatedMedicine)) {
+                        updatedCount++
+                        Log.d(TAG, "✅ Статус сброшен для: ${medicine.name}")
+                    } else {
+                        Log.e(TAG, "❌ Ошибка сброса статуса для: ${medicine.name}")
+                    }
+                }
+            }
+
+            Log.d(TAG, "Сброшено статусов: $updatedCount")
+            updatedCount > 0
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при сбросе статуса takenToday", e)
+            false
+        }
+    }
+
+    /**
+     * Принудительно сбрасывает статус takenToday для всех лекарств
+     */
+    fun forceResetAllTakenTodayStatus(): Boolean {
+        return try {
+            Log.d(TAG, "=== ПРИНУДИТЕЛЬНЫЙ СБРОС ВСЕХ takenToday ===")
+
+            val medicines = loadMedicines()
+            Log.d(TAG, "Загружено лекарств: ${medicines.size}")
+
+            var updatedCount = 0
+            medicines.forEach { medicine ->
+                Log.d(TAG, "Проверяем: ${medicine.name} (takenToday: ${medicine.takenToday})")
+                
+                val updatedMedicine = medicine.copy(takenToday = false)
+                if (updateMedicine(updatedMedicine)) {
+                    updatedCount++
+                    Log.d(TAG, "✅ Статус сброшен для: ${medicine.name}")
+                } else {
+                    Log.e(TAG, "❌ Ошибка сброса статуса для: ${medicine.name}")
+                }
+            }
+
+            Log.d(TAG, "Всего сброшено статусов: $updatedCount")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при принудительном сбросе статуса takenToday", e)
+            false
+        }
+    }
+
+    /**
+     * Исправляет групповые данные для лекарств "через день"
+     */
+    fun fixGroupData(): Boolean {
+        return try {
+            Log.d(TAG, "=== ИСПРАВЛЕНИЕ ГРУППОВЫХ ДАННЫХ ===")
+            
+            val medicines = loadMedicines()
+            Log.d(TAG, "Загружено лекарств: ${medicines.size}")
+            
+            // Находим лекарства с одинаковым groupName
+            val groupNames = medicines.mapNotNull { it.groupName }.distinct()
+            Log.d(TAG, "Найдено групп: ${groupNames.size}")
+            
+            var updatedCount = 0
+            groupNames.forEach { groupName ->
+                val groupMedicines = medicines.filter { it.groupName == groupName }
+                Log.d(TAG, "Группа '$groupName': ${groupMedicines.size} лекарств")
+                
+                if (groupMedicines.size > 1) {
+                    // Используем одинаковый groupId и groupStartDate для всех лекарств в группе
+                    val firstMedicine = groupMedicines.first()
+                    val commonGroupId = firstMedicine.groupId ?: System.currentTimeMillis()
+                    val commonGroupStartDate = firstMedicine.groupStartDate
+                    
+                    Log.d(TAG, "Унифицируем группу '$groupName':")
+                    Log.d(TAG, "  - groupId: $commonGroupId")
+                    Log.d(TAG, "  - groupStartDate: $commonGroupStartDate")
+                    
+                    groupMedicines.forEach { medicine ->
+                        if (medicine.groupId != commonGroupId || medicine.groupStartDate != commonGroupStartDate) {
+                            Log.d(TAG, "Исправляем: ${medicine.name}")
+                            Log.d(TAG, "  - groupId: ${medicine.groupId} -> $commonGroupId")
+                            Log.d(TAG, "  - groupStartDate: ${medicine.groupStartDate} -> $commonGroupStartDate")
+                            
+                            val updatedMedicine = medicine.copy(
+                                groupId = commonGroupId,
+                                groupStartDate = commonGroupStartDate
+                            )
+                            
+                            if (updateMedicine(updatedMedicine)) {
+                                updatedCount++
+                                Log.d(TAG, "✅ Исправлено: ${medicine.name}")
+                            } else {
+                                Log.e(TAG, "❌ Ошибка исправления: ${medicine.name}")
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Log.d(TAG, "Исправлено лекарств: $updatedCount")
+            updatedCount > 0
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при исправлении групповых данных", e)
+            false
         }
     }
 } 

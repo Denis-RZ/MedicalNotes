@@ -11,6 +11,21 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
     
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
+            "ACTION_TAKE_ALL_OVERDUE" -> {
+                val ids = intent.getLongArrayExtra("medicine_ids") ?: longArrayOf()
+                if (ids.isNotEmpty()) {
+                    android.util.Log.d("MedicineAlarmReceiver", "=== КНОПКА 'ПРИНЯЛ ВСЕ' НАЖАТА === (${ids.size})")
+                    val dm = com.medicalnotes.app.utils.DataManager(context)
+                    val all = dm.loadMedicines()
+                    val updated = all.map { med ->
+                        if (ids.contains(med.id)) med.copy(takenToday = true, lastTakenTime = System.currentTimeMillis()) else med
+                    }
+                    dm.saveMedicines(updated)
+                    // Остановим звук/вибрацию и отменим уведомления
+                    com.medicalnotes.app.service.OverdueCheckService.forceStopSoundAndVibration(context)
+                    com.medicalnotes.app.utils.UnifiedNotificationManager.cancelAllNotifications(context)
+                }
+            }
             "ACTION_MEDICINE_TAKEN" -> {
                 val medicineId = intent.getLongExtra("medicine_id", -1)
                 if (medicineId != -1L) {
@@ -122,7 +137,7 @@ class MedicineAlarmReceiver : BroadcastReceiver() {
                             android.util.Log.d("MedicineAlarmReceiver", "Текущий статус лекарства: $currentStatus")
                             
                             // Если лекарство больше не просрочено, не воспроизводим звук
-                            if (currentStatus != com.medicalnotes.app.utils.MedicineStatus.OVERDUE) {
+                            if (currentStatus != com.medicalnotes.app.utils.DosageCalculator.MedicineStatus.OVERDUE) {
                                 android.util.Log.d("MedicineAlarmReceiver", "Лекарство больше не просрочено, звук не воспроизводится")
                                 return
                             }

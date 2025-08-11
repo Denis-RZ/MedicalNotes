@@ -28,12 +28,11 @@ object PermissionManager {
     private val REQUIRED_PERMISSIONS = mutableListOf<String>().apply {
         add(Manifest.permission.VIBRATE)
         add(Manifest.permission.RECEIVE_BOOT_COMPLETED)
-        add(Manifest.permission.SCHEDULE_EXACT_ALARM)
-        add(Manifest.permission.USE_EXACT_ALARM)
+        // SCHEDULE_EXACT_ALARM и USE_EXACT_ALARM не запрашиваются обычным runtime API, их наличие здесь не нужно
         add(Manifest.permission.WAKE_LOCK)
         add(Manifest.permission.FOREGROUND_SERVICE)
         add(Manifest.permission.FOREGROUND_SERVICE_HEALTH)
-        add(Manifest.permission.USE_FULL_SCREEN_INTENT)
+        // USE_FULL_SCREEN_INTENT не требуется как отдельное runtime-разрешение
         
         // Разрешение на уведомления для Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -65,8 +64,8 @@ object PermissionManager {
         // Проверяем специальные разрешения
         android.util.Log.d("PermissionManager", "🔧 Проверяем специальные разрешения")
         
-        status.systemAlertWindowGranted = Settings.canDrawOverlays(context)
-        android.util.Log.d("PermissionManager", "  ${if (status.systemAlertWindowGranted) "✅" else "❌"} System Alert Window: ${if (status.systemAlertWindowGranted) "РАЗРЕШЕНО" else "ЗАПРЕЩЕНО"}")
+        // Убрали проверку overlay, т.к. системные оверлеи больше не используются
+        status.systemAlertWindowGranted = true
         
         status.notificationsEnabled = areNotificationsEnabled(context)
         android.util.Log.d("PermissionManager", "  ${if (status.notificationsEnabled) "✅" else "❌"} Уведомления: ${if (status.notificationsEnabled) "ВКЛЮЧЕНЫ" else "ОТКЛЮЧЕНЫ"}")
@@ -155,9 +154,7 @@ object PermissionManager {
     private fun showSpecialPermissionsInstructions(activity: FragmentActivity, status: PermissionStatus) {
         val instructions = mutableListOf<String>()
         
-        if (!status.systemAlertWindowGranted) {
-            instructions.add("• Разрешить показ поверх других приложений")
-        }
+        // overlay больше не требуется
         
         if (!status.notificationsEnabled) {
             instructions.add("• Включить уведомления в настройках приложения")

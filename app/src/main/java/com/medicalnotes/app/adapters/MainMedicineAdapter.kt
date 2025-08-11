@@ -8,13 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.medicalnotes.app.databinding.ItemMedicineMainBinding
 import com.medicalnotes.app.models.Medicine
 import com.medicalnotes.app.utils.DosageCalculator
-import com.medicalnotes.app.utils.MedicineStatus
+// import com.medicalnotes.app.utils.MedicineStatus // УДАЛЕНО: используем DosageCalculator.MedicineStatus
 import java.time.format.DateTimeFormatter
 import com.medicalnotes.app.utils.DataLocalizationHelper
 
 class MainMedicineAdapter(
     private val onMedicineClick: (Medicine) -> Unit,
-    private val onTakeMedicineClick: (Medicine) -> Unit
+    private val onTakeMedicineClick: (Medicine) -> Unit,
+    private val onAddBackTodayClick: (Medicine) -> Unit
 ) : ListAdapter<Medicine, MainMedicineAdapter.MainMedicineViewHolder>(MainMedicineDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainMedicineViewHolder {
@@ -23,7 +24,7 @@ class MainMedicineAdapter(
             parent,
             false
         )
-        return MainMedicineViewHolder(binding, onMedicineClick, onTakeMedicineClick)
+        return MainMedicineViewHolder(binding, onMedicineClick, onTakeMedicineClick, onAddBackTodayClick)
     }
 
     override fun onBindViewHolder(holder: MainMedicineViewHolder, position: Int) {
@@ -33,7 +34,8 @@ class MainMedicineAdapter(
     class MainMedicineViewHolder(
         private val binding: ItemMedicineMainBinding,
         private val onMedicineClick: (Medicine) -> Unit,
-        private val onTakeMedicineClick: (Medicine) -> Unit
+        private val onTakeMedicineClick: (Medicine) -> Unit,
+        private val onAddBackTodayClick: (Medicine) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -80,7 +82,7 @@ class MainMedicineAdapter(
                     
                     // Показываем статус в зависимости от состояния лекарства
                     when (medicineStatus) {
-                        MedicineStatus.OVERDUE -> {
+                        DosageCalculator.MedicineStatus.OVERDUE -> {
                             //  СРОЧНО: НОВЫЙ ДИЗАЙН ДЛЯ ПРОСРОЧЕННЫХ ЛЕКАРСТВ
                             textMissedStatus.visibility = android.view.View.VISIBLE
                             textMissedStatus.text = binding.root.context.getString(com.medicalnotes.app.R.string.missed_status)
@@ -94,7 +96,7 @@ class MainMedicineAdapter(
                             
                             //  СРОЧНО: Красный фон карточки с границей
                             binding.viewCardBackground.setBackgroundColor(
-                                binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_background)
+                                binding.root.context.getColor(com.medicalnotes.app.R.color.overdue_red)
                             )
                             cardMedicine.setStrokeColor(
                                 android.content.res.ColorStateList.valueOf(
@@ -135,11 +137,14 @@ class MainMedicineAdapter(
                             // Мигание кнопки для просроченных лекарств
                             startButtonBlinkingAnimation(buttonTakeMedicine, true)
                             
+                            //  ДОБАВЛЕНО: Скрываем кнопку "Добавить обратно на сегодня" для просроченных лекарств
+                            binding.buttonAddBackToday.visibility = android.view.View.GONE
+                            
                             //  ИЗМЕНЕНО: Уведомления теперь управляются автоматически в MainActivity
                             // Уведомление для просроченных лекарств показывается только визуально
                             android.util.Log.d("MainMedicineAdapter", "Просроченное лекарство отображается: ${localizedMedicine.name}")
                         }
-                        MedicineStatus.UPCOMING -> {
+                        DosageCalculator.MedicineStatus.UPCOMING -> {
                             //  Скрываем иконку предупреждения для обычных лекарств
                             binding.textWarningIcon.visibility = android.view.View.GONE
                             
@@ -183,8 +188,11 @@ class MainMedicineAdapter(
                                     binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                                 )
                             )
+                            
+                            //  ДОБАВЛЕНО: Скрываем кнопку "Добавить обратно на сегодня" для обычных лекарств
+                            binding.buttonAddBackToday.visibility = android.view.View.GONE
                         }
-                        MedicineStatus.TAKEN_TODAY -> {
+                        DosageCalculator.MedicineStatus.TAKEN_TODAY -> {
                             //  Скрываем иконку предупреждения для принятых лекарств
                             binding.textWarningIcon.visibility = android.view.View.GONE
                             
@@ -229,6 +237,9 @@ class MainMedicineAdapter(
                                     binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                                 )
                             )
+                            
+                            //  ДОБАВЛЕНО: Показываем кнопку "Добавить обратно на сегодня" для принятых лекарств
+                            binding.buttonAddBackToday.visibility = android.view.View.VISIBLE
                         }
                         else -> {
                             //  Скрываем иконку предупреждения для остальных случаев
@@ -270,6 +281,9 @@ class MainMedicineAdapter(
                                     binding.root.context.getColor(com.medicalnotes.app.R.color.white)
                                 )
                             )
+                            
+                            //  ДОБАВЛЕНО: Скрываем кнопку "Добавить обратно на сегодня" для остальных случаев
+                            binding.buttonAddBackToday.visibility = android.view.View.GONE
                         }
                     }
                     
@@ -290,18 +304,18 @@ class MainMedicineAdapter(
                     binding.debugIsValidGroup.text = "Valid Group: ${localizedMedicine.isValidGroup()}"
                     
                     //  ИЗМЕНЕНО: Цветовая индикация для инсулина (только если не просрочено)
-                    if (localizedMedicine.isInsulin && medicineStatus != MedicineStatus.OVERDUE) {
+                    if (localizedMedicine.isInsulin && medicineStatus != DosageCalculator.MedicineStatus.OVERDUE) {
                         cardMedicine.setCardBackgroundColor(
                             binding.root.context.getColor(com.medicalnotes.app.R.color.medical_orange)
                         )
                     }
                     
                     //  ИЗМЕНЕНО: Индикация низкого запаса (только если не просрочено)
-                    if (localizedMedicine.remainingQuantity <= 5 && medicineStatus != MedicineStatus.OVERDUE) {
+                    if (localizedMedicine.remainingQuantity <= 5 && medicineStatus != DosageCalculator.MedicineStatus.OVERDUE) {
                         textMedicineQuantity.setTextColor(
                             binding.root.context.getColor(com.medicalnotes.app.R.color.medical_red)
                         )
-                    } else if (medicineStatus != MedicineStatus.OVERDUE) {
+                    } else if (medicineStatus != DosageCalculator.MedicineStatus.OVERDUE) {
                         textMedicineQuantity.setTextColor(
                             binding.root.context.getColor(com.medicalnotes.app.R.color.black)
                         )
@@ -312,13 +326,18 @@ class MainMedicineAdapter(
                         onTakeMedicineClick(localizedMedicine)
                     }
                     
+                    // ДОБАВЛЕНО: Клик на кнопку "Добавить обратно на сегодня"
+                    binding.buttonAddBackToday.setOnClickListener {
+                        onAddBackTodayClick(localizedMedicine)
+                    }
+                    
                     // ДОБАВЛЕНО: Клик на карточку для редактирования
                     binding.root.setOnClickListener {
                         onMedicineClick(localizedMedicine)
                     }
                     
                     // Устанавливаем тег для мигания
-                    if (medicineStatus == MedicineStatus.OVERDUE) {
+                    if (medicineStatus == DosageCalculator.MedicineStatus.OVERDUE) {
                         buttonTakeMedicine.tag = "overdue"
                     } else {
                         buttonTakeMedicine.tag = null

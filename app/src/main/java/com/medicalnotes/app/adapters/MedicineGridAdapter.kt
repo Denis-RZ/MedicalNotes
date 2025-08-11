@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.medicalnotes.app.databinding.ItemMedicineGridBinding
 import com.medicalnotes.app.models.Medicine
 import com.medicalnotes.app.utils.DosageCalculator
-import com.medicalnotes.app.utils.MedicineStatusHelper
-import com.medicalnotes.app.utils.MedicineStatus
+// import com.medicalnotes.app.utils.MedicineStatus // УДАЛЕНОHelper
+// import com.medicalnotes.app.utils.MedicineStatus // УДАЛЕНО
 import com.medicalnotes.app.utils.DataLocalizationHelper
 
 class MedicineGridAdapter(
@@ -48,8 +48,8 @@ class MedicineGridAdapter(
             
             binding.apply {
                 // Обновляем статус лекарства
-                val updatedMedicine = MedicineStatusHelper.updateMedicineStatus(localizedMedicine)
-                val status = MedicineStatusHelper.getMedicineStatus(updatedMedicine)
+                val updatedMedicine = localizedMedicine
+                val status = DosageCalculator.getMedicineStatus(updatedMedicine)
                 
                 // Основная информация - ограничиваем длину названия
                 textMedicineName.text = if (updatedMedicine.name.length > 15) {
@@ -79,7 +79,7 @@ class MedicineGridAdapter(
                 
                 // Время приема
                 val timeText = if (updatedMedicine.multipleDoses && updatedMedicine.doseTimes.isNotEmpty()) {
-                    val times = updatedMedicine.doseTimes.map { it.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) }
+                    val times = updatedMedicine.doseTimes.map { time -> time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) }
                     times.joinToString(", ")
                 } else {
                     updatedMedicine.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
@@ -91,22 +91,22 @@ class MedicineGridAdapter(
                 
                 // Статус в зависимости от состояния
                 when (status) {
-                    MedicineStatus.UPCOMING -> {
+                    DosageCalculator.MedicineStatus.UPCOMING -> {
                         textStatus.text = "СЕГОДНЯ"
                         textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
                         textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_light_background)
                     }
-                    MedicineStatus.OVERDUE -> {
+                    DosageCalculator.MedicineStatus.OVERDUE -> {
                         textStatus.text = "ПРОСРОЧЕНО"
                         textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
                         textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.missed_light_background)
                     }
-                    MedicineStatus.TAKEN_TODAY -> {
+                    DosageCalculator.MedicineStatus.TAKEN_TODAY -> {
                         textStatus.text = "ПРИНЯТО"
                         textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
                         textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_light_background)
                     }
-                    MedicineStatus.NOT_TODAY -> {
+                    DosageCalculator.MedicineStatus.NOT_TODAY -> {
                         textStatus.text = "НЕ АКТИВНО"
                         textStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.white))
                         textStatus.background = root.context.getDrawable(com.medicalnotes.app.R.drawable.status_light_background)
@@ -123,25 +123,25 @@ class MedicineGridAdapter(
                 
                 // Кнопки в зависимости от статуса
                 when (status) {
-                    MedicineStatus.UPCOMING -> {
+                    DosageCalculator.MedicineStatus.UPCOMING -> {
                         binding.buttonToggle.text = "Принял"
                         binding.buttonToggle.visibility = android.view.View.VISIBLE
                         binding.buttonEdit.visibility = android.view.View.VISIBLE
                         binding.buttonDelete.visibility = android.view.View.VISIBLE
                     }
-                    MedicineStatus.OVERDUE -> {
+                    DosageCalculator.MedicineStatus.OVERDUE -> {
                         binding.buttonToggle.text = "Принял"
                         binding.buttonToggle.visibility = android.view.View.VISIBLE
                         binding.buttonEdit.visibility = android.view.View.VISIBLE
                         binding.buttonDelete.visibility = android.view.View.VISIBLE
                     }
-                    MedicineStatus.TAKEN_TODAY -> {
+                    DosageCalculator.MedicineStatus.TAKEN_TODAY -> {
                         binding.buttonToggle.text = "Отменить"
                         binding.buttonToggle.visibility = android.view.View.VISIBLE
                         binding.buttonEdit.visibility = android.view.View.VISIBLE
                         binding.buttonDelete.visibility = android.view.View.VISIBLE
                     }
-                    MedicineStatus.NOT_TODAY -> {
+                    DosageCalculator.MedicineStatus.NOT_TODAY -> {
                         binding.buttonToggle.text = "Отключить"
                         binding.buttonToggle.visibility = android.view.View.VISIBLE
                         binding.buttonEdit.visibility = android.view.View.VISIBLE
@@ -176,11 +176,11 @@ class MedicineGridAdapter(
                 // Обработчик кнопки принятия/отмены
                 binding.buttonToggle.setOnClickListener { 
                     when (status) {
-                        MedicineStatus.UPCOMING, MedicineStatus.OVERDUE -> {
+                        DosageCalculator.MedicineStatus.UPCOMING, DosageCalculator.MedicineStatus.OVERDUE -> {
                             android.util.Log.d("MedicineGridAdapter", "Taken button clicked for: ${updatedMedicine.name}")
                             onTakenClick(updatedMedicine)
                         }
-                        MedicineStatus.TAKEN_TODAY -> {
+                        DosageCalculator.MedicineStatus.TAKEN_TODAY -> {
                             android.util.Log.d("MedicineGridAdapter", "Cancel button clicked for: ${updatedMedicine.name}")
                             onToggleClick(updatedMedicine)
                         }

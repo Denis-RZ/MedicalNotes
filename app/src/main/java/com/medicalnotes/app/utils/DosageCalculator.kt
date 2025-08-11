@@ -9,6 +9,20 @@ import android.content.Context
 
 object DosageCalculator {
     
+    // Унифицированные временные пороги
+    private const val OVERDUE_BUFFER_MINUTES = 5L  // Reduced from 15 to 5 minutes for faster overdue detection
+    private const val OVERDUE_BUFFER_SECONDS = OVERDUE_BUFFER_MINUTES * 60L
+    private const val MAX_OVERDUE_HOURS = 24L  // Maximum hours to consider overdue (24 hours = full day)
+    private const val OVERDUE_BUFFER_MILLIS = OVERDUE_BUFFER_SECONDS * 1000L
+    
+    // Статусы лекарств
+    enum class MedicineStatus {
+        NOT_TODAY,      // Не сегодня
+        UPCOMING,       // Предстоит сегодня
+        OVERDUE,        // Просрочено
+        TAKEN_TODAY     // Принято сегодня
+    }
+    
     /**
      * Проверяет, нужно ли принимать лекарство в указанную дату с валидацией групп
      */
@@ -99,7 +113,54 @@ object DosageCalculator {
     }
     
     /**
-     * Получает все активные лекарства для указанной даты с валидацией групп
+     * Получает активные лекарства для указанной даты (для календаря - без фильтрации по takenToday)
+     */
+    fun getActiveMedicinesForDateForCalendar(medicines: List<Medicine>, date: LocalDate): List<Medicine> {
+        android.util.Log.d("DosageCalculator", "Фильтрация лекарств для календаря: ${medicines.size} лекарств для даты $date")
+        
+        android.util.Log.d("DosageCalculator", "=== ФИЛЬТРАЦИЯ АКТИВНЫХ ЛЕКАРСТВ ДЛЯ КАЛЕНДАРЯ ===")
+        val activeMedicines = medicines.filter { medicine ->
+            android.util.Log.d("DosageCalculator", "🔍 ФИЛЬТРАЦИЯ КАЛЕНДАРЬ: ${medicine.name}")
+            android.util.Log.d("DosageCalculator", "  - groupId: ${medicine.groupId}")
+            android.util.Log.d("DosageCalculator", "  - groupName: ${medicine.groupName}")
+            android.util.Log.d("DosageCalculator", "  - groupOrder: ${medicine.groupOrder}")
+            android.util.Log.d("DosageCalculator", "  - groupStartDate: ${medicine.groupStartDate}")
+            android.util.Log.d("DosageCalculator", "  - groupFrequency: ${medicine.groupFrequency}")
+            
+            val isActive = medicine.isActive
+            android.util.Log.d("DosageCalculator", "  - isActive: $isActive")
+            
+            android.util.Log.d("DosageCalculator", "  - ВЫЗЫВАЕМ shouldTakeMedicine()")
+            val shouldTake = shouldTakeMedicine(medicine, date, medicines)
+            android.util.Log.d("DosageCalculator", "  - shouldTake: $shouldTake")
+            
+            val isActiveAndShouldTake = isActive && shouldTake
+            android.util.Log.d("DosageCalculator", "  - isActiveAndShouldTake: $isActiveAndShouldTake")
+            
+            isActiveAndShouldTake
+        }
+        
+        android.util.Log.d("DosageCalculator", "Активных лекарств для календаря: ${activeMedicines.size}")
+        
+        // ИСПРАВЛЕНО: Для календаря НЕ фильтруем по takenToday
+        // Это позволяет видеть все лекарства, которые должны приниматься в указанную дату
+        val medicinesForCalendar = activeMedicines
+        
+        android.util.Log.d("DosageCalculator", "Результат для календаря: ${medicinesForCalendar.size} лекарств")
+        
+        // ДОБАВЛЕНО: Подробное логирование для отладки
+        activeMedicines.forEach { medicine ->
+            android.util.Log.d("DosageCalculator", "🔍 КАЛЕНДАРЬ: ${medicine.name}")
+            android.util.Log.d("DosageCalculator", "  - takenToday: ${medicine.takenToday}")
+            android.util.Log.d("DosageCalculator", "  - lastTakenTime: ${medicine.lastTakenTime}")
+            android.util.Log.d("DosageCalculator", "  - В списке календаря: ${medicinesForCalendar.contains(medicine)}")
+        }
+        
+        return medicinesForCalendar
+    }
+
+    /**
+     * Получает активные лекарства для указанной даты
      */
     fun getActiveMedicinesForDate(medicines: List<Medicine>, date: LocalDate): List<Medicine> {
         //  ИСПРАВЛЕНО: Убрано избыточное логирование для предотвращения ANR
@@ -160,12 +221,7 @@ object DosageCalculator {
             }
         }
         
-        return medicinesForToday.map { medicine ->
-            // Проверяем статус лекарства для отображения
-            val status = getMedicineStatus(medicine, date)
-            val isOverdue = status == MedicineStatus.OVERDUE
-            medicine.copy(isOverdue = isOverdue)
-        }
+        return medicinesForToday
     }
     
     /**
@@ -240,9 +296,15 @@ object DosageCalculator {
     }
     
     /**
-     * Проверяет, просрочено ли лекарство
+     * Единый метод для определения просрочки
      */
     fun isMedicineOverdue(medicine: Medicine, date: LocalDate = LocalDate.now()): Boolean {
+        // ИСПРАВЛЕНО: Принятые лекарства не могут быть просроченными
+        if (medicine.takenToday) {
+            android.util.Log.d("DosageCalculator", "Лекарство ${medicine.name} уже принято сегодня - не просрочено")
+            return false
+        }
+        
         if (!shouldTakeMedicine(medicine, date)) {
             return false
         }
@@ -254,13 +316,17 @@ object DosageCalculator {
             val doseDateTime = date.atTime(doseTime)
             val timeDiff = java.time.Duration.between(doseDateTime, now)
             
-            // Считаем просроченным, если прошло больше 1 часа после времени приема
-            timeDiff.toHours() > 1 && doseDateTime.isBefore(now)
+            // ИСПРАВЛЕНО: Используем короткий буфер (5 минут) но ограничиваем максимум 24 часами
+            val isOverdue = timeDiff.toMinutes() > OVERDUE_BUFFER_MINUTES && 
+                           timeDiff.toHours() <= MAX_OVERDUE_HOURS && 
+                           doseDateTime.isBefore(now)
+            android.util.Log.d("DosageCalculator", "Время приема: ${doseTime}, прошло ${timeDiff.toMinutes()} минут, просрочено: $isOverdue")
+            isOverdue
         }
     }
     
     /**
-     * Получает статус лекарства для отображения
+     * Единый метод для получения статуса
      */
     fun getMedicineStatus(medicine: Medicine, date: LocalDate = LocalDate.now()): MedicineStatus {
         android.util.Log.d("DosageCalculator", "=== ОПРЕДЕЛЕНИЕ СТАТУСА ===")
@@ -272,16 +338,7 @@ object DosageCalculator {
             return MedicineStatus.NOT_TODAY
         }
         
-        // Проверяем, было ли лекарство принято сегодня
-        val lastTakenDate = if (medicine.lastTakenTime > 0) {
-            java.time.LocalDate.ofEpochDay(medicine.lastTakenTime / (24 * 60 * 60 * 1000))
-        } else {
-            java.time.LocalDate.MIN
-        }
-        
-        android.util.Log.d("DosageCalculator", "Последний прием: $lastTakenDate")
-        
-        if (lastTakenDate == date) {
+        if (medicine.takenToday) {
             android.util.Log.d("DosageCalculator", "Статус: TAKEN_TODAY (уже принято)")
             return MedicineStatus.TAKEN_TODAY
         }
@@ -292,21 +349,18 @@ object DosageCalculator {
         android.util.Log.d("DosageCalculator", "Времена приема: $doseTimes")
         android.util.Log.d("DosageCalculator", "Текущее время: $now")
         
-        // Проверяем, есть ли приемы в будущем сегодня
-        val futureDoses = doseTimes.filter { doseTime ->
-            val doseDateTime = date.atTime(doseTime)
-            doseDateTime.isAfter(now)
-        }
-        
-        // Проверяем, есть ли просроченные приемы
+        // Проверяем просроченные приемы
         val overdueDoses = doseTimes.filter { doseTime ->
             val doseDateTime = date.atTime(doseTime)
             val timeDiff = java.time.Duration.between(doseDateTime, now)
-            // Считаем просроченным, если прошло больше 1 минуты после времени приема
-            timeDiff.toMinutes() > 1 && doseDateTime.isBefore(now)
+            // ИСПРАВЛЕНО: Используем короткий буфер (5 минут) но ограничиваем максимум 24 часами
+            val isOverdue = timeDiff.toMinutes() > OVERDUE_BUFFER_MINUTES && 
+                           timeDiff.toHours() <= MAX_OVERDUE_HOURS && 
+                           doseDateTime.isBefore(now)
+            android.util.Log.d("DosageCalculator", "Доза ${doseTime}: время прошло ${timeDiff.toMinutes()} минут, просрочено: $isOverdue")
+            isOverdue
         }
         
-        android.util.Log.d("DosageCalculator", "Будущие приемы: $futureDoses")
         android.util.Log.d("DosageCalculator", "Просроченные приемы: $overdueDoses")
         
         return when {
@@ -314,7 +368,7 @@ object DosageCalculator {
                 android.util.Log.d("DosageCalculator", "Статус: OVERDUE (просрочено)")
                 MedicineStatus.OVERDUE
             }
-            futureDoses.isNotEmpty() -> {
+            doseTimes.any { it.atDate(date).isAfter(now) } -> {
                 android.util.Log.d("DosageCalculator", "Статус: UPCOMING (предстоит)")
                 MedicineStatus.UPCOMING
             }
@@ -391,8 +445,12 @@ object DosageCalculator {
         android.util.Log.d("DosageCalculator", "  - Дней с начала: $daysSinceStart")
         android.util.Log.d("DosageCalculator", "  - Частота группы: ${medicine.groupFrequency}")
         
-        // ИСПРАВЛЕНО: Логика группы "через день" - учитываем, что лекарство могло быть принято вчера
-        if (medicine.groupFrequency == DosageFrequency.EVERY_OTHER_DAY) {
+        // ИСПРАВЛЕНО: Используем индивидуальную частоту лекарства, а не групповую
+        // Это критично для правильной работы уведомлений
+        val frequencyToUse = medicine.frequency // Используем индивидуальную частоту, не групповую!
+        android.util.Log.d("DosageCalculator", "  - Используем индивидуальную частоту: $frequencyToUse (не групповую: ${medicine.groupFrequency})")
+        
+        if (frequencyToUse == DosageFrequency.EVERY_OTHER_DAY) {
             // Определяем, какой день группы сегодня (0, 1, 2, 3...)
             val groupDay = (daysSinceStart % 2).toInt()
             

@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.medicalnotes.app.databinding.ItemMedicineBinding
 import com.medicalnotes.app.models.Medicine
 import com.medicalnotes.app.utils.DosageCalculator
-import com.medicalnotes.app.utils.MedicineStatus
+// import com.medicalnotes.app.utils.MedicineStatus // УДАЛЕНО
 import java.time.format.DateTimeFormatter
 
 class MedicineAdapter(
@@ -84,7 +84,7 @@ class MedicineAdapter(
                 
                 // Показываем статус в зависимости от состояния лекарства
                 when (medicineStatus) {
-                    MedicineStatus.OVERDUE -> {
+                    DosageCalculator.MedicineStatus.OVERDUE -> {
                         textMissedStatus.visibility = android.view.View.VISIBLE
                         textMissedStatus.text = root.context.getString(com.medicalnotes.app.R.string.overdue)
                         textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_red))
@@ -98,7 +98,7 @@ class MedicineAdapter(
                             root.context.getColor(com.medicalnotes.app.R.color.medical_red_light)
                         )
                     }
-                    MedicineStatus.UPCOMING -> {
+                    DosageCalculator.MedicineStatus.UPCOMING -> {
                         textMissedStatus.visibility = android.view.View.VISIBLE
                         textMissedStatus.text = root.context.getString(com.medicalnotes.app.R.string.today)
                         textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_green))
@@ -109,7 +109,7 @@ class MedicineAdapter(
                             root.context.getColor(com.medicalnotes.app.R.color.white)
                         )
                     }
-                    MedicineStatus.TAKEN_TODAY -> {
+                    DosageCalculator.MedicineStatus.TAKEN_TODAY -> {
                         textMissedStatus.visibility = android.view.View.VISIBLE
                         textMissedStatus.text = "ПРИНЯТО"
                         textMissedStatus.setTextColor(root.context.getColor(com.medicalnotes.app.R.color.medical_blue))

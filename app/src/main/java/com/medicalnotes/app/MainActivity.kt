@@ -24,6 +24,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import com.medicalnotes.app.utils.DosageCalculator
 import com.medicalnotes.app.service.OverdueCheckService
+import com.medicalnotes.app.utils.UnifiedNotificationManager
 
 class MainActivity : BaseActivity() {
 
@@ -56,7 +57,7 @@ class MainActivity : BaseActivity() {
                 
                 //  ИСПРАВЛЕНО: Принудительно перезагружаем лекарства на сегодня
                 com.medicalnotes.app.utils.LogCollector.d("MainActivity", "Перезагружаем лекарства на сегодня после редактирования")
-                loadTodayMedicines()
+                viewModel.loadMedicinesForDate(LocalDate.now())
                 
                 // Принудительно обновляем статусы
                 checkOverdueMedicines()
@@ -212,6 +213,13 @@ class MainActivity : BaseActivity() {
             android.util.Log.e("MainActivity", "Ошибка обработки интентов", e)
             showErrorDialog("Ошибка обработки интентов", "Детали ошибки:\n${e.message}")
         }
+        
+        // ИСПРАВЛЕНО: Проверяем и сбрасываем некорректные статусы при запуске
+        try {
+            fixIncorrectTakenTodayStatus()
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка исправления статусов", e)
+        }
     }
 
     private fun initializeComponents() {
@@ -238,6 +246,15 @@ class MainActivity : BaseActivity() {
                 return
             }
 
+            // ИСПРАВЛЕНО: Инициализация UnifiedNotificationManager
+            try {
+                UnifiedNotificationManager.createNotificationChannels(this)
+                com.medicalnotes.app.utils.LogCollector.i("MainActivity", "UnifiedNotificationManager initialized")
+            } catch (e: Exception) {
+                com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error initializing UnifiedNotificationManager", e)
+                showErrorDialog("Ошибка инициализации уведомлений", "Детали ошибки:\n${e.message}")
+            }
+
             // Настройка UI с дополнительными проверками
             try {
                 setupViews()
@@ -254,10 +271,22 @@ class MainActivity : BaseActivity() {
 
             // Загрузка данных с проверками
             try {
+                android.util.Log.d("MainActivity", "🚀 === НАЧАЛО ЗАГРУЗКИ ДАННЫХ ===")
+                android.util.Log.d("MainActivity", "viewModel доступен: ${viewModel != null}")
+                android.util.Log.d("MainActivity", "viewModel.todayMedicines доступен: ${viewModel.todayMedicines != null}")
+                
+                android.util.Log.d("MainActivity", "Вызываем viewModel.loadAllMedicines()")
                 viewModel.loadAllMedicines()
-                loadTodayMedicines()
+                android.util.Log.d("MainActivity", "✅ viewModel.loadAllMedicines() завершен")
+                
+                android.util.Log.d("MainActivity", "Вызываем loadTodayMedicines()")
+                viewModel.loadMedicinesForDate(LocalDate.now())
+                android.util.Log.d("MainActivity", "✅ viewModel.loadMedicinesForDate() завершен")
+                
                 com.medicalnotes.app.utils.LogCollector.i("MainActivity", "Data loading completed")
+                android.util.Log.d("MainActivity", "=== ЗАГРУЗКА ДАННЫХ ЗАВЕРШЕНА ===")
             } catch (e: Exception) {
+                android.util.Log.e("MainActivity", "❌ ОШИБКА при загрузке данных", e)
                 com.medicalnotes.app.utils.LogCollector.e("MainActivity", "Error loading data", e)
                 showErrorDialog("Ошибка загрузки данных", "Детали ошибки:\n${e.message}")
             }
@@ -362,25 +391,95 @@ class MainActivity : BaseActivity() {
                     },
                     onTakeMedicineClick = { medicine ->
                         try {
-                            // Отмечаем лекарство как принятое
+                            android.util.Log.d("MainActivity", "=== НАЖАТИЕ КНОПКИ 'ПРИНЯТЬ ЛЕКАРСТВО' ===")
+                            android.util.Log.d("MainActivity", "Лекарство: ${medicine.name}")
+                            android.util.Log.d("MainActivity", "ID: ${medicine.id}")
+                            
+                            // 1. Отмечаем лекарство как принятое
+                            android.util.Log.d("MainActivity", "1. Отмечаем лекарство как принятое...")
                             val updatedMedicine = com.medicalnotes.app.utils.MedicineStatusHelper.markAsTaken(medicine)
                             viewModel.updateMedicine(updatedMedicine)
+                            android.util.Log.d("MainActivity", "✓ Лекарство отмечено как принятое")
                             
-                            // Останавливаем звуки и вибрацию
+                            // 2. Останавливаем звуки и вибрацию через OverdueCheckService
+                            android.util.Log.d("MainActivity", "2. Останавливаем звуки и вибрацию...")
                             com.medicalnotes.app.service.OverdueCheckService.forceStopSoundAndVibration(this)
+                            android.util.Log.d("MainActivity", "✓ Звуки и вибрация остановлены")
                             
-                            // Показываем уведомление
+                            // 3. Отменяем все уведомления через UnifiedNotificationManager
+                            android.util.Log.d("MainActivity", "3. Отменяем уведомления...")
+                            com.medicalnotes.app.utils.UnifiedNotificationManager.cancelAllNotifications(this)
+                            android.util.Log.d("MainActivity", "✓ Все уведомления отменены")
+                            
+                            // 4. Отменяем уведомления для конкретного лекарства
+                            com.medicalnotes.app.utils.UnifiedNotificationManager.cancelMedicineNotifications(this, medicine.id)
+                            android.util.Log.d("MainActivity", "✓ Уведомления для лекарства отменены")
+                            
+                            // 5. Показываем подтверждение пользователю
                             android.widget.Toast.makeText(
                                 this, 
                                 "Лекарство \"${medicine.name}\" отмечено как принятое", 
                                 android.widget.Toast.LENGTH_SHORT
                             ).show()
+                            android.util.Log.d("MainActivity", "✓ Пользователю показано подтверждение")
                             
-                            // Перезагружаем список
-                            loadTodayMedicines()
+                            // 6. Принудительно перезагружаем список лекарств
+                            android.util.Log.d("MainActivity", "4. Перезагружаем список лекарств...")
+                            viewModel.loadMedicinesForDate(LocalDate.now())
+                            android.util.Log.d("MainActivity", "✓ Список лекарств перезагружен")
+                            
+                            // 7. Дополнительная проверка - убеждаемся, что лекарство исчезло из списка
+                            viewModel.todayMedicines.observe(this) { medicines ->
+                                val medicineStillInList = medicines.any { it.id == medicine.id }
+                                if (medicineStillInList) {
+                                    android.util.Log.w("MainActivity", "⚠️ Лекарство все еще в списке, принудительно обновляем...")
+                                    // Принудительно обновляем UI
+                                    todayMedicineAdapter?.notifyDataSetChanged()
+                                } else {
+                                    android.util.Log.d("MainActivity", "✓ Лекарство успешно исчезло из списка")
+                                }
+                            }
+                            
+                            android.util.Log.d("MainActivity", "=== ОБРАБОТКА НАЖАТИЯ ЗАВЕРШЕНА ===")
+                            
                         } catch (e: Exception) {
-                            android.util.Log.e("MainActivity", "Ошибка отметки лекарства как принятого", e)
+                            android.util.Log.e("MainActivity", "❌ Ошибка отметки лекарства как принятого", e)
                             showErrorDialog("Ошибка отметки лекарства", "Детали ошибки:\n${e.message}")
+                        }
+                    },
+                    onAddBackTodayClick = { medicine ->
+                        try {
+                            android.util.Log.d("MainActivity", "=== НАЖАТИЕ КНОПКИ 'ДОБАВИТЬ ОБРАТНО НА СЕГОДНЯ' ===")
+                            android.util.Log.d("MainActivity", "Лекарство: ${medicine.name}")
+                            android.util.Log.d("MainActivity", "ID: ${medicine.id}")
+                            
+                            // 1. Сбрасываем статус "принято сегодня"
+                            android.util.Log.d("MainActivity", "1. Сбрасываем статус 'принято сегодня'...")
+                            val updatedMedicine = medicine.copy(
+                                takenToday = false,
+                                lastTakenTime = 0L
+                            )
+                            viewModel.updateMedicine(updatedMedicine)
+                            android.util.Log.d("MainActivity", "✓ Статус сброшен")
+                            
+                            // 2. Показываем подтверждение пользователю
+                            android.widget.Toast.makeText(
+                                this, 
+                                "Лекарство \"${medicine.name}\" добавлено обратно на сегодня", 
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                            android.util.Log.d("MainActivity", "✓ Пользователю показано подтверждение")
+                            
+                            // 3. Принудительно перезагружаем список лекарств
+                            android.util.Log.d("MainActivity", "3. Перезагружаем список лекарств...")
+                            viewModel.loadMedicinesForDate(LocalDate.now())
+                            android.util.Log.d("MainActivity", "✓ Список лекарств перезагружен")
+                            
+                            android.util.Log.d("MainActivity", "=== ОБРАБОТКА НАЖАТИЯ ЗАВЕРШЕНА ===")
+                            
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "❌ Ошибка добавления лекарства обратно на сегодня", e)
+                            showErrorDialog("Ошибка добавления лекарства", "Детали ошибки:\n${e.message}")
                         }
                     }
                 )
@@ -580,38 +679,46 @@ class MainActivity : BaseActivity() {
 
     private fun observeData() {
         try {
-            android.util.Log.d("MainActivity", "observeData: Начало настройки наблюдателей")
+            android.util.Log.d("MainActivity", "🔍 === НАЧАЛО НАСТРОЙКИ НАБЛЮДАТЕЛЕЙ ===")
+            android.util.Log.d("MainActivity", "viewModel доступен: ${viewModel != null}")
+            android.util.Log.d("MainActivity", "viewModel.todayMedicines доступен: ${viewModel.todayMedicines != null}")
             
             // Наблюдаем за изменениями в списке лекарств
             viewModel.todayMedicines.observe(this) { medicines ->
                 try {
+                    android.util.Log.d("MainActivity", "📋 === ПОЛУЧЕНЫ ДАННЫЕ В НАБЛЮДАТЕЛЕ ===")
+                    android.util.Log.d("MainActivity", "Количество лекарств: ${medicines.size}")
                     android.util.Log.d("MainActivity", "📋 MainActivity: Получено ${medicines.size} лекарств в наблюдателе")
                     addLog("📋 Получено ${medicines.size} лекарств в наблюдателе")
                     
                     if (medicines.isEmpty()) {
+                        android.util.Log.d("MainActivity", "Список пуст - показываем пустое состояние")
                         binding.progressBarTodayMedicines.visibility = android.view.View.GONE
                         binding.recyclerViewTodayMedicines.visibility = android.view.View.GONE
                         // Показываем пустое состояние
                         showEmptyState()
                     } else {
+                        android.util.Log.d("MainActivity", "Список не пуст - показываем лекарства")
                         binding.progressBarTodayMedicines.visibility = android.view.View.GONE
                         binding.recyclerViewTodayMedicines.visibility = android.view.View.VISIBLE
                         // Скрываем пустое состояние
                         showContentState()
                         
                         todayMedicineAdapter.submitList(medicines)
+                        android.util.Log.d("MainActivity", "✅ Список лекарств обновлен в адаптере")
                     }
                     
                     android.util.Log.d("MainActivity", "observeData: UI обновлен успешно")
                 } catch (e: Exception) {
-                    android.util.Log.e("MainActivity", "observeData: Ошибка обновления UI", e)
+                    android.util.Log.e("MainActivity", "❌ observeData: Ошибка обновления UI", e)
                     showErrorDialog("Ошибка обновления UI", "Детали ошибки:\n${e.message}")
                 }
             }
             
-            android.util.Log.d("MainActivity", "observeData: Наблюдатели настроены успешно")
+            android.util.Log.d("MainActivity", "✅ Наблюдатели настроены успешно")
+            android.util.Log.d("MainActivity", "=== НАСТРОЙКА НАБЛЮДАТЕЛЕЙ ЗАВЕРШЕНА ===")
         } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "observeData: Критическая ошибка настройки наблюдателей", e)
+            android.util.Log.e("MainActivity", "❌ observeData: Критическая ошибка настройки наблюдателей", e)
             showErrorDialog("Критическая ошибка настройки наблюдателей", "Детали ошибки:\n${e.message}\n\nСтек вызовов:\n${e.stackTraceToString()}")
             throw e
         }
@@ -631,7 +738,7 @@ class MainActivity : BaseActivity() {
         // Обновляем список лекарств
         try {
             viewModel.loadAllMedicines()
-            loadTodayMedicines()
+            viewModel.loadMedicinesForDate(LocalDate.now())
         } catch (e: Exception) {
             android.util.Log.e("MainActivity", "Ошибка обновления данных", e)
         }
@@ -654,41 +761,67 @@ class MainActivity : BaseActivity() {
         addLog("Текущее время: ${LocalDateTime.now()}")
         addLog("Статус лекарства: ${com.medicalnotes.app.utils.MedicineStatusHelper.getMedicineStatus(medicine)}")
         
-        //  ДОБАВЛЕНО: Немедленная остановка всех звуков и уведомлений
-        addLog(" НАЧИНАЕМ ОСТАНОВКУ ЗВУКА И УВЕДОМЛЕНИЙ")
+        // ИСПРАВЛЕНО: Агрессивная остановка всех звуков, вибрации и уведомлений
+        addLog(" НАЧИНАЕМ ПОЛНУЮ ОСТАНОВКУ ЗВУКА, ВИБРАЦИИ И УВЕДОМЛЕНИЙ")
         try {
             com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_НАЖАТА", "Кнопка 'принял лекарство' нажата для: ${medicine.name} (ID: ${medicine.id})")
             addLog(" КНОПКА_НАЖАТА: Кнопка 'принял лекарство' нажата для: ${medicine.name}")
             
-            // ИСПРАВЛЕНО: Останавливаем повторяющиеся звуки и вибрацию
-            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ДЕЙСТВИЕ", "Останавливаем звуки и вибрацию для: ${medicine.name}")
-            addLog(" ОСТАНАВЛИВАЕМ звуки и вибрацию для: ${medicine.name}")
+            // 1. Останавливаем все через OverdueCheckService
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ДЕЙСТВИЕ", "Останавливаем звуки и вибрацию через OverdueCheckService")
+            addLog(" 1. ОСТАНАВЛИВАЕМ через OverdueCheckService")
             OverdueCheckService.forceStopSoundAndVibration(this@MainActivity)
             
+            // 2. Останавливаем все через UnifiedNotificationManager
+            addLog(" 2. ОСТАНАВЛИВАЕМ через UnifiedNotificationManager")
+            UnifiedNotificationManager.cancelAllNotifications(this@MainActivity)
+            
+            // 3. Останавливаем вибрацию напрямую через системный сервис
+            addLog(" 3. ОСТАНАВЛИВАЕМ вибрацию напрямую")
+            val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                getSystemService(android.os.VibratorManager::class.java)?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator
+            }
+            vibrator?.cancel()
+            
+            // 4. Отменяем уведомления через системный NotificationManager
+            addLog(" 4. ОТМЕНЯЕМ уведомления через системный NotificationManager")
+            val systemNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? android.app.NotificationManager
+            systemNotificationManager?.cancelAll()
+            
+            // 5. Останавливаем через NotificationManager (для совместимости)
+            addLog(" 5. ОСТАНАВЛИВАЕМ через старый NotificationManager")
             val notificationManager = com.medicalnotes.app.utils.NotificationManager(this@MainActivity)
-            addLog(" NotificationManager создан")
-            
-            // ИСПРАВЛЕНО: Простая остановка вибрации и уведомлений
-            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ДЕЙСТВИЕ", "Останавливаем вибрацию для: ${medicine.name}")
-            addLog(" ОСТАНАВЛИВАЕМ вибрацию для: ${medicine.name}")
             notificationManager.stopVibration()
-            
-            // Отменяем уведомления для этого лекарства
-            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ДЕЙСТВИЕ", "Отменяем уведомления для: ${medicine.name}")
-            addLog(" ОТМЕНЯЕМ уведомления для: ${medicine.name}")
             notificationManager.cancelOverdueNotification(medicine.id)
             notificationManager.cancelMedicineNotification(medicine.id)
+            notificationManager.forceStopAllNotifications()
             
-            // Останавливаем периодическую проверку
-            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ПЕРИОДИЧЕСКАЯ", "Останавливаем периодическую проверку для: ${medicine.name}")
-            addLog(" ОСТАНАВЛИВАЕМ периодическую проверку для: ${medicine.name}")
+            // 6. Останавливаем периодическую проверку
+            addLog(" 6. ОСТАНАВЛИВАЕМ периодическую проверку")
             stopPeriodicOverdueCheck()
             
-            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ЗАВЕРШЕНА", "Все действия по остановке завершены для: ${medicine.name}")
-            addLog(" ВСЕ ДЕЙСТВИЯ ПО ОСТАНОВКЕ ЗАВЕРШЕНЫ для: ${medicine.name}")
+            // 7. Дополнительно останавливаем звук через аудио менеджер
+            addLog(" 7. ОСТАНАВЛИВАЕМ звук через AudioManager")
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
+            audioManager?.let { am ->
+                // Временно отключаем звук уведомлений на 2 секунды
+                val currentVolume = am.getStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION)
+                am.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, 0, 0)
+                
+                // Восстанавливаем через 2 секунды
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    am.setStreamVolume(android.media.AudioManager.STREAM_NOTIFICATION, currentVolume, 0)
+                }, 2000)
+            }
+            
+            com.medicalnotes.app.utils.LogCollector.d(" КНОПКА_ЗАВЕРШЕНА", "ВСЕ действия по остановке завершены для: ${medicine.name}")
+            addLog(" ✅ ВСЕ ДЕЙСТВИЯ ПО ОСТАНОВКЕ ЗАВЕРШЕНЫ для: ${medicine.name}")
         } catch (e: Exception) {
             com.medicalnotes.app.utils.LogCollector.e(" КНОПКА_ОШИБКА", "Ошибка отмены уведомлений для: ${medicine.name}", e)
-            addLog(" ОШИБКА отмены уведомлений для: ${medicine.name} - ${e.message}")
+            addLog(" ❌ ОШИБКА остановки для: ${medicine.name} - ${e.message}")
         }
         
         lifecycleScope.launch(Dispatchers.IO) {
@@ -709,7 +842,6 @@ class MainActivity : BaseActivity() {
                     takenToday = true,
                     isMissed = false,
                     lastTakenTime = System.currentTimeMillis(),
-                    takenAt = System.currentTimeMillis(),
                     remainingQuantity = newRemainingQuantity //  ИСПРАВЛЕНО: Уменьшаем количество
                 )
                 
@@ -916,15 +1048,16 @@ class MainActivity : BaseActivity() {
         addLog("📋 MainActivity: viewModel доступен: ${viewModel != null}")
         addLog("📋 MainActivity: viewModel.todayMedicines доступен: ${viewModel.todayMedicines != null}")
         showLoadingState()
-        addLog("Вызываем viewModel.loadTodayMedicines()")
-        android.util.Log.d("MainActivity", "🚀 MainActivity: Вызываем viewModel.loadTodayMedicines()")
+        addLog("Вызываем viewModel.loadMedicinesForDate(LocalDate.now())")
+        android.util.Log.d("MainActivity", "🚀 MainActivity: Вызываем viewModel.loadMedicinesForDate(LocalDate.now())")
         try {
-            viewModel.loadTodayMedicines()
-            addLog("viewModel.loadTodayMedicines() вызван успешно")
-            android.util.Log.d("MainActivity", "✅ MainActivity: viewModel.loadTodayMedicines() вызван успешно")
+            // ИСПРАВЛЕНО: Используем универсальный метод с текущей датой
+            viewModel.loadMedicinesForDate(LocalDate.now())
+            addLog("viewModel.loadMedicinesForDate() вызван успешно")
+            android.util.Log.d("MainActivity", "✅ MainActivity: viewModel.loadMedicinesForDate() вызван успешно")
         } catch (e: Exception) {
-            addLog("❌ ОШИБКА при вызове viewModel.loadTodayMedicines(): ${e.message}")
-            android.util.Log.e("MainActivity", "❌ ОШИБКА при вызове viewModel.loadTodayMedicines()", e)
+            addLog("❌ ОШИБКА при вызове viewModel.loadMedicinesForDate(): ${e.message}")
+            android.util.Log.e("MainActivity", "❌ ОШИБКА при вызове viewModel.loadMedicinesForDate()", e)
         }
     }
 
@@ -1003,10 +1136,8 @@ class MainActivity : BaseActivity() {
                         appendLine("    <isActive>${medicine.isActive}</isActive>")
                         appendLine("    <takenToday>${medicine.takenToday}</takenToday>")
                         appendLine("    <lastTakenTime>${medicine.lastTakenTime}</lastTakenTime>")
-                        appendLine("    <takenAt>${medicine.takenAt}</takenAt>")
                         appendLine("    <isMissed>${medicine.isMissed}</isMissed>")
                         appendLine("    <missedCount>${medicine.missedCount}</missedCount>")
-                        appendLine("    <isOverdue>${medicine.isOverdue}</isOverdue>")
                         appendLine("    <groupId>${medicine.groupId ?: ""}</groupId>")
                         appendLine("    <groupName>${medicine.groupName}</groupName>")
                         appendLine("    <groupOrder>${medicine.groupOrder}</groupOrder>")
@@ -1107,10 +1238,8 @@ class MainActivity : BaseActivity() {
                         appendLine("    \"isActive\": ${medicine.isActive},")
                         appendLine("    \"takenToday\": ${medicine.takenToday},")
                         appendLine("    \"lastTakenTime\": ${medicine.lastTakenTime},")
-                        appendLine("    \"takenAt\": ${medicine.takenAt},")
                         appendLine("    \"isMissed\": ${medicine.isMissed},")
                         appendLine("    \"missedCount\": ${medicine.missedCount},")
-                        appendLine("    \"isOverdue\": ${medicine.isOverdue},")
                         appendLine("    \"groupId\": ${medicine.groupId ?: "null"},")
                         appendLine("    \"groupName\": \"${medicine.groupName}\",")
                         appendLine("    \"groupOrder\": ${medicine.groupOrder},")
@@ -1245,7 +1374,7 @@ class MainActivity : BaseActivity() {
                         addLog("  - Последний прием: ${medicine.lastTakenTime}")
                     }
                     
-                    if (status == com.medicalnotes.app.utils.MedicineStatus.OVERDUE) {
+                    if (status == com.medicalnotes.app.utils.DosageCalculator.MedicineStatus.OVERDUE) {
                         lifecycleScope.launch(Dispatchers.Main) { 
                             addLog(" НАЙДЕНО ПРОСРОЧЕННОЕ: ${medicine.name} (принято сегодня: ${medicine.takenToday})")
                         }
@@ -1254,7 +1383,7 @@ class MainActivity : BaseActivity() {
                 
                 val overdueMedicines = medicines.filter { medicine ->
                     val status = com.medicalnotes.app.utils.MedicineStatusHelper.getMedicineStatus(medicine)
-                    val isOverdue = status == com.medicalnotes.app.utils.MedicineStatus.OVERDUE
+                    val isOverdue = status == com.medicalnotes.app.utils.DosageCalculator.MedicineStatus.OVERDUE
                     val notTakenToday = !medicine.takenToday
                     
                     lifecycleScope.launch(Dispatchers.Main) { 
@@ -1905,8 +2034,8 @@ class MainActivity : BaseActivity() {
                         addLog("=== ИЗМЕНЕНИЕ ТЕСТОВОЙ ДАТЫ ===")
                         addLog("Новая тестовая дата: $newDate")
                         
-                        // Перезагружаем лекарства для новой даты
-                        loadTodayMedicinesForDate(newDate)
+                        // ИСПРАВЛЕНО: Используем универсальный метод из ViewModel
+                        viewModel.loadMedicinesForDate(newDate)
                         
                         android.widget.Toast.makeText(
                             this,
@@ -1962,56 +2091,106 @@ class MainActivity : BaseActivity() {
     }
     
     /**
-     * ДОБАВЛЕНО: Загружает лекарства для указанной даты
+     * ИСПРАВЛЕНО: Функция для исправления некорректных статусов takenToday
+     * Проверяет все лекарства и сбрасывает takenToday если lastTakenTime не сегодня
      */
-    private fun loadTodayMedicinesForDate(date: LocalDate) {
-        try {
-            addLog("=== ЗАГРУЗКА ЛЕКАРСТВ ДЛЯ ДАТЫ: $date ===")
-            showLoadingState()
-            
-            // Запускаем загрузку в фоновом потоке
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    val dataManager = com.medicalnotes.app.utils.DataManager(this@MainActivity)
-                    val allMedicines = dataManager.loadMedicines()
+    private fun fixIncorrectTakenTodayStatus() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                android.util.Log.d("MainActivity", "=== НАЧИНАЕМ ИСПРАВЛЕНИЕ СТАТУСОВ TAKEN_TODAY ===")
+                
+                val dataManager = com.medicalnotes.app.utils.DataManager(this@MainActivity)
+                val allMedicines = dataManager.loadMedicines()
+                val today = LocalDate.now()
+                
+                android.util.Log.d("MainActivity", "Всего лекарств для проверки: ${allMedicines.size}")
+                android.util.Log.d("MainActivity", "Сегодняшняя дата: $today")
+                
+                var fixedCount = 0
+                val medicinesToUpdate = mutableListOf<Medicine>()
+                
+                allMedicines.forEach { medicine ->
+                    android.util.Log.d("MainActivity", "Проверяем лекарство: ${medicine.name}")
+                    android.util.Log.d("MainActivity", "  - takenToday: ${medicine.takenToday}")
+                    android.util.Log.d("MainActivity", "  - lastTakenTime: ${medicine.lastTakenTime}")
                     
-                    addLog("Всего лекарств в базе: ${allMedicines.size}")
-                    
-                    // Используем DosageCalculator для получения лекарств на указанную дату
-                    val medicinesForDate = com.medicalnotes.app.utils.DosageCalculator.getActiveMedicinesForDate(allMedicines, date)
-                    
-                    addLog("Лекарств для даты $date: ${medicinesForDate.size}")
-                    
-                    medicinesForDate.forEach { medicine ->
-                        addLog("✅ Для даты $date: ${medicine.name} (${medicine.time})")
-                    }
-                    
-                    // Обновляем UI на главном потоке
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        try {
-                            if (medicinesForDate.isNotEmpty()) {
-                                todayMedicineAdapter.submitList(medicinesForDate)
-                                showContentState()
-                                addLog("📋 Отображено ${medicinesForDate.size} лекарств для даты $date")
-                            } else {
-                                showEmptyState()
-                                addLog("📋 Нет лекарств для отображения на дату $date")
-                            }
-                        } catch (e: Exception) {
-                            android.util.Log.e("MainActivity", "Ошибка обновления UI для даты $date", e)
-                            showErrorState("Ошибка отображения лекарств для даты $date")
+                    if (medicine.takenToday && medicine.lastTakenTime > 0) {
+                        val lastTakenDate = java.time.Instant.ofEpochMilli(medicine.lastTakenTime)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate()
+                        
+                        android.util.Log.d("MainActivity", "  - lastTakenDate: $lastTakenDate")
+                        
+                        if (lastTakenDate != today) {
+                            android.util.Log.d("MainActivity", "  - НАЙДЕНА ПРОБЛЕМА: lastTakenDate != today")
+                            android.util.Log.d("MainActivity", "  - Сбрасываем takenToday для лекарства: ${medicine.name}")
+                            
+                            val updatedMedicine = medicine.copy(
+                                takenToday = false,
+                                updatedAt = System.currentTimeMillis()
+                            )
+                            medicinesToUpdate.add(updatedMedicine)
+                            fixedCount++
+                        } else {
+                            android.util.Log.d("MainActivity", "  - Статус корректный")
                         }
-                    }
-                } catch (e: Exception) {
-                    android.util.Log.e("MainActivity", "Ошибка загрузки лекарств для даты $date", e)
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        showErrorState("Ошибка загрузки лекарств для даты $date")
+                    } else if (medicine.takenToday && medicine.lastTakenTime <= 0) {
+                        // Некорректная ситуация: takenToday = true, но lastTakenTime не установлен
+                        android.util.Log.d("MainActivity", "  - НАЙДЕНА ПРОБЛЕМА: takenToday=true но lastTakenTime<=0")
+                        
+                        val updatedMedicine = medicine.copy(
+                            takenToday = false,
+                            updatedAt = System.currentTimeMillis()
+                        )
+                        medicinesToUpdate.add(updatedMedicine)
+                        fixedCount++
                     }
                 }
+                
+                // Сохраняем исправления
+                if (medicinesToUpdate.isNotEmpty()) {
+                    android.util.Log.d("MainActivity", "Сохраняем ${medicinesToUpdate.size} исправленных лекарств")
+                    
+                    // Обновляем каждое лекарство
+                    medicinesToUpdate.forEach { medicine ->
+                        dataManager.updateMedicine(medicine)
+                    }
+                    
+                    android.util.Log.d("MainActivity", "✅ ИСПРАВЛЕНО СТАТУСОВ: $fixedCount")
+                    
+                    // Перезагружаем лекарства на UI
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        try {
+                            android.widget.Toast.makeText(
+                                this@MainActivity,
+                                "Исправлено $fixedCount некорректных статусов",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                            
+                            // Перезагружаем данные
+                            viewModel.loadMedicinesForDate(today)
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "Ошибка обновления UI после исправления статусов", e)
+                        }
+                    }
+                } else {
+                    android.util.Log.d("MainActivity", "✅ Все статусы корректны, исправления не требуются")
+                }
+                
+                android.util.Log.d("MainActivity", "=== ИСПРАВЛЕНИЕ СТАТУСОВ TAKEN_TODAY ЗАВЕРШЕНО ===")
+                
+            } catch (e: Exception) {
+                android.util.Log.e("MainActivity", "❌ Ошибка при исправлении статусов takenToday", e)
+                
+                lifecycleScope.launch(Dispatchers.Main) {
+                    android.widget.Toast.makeText(
+                        this@MainActivity,
+                        "Ошибка при исправлении статусов: ${e.message}",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                }
             }
-        } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Критическая ошибка загрузки лекарств для даты", e)
-            showErrorState("Критическая ошибка загрузки")
         }
     }
+
 }  

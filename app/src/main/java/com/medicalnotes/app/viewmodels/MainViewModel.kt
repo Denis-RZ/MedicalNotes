@@ -11,8 +11,11 @@ import com.medicalnotes.app.repository.MedicineRepository
 import com.medicalnotes.app.repository.CustomButtonRepository
 import com.medicalnotes.app.utils.DosageCalculator
 import com.medicalnotes.app.utils.GroupFixer
+import com.medicalnotes.app.utils.StatusManager
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     
@@ -28,118 +31,146 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _customButtons = MutableLiveData<List<CustomButton>>()
     val customButtons: LiveData<List<CustomButton>> = _customButtons
     
-    fun loadTodayMedicines() {
-        android.util.Log.e("MainViewModel", "🚀🚀🚀 НАЧАЛО loadTodayMedicines() - ВХОД В ФУНКЦИЮ 🚀🚀🚀")
-        android.util.Log.e("MainViewModel", "📋 MainViewModel: Запускаем корутину...")
-        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+    /**
+     * УНИВЕРСАЛЬНЫЙ МЕТОД: Загружает лекарства для указанной даты
+     * Используется как при загрузке приложения, так и при клике по календарю
+     */
+    fun loadMedicinesForDate(date: LocalDate) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                android.util.Log.e("MainViewModel", "=== НАЧАЛО loadTodayMedicines() С ВАЛИДАЦИЕЙ ГРУПП ===")
-                // ДОБАВЛЕНО: Используем Log.e для максимальной видимости
-                android.util.Log.e("MainViewModel", "🚀🚀🚀 MainViewModel: НАЧАЛО loadTodayMedicines() - ВХОД В КОРОУТИНУ 🚀🚀🚀")
-            
-            val allMedicines = medicineRepository.getAllMedicines()
-            android.util.Log.d("MainViewModel", "=== ЗАГРУЗКА ЛЕКАРСТВ НА СЕГОДНЯ ===")
-            android.util.Log.d("MainViewModel", "Всего лекарств в базе: ${allMedicines.size}")
-            
-            val today = com.medicalnotes.app.utils.DateUtils.getCurrentDate()
-            android.util.Log.d("MainViewModel", "Сегодняшняя дата: $today")
-            
-            // ИСПРАВЛЕНИЕ ГРУППОВЫХ НЕСОГЛАСОВАННОСТЕЙ
-            android.util.Log.d("MainViewModel", "=== ИСПРАВЛЕНИЕ ГРУППОВЫХ НЕСОГЛАСОВАННОСТЕЙ ===")
-            val fixedMedicines = GroupFixer.fixGroupInconsistencies(allMedicines)
-            android.util.Log.d("MainViewModel", "Лекарств после исправления: ${fixedMedicines.size}")
-            
-            // Сохраняем исправленные лекарства обратно в хранилище
-            if (fixedMedicines != allMedicines) {
-                android.util.Log.d("MainViewModel", "Обнаружены изменения, сохраняем исправленные данные...")
-                fixedMedicines.forEach { medicine ->
-                    medicineRepository.updateMedicine(medicine)
-                }
-                android.util.Log.d("MainViewModel", "Исправленные данные сохранены")
-            }
-            
-            // ВАЛИДАЦИЯ И ИСПРАВЛЕНИЕ ГРУПП
-            android.util.Log.d("MainViewModel", "=== ВАЛИДАЦИЯ ГРУПП ===")
-            val groupIds = fixedMedicines.mapNotNull { it.groupId }.distinct()
-            android.util.Log.d("MainViewModel", "Найдено групп: ${groupIds.size}")
-            
-            groupIds.forEach { groupId ->
-                android.util.Log.d("MainViewModel", "Проверяем группу $groupId")
-                val groupMedicines = fixedMedicines.filter { it.groupId == groupId }
-                android.util.Log.d("MainViewModel", "  - Лекарств в группе: ${groupMedicines.size}")
+                android.util.Log.d("MainViewModel", "🚀 === НАЧАЛО loadMedicinesForDate($date) ===")
                 
-                // Проверяем валидность группы
-                val firstMedicine = groupMedicines.first()
-                val isValid = firstMedicine.isGroupConsistent(groupMedicines)
-                android.util.Log.d("MainViewModel", "  - Группа валидна: $isValid")
-                
-                if (!isValid) {
-                    android.util.Log.w("MainViewModel", "  - Группа $groupId невалидна, исправляем...")
-                    // Здесь можно добавить вызов DataManager для исправления группы
-                    // dataManager.fixGroupInconsistencies(groupId)
+                val allMedicines = medicineRepository.getAllMedicines()
+                android.util.Log.d("MainViewModel", "Загружено всех лекарств: ${allMedicines.size}")
+
+                // Применяем исправления групповых данных
+                android.util.Log.d("MainViewModel", "Применяем GroupFixer для валидации групп...")
+                val fixedMedicines = GroupFixer.fixGroupInconsistencies(allMedicines)
+
+                // Если обнаружены изменения групповых полей — сохраняем
+                var groupChanges = false
+                for (i in allMedicines.indices) {
+                    val original = allMedicines[i]
+                    val fixed = fixedMedicines[i]
+                    if (original.groupId != fixed.groupId || original.groupStartDate != fixed.groupStartDate) {
+                        groupChanges = true
+                        break
+                    }
                 }
-            }
-            
-            fixedMedicines.forEach { medicine ->
-                android.util.Log.d("MainViewModel", "Лекарство: ${medicine.name}")
-                android.util.Log.d("MainViewModel", "  - Активно: ${medicine.isActive}")
-                android.util.Log.d("MainViewModel", "  - Частота: ${medicine.frequency}")
-                android.util.Log.d("MainViewModel", "  - Дата начала: ${medicine.startDate}")
-                android.util.Log.d("MainViewModel", "  - Последний прием: ${medicine.lastTakenTime}")
-                android.util.Log.d("MainViewModel", "  - takenToday: ${medicine.takenToday}")
-                android.util.Log.d("MainViewModel", "  - groupId: ${medicine.groupId}")
-                android.util.Log.d("MainViewModel", "  - groupName: ${medicine.groupName}")
-                android.util.Log.d("MainViewModel", "  - groupOrder: ${medicine.groupOrder}")
-                android.util.Log.d("MainViewModel", "  - groupStartDate: ${medicine.groupStartDate}")
-                android.util.Log.d("MainViewModel", "  - groupFrequency: ${medicine.groupFrequency}")
-                android.util.Log.d("MainViewModel", "  - isValidGroup(): ${medicine.isValidGroup()}")
-            }
-            
-            android.util.Log.d("MainViewModel", "=== ВЫЗОВ DosageCalculator.getActiveMedicinesForDate ===")
-            android.util.Log.e("MainViewModel", "📋 MainViewModel: Вызываем DosageCalculator.getActiveMedicinesForDate")
-            val todayMedicines = DosageCalculator.getActiveMedicinesForDate(fixedMedicines, today)
-            android.util.Log.d("MainViewModel", "Лекарств на сегодня: ${todayMedicines.size}")
-            android.util.Log.e("MainViewModel", "📋 MainViewModel: DosageCalculator вернул ${todayMedicines.size} лекарств")
-            
-            // ДОБАВЛЕНО: Подробное логирование каждого лекарства
-            todayMedicines.forEach { medicine ->
-                android.util.Log.d("MainViewModel", "✅ В списке на сегодня: ${medicine.name}")
-                android.util.Log.d("MainViewModel", "  - Время: ${medicine.time}")
-                android.util.Log.d("MainViewModel", "  - takenToday: ${medicine.takenToday}")
-                android.util.Log.d("MainViewModel", "  - isOverdue: ${medicine.isOverdue}")
-            }
-            
-            //  ДОБАВЛЕНО: Подробное логирование для отладки
-            if (todayMedicines.isEmpty()) {
-                android.util.Log.d("MainViewModel", " СПИСОК ПУСТОЙ - проверяем каждое лекарство:")
-                fixedMedicines.forEach { medicine ->
-                    android.util.Log.d("MainViewModel", "Проверяем: ${medicine.name}")
-                    android.util.Log.d("MainViewModel", "  - isActive: ${medicine.isActive}")
-                    android.util.Log.d("MainViewModel", "  - shouldTakeMedicine: ${DosageCalculator.shouldTakeMedicine(medicine, today, fixedMedicines)}")
-                    android.util.Log.d("MainViewModel", "  - takenToday: ${medicine.takenToday}")
-                    android.util.Log.d("MainViewModel", "  - lastTakenTime: ${medicine.lastTakenTime}")
-                    android.util.Log.d("MainViewModel", "  - startDate: ${medicine.startDate}")
-                    android.util.Log.d("MainViewModel", "  - frequency: ${medicine.frequency}")
+
+                val medicinesForCalculation: List<com.medicalnotes.app.models.Medicine> = if (groupChanges) {
+                    android.util.Log.d("MainViewModel", "Обнаружены изменения групп — сохраняем исправленные данные")
+                    fixedMedicines.forEach { medicineRepository.updateMedicine(it) }
+                    val reloaded = medicineRepository.getAllMedicines()
+                    android.util.Log.d("MainViewModel", "Повторно загружено лекарств после сохранения: ${reloaded.size}")
+                    reloaded
+                } else {
+                    android.util.Log.d("MainViewModel", "Изменений групп не обнаружено")
+                    allMedicines
                 }
-            }
-            
-            todayMedicines.forEach { medicine ->
-                android.util.Log.d("MainViewModel", "Сегодня: ${medicine.name}")
-                android.util.Log.d("MainViewModel", "  - Время: ${medicine.time}")
-                android.util.Log.d("MainViewModel", "  - Принято сегодня: ${medicine.takenToday}")
-                android.util.Log.d("MainViewModel", "  - Дата начала: ${medicine.startDate}")
-            }
-            
-            android.util.Log.d("MainViewModel", "=== УСТАНОВКА ЗНАЧЕНИЯ В LiveData ===")
-            android.util.Log.d("MainViewModel", "Устанавливаем значение: ${todayMedicines.size} лекарств")
-            android.util.Log.e("MainViewModel", "📋 MainViewModel: Устанавливаем в LiveData ${todayMedicines.size} лекарств")
-            _todayMedicines.postValue(todayMedicines)
-            android.util.Log.d("MainViewModel", "=== ЗНАЧЕНИЕ УСТАНОВЛЕНО ===")
-            android.util.Log.e("MainViewModel", "📋 MainViewModel: LiveData обновлен")
-            android.util.Log.e("MainViewModel", "✅✅✅ ЗАВЕРШЕНИЕ loadTodayMedicines() - ФУНКЦИЯ ЗАКОНЧЕНА ✅✅✅")
-            android.util.Log.e("MainViewModel", "✅✅✅ MainViewModel: ЗАВЕРШЕНИЕ loadTodayMedicines() - ФУНКЦИЯ ЗАКОНЧЕНА ✅✅✅")
+
+                // Получаем активные лекарства для указанной даты (как в календаре)
+                val activeMedicines = DosageCalculator.getActiveMedicinesForDateForCalendar(medicinesForCalculation, date)
+                android.util.Log.d("MainViewModel", "Активных лекарств для $date: ${activeMedicines.size}")
+
+                // Обновляем UI в главном потоке
+                withContext(Dispatchers.Main) {
+                    _todayMedicines.value = activeMedicines
+                    android.util.Log.d("MainViewModel", "UI обновлен для даты $date: ${activeMedicines.size} лекарств")
+                }
+
             } catch (e: Exception) {
-                android.util.Log.e("MainViewModel", "❌ ОШИБКА В loadTodayMedicines()", e)
+                android.util.Log.e("MainViewModel", "Ошибка при загрузке лекарств для даты $date", e)
+                withContext(Dispatchers.Main) {
+                    _todayMedicines.value = emptyList()
+                }
+            }
+        }
+    }
+    
+    fun loadTodayMedicines() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                android.util.Log.d("MainViewModel", "🚀 === НАЧАЛО loadTodayMedicines() ===")
+                android.util.Log.d("MainViewModel", "Текущий поток: ${Thread.currentThread().name}")
+                
+                val allMedicines = medicineRepository.getAllMedicines()
+                android.util.Log.d("MainViewModel", "Загружено всех лекарств: ${allMedicines.size}")
+
+                // Применяем исправления групповых данных
+                android.util.Log.d("MainViewModel", "Применяем GroupFixer...")
+                val fixedMedicines = GroupFixer.fixGroupInconsistencies(allMedicines)
+                
+                // Проверяем, были ли изменения в групповых данных
+                android.util.Log.d("MainViewModel", "=== ПРОВЕРКА ИЗМЕНЕНИЙ ГРУПП ===")
+                var groupChanges = false
+                for (i in allMedicines.indices) {
+                    val original = allMedicines[i]
+                    val fixed = fixedMedicines[i]
+                    if (original.groupId != fixed.groupId || original.groupStartDate != fixed.groupStartDate) {
+                        android.util.Log.d("MainViewModel", "ИЗМЕНЕНИЕ ГРУППЫ: ${original.name}")
+                        android.util.Log.d("MainViewModel", "  - groupId: ${original.groupId} -> ${fixed.groupId}")
+                        android.util.Log.d("MainViewModel", "  - groupStartDate: ${original.groupStartDate} -> ${fixed.groupStartDate}")
+                        groupChanges = true
+                    }
+                }
+
+                if (groupChanges) {
+                    android.util.Log.d("MainViewModel", "Обнаружены изменения групп, сохраняем исправленные данные...")
+                    fixedMedicines.forEach { medicine ->
+                        medicineRepository.updateMedicine(medicine)
+                    }
+                    android.util.Log.d("MainViewModel", "Исправленные групповые данные сохранены")
+                } else {
+                    android.util.Log.d("MainViewModel", "Изменений групп не обнаружено")
+                }
+
+                // Получаем обновленные данные после исправлений
+                val updatedMedicines = medicineRepository.getAllMedicines()
+                android.util.Log.d("MainViewModel", "Обновленных лекарств после исправлений: ${updatedMedicines.size}")
+
+                // Получаем активные лекарства для сегодня
+                val today = LocalDate.now()
+                android.util.Log.d("MainViewModel", "Сегодняшняя дата: $today")
+                
+                // ИСПРАВЛЕНО: Для экрана «Лекарства на сегодня» показываем только те,
+                // которые нужно принять сегодня И ещё не приняты (takenToday = false)
+                val medicinesForToday = DosageCalculator.getActiveMedicinesForDate(updatedMedicines, today)
+                android.util.Log.d("MainViewModel", "Активных (не принятых) лекарств на сегодня: ${medicinesForToday.size}")
+                android.util.Log.d("MainViewModel", "Лекарств для отображения сегодня: ${medicinesForToday.size}")
+
+                // Логируем каждое лекарство для отладки
+                medicinesForToday.forEach { medicine ->
+                    android.util.Log.d("MainViewModel", "ЛЕКАРСТВО ДЛЯ СЕГОДНЯ: ${medicine.name}")
+                    android.util.Log.d("MainViewModel", "  - groupId: ${medicine.groupId}")
+                    android.util.Log.d("MainViewModel", "  - groupStartDate: ${medicine.groupStartDate}")
+                    android.util.Log.d("MainViewModel", "  - groupOrder: ${medicine.groupOrder}")
+                    android.util.Log.d("MainViewModel", "  - takenToday: ${medicine.takenToday}")
+                    android.util.Log.d("MainViewModel", "  - isOverdue: ${DosageCalculator.isMedicineOverdue(medicine)}")
+                }
+
+                // Обновляем UI в главном потоке
+                withContext(Dispatchers.Main) {
+                    android.util.Log.d("MainViewModel", "=== ОБНОВЛЕНИЕ UI ===")
+                    android.util.Log.d("MainViewModel", "Лекарств для отображения: ${medicinesForToday.size}")
+                    android.util.Log.d("MainViewModel", "Предыдущее значение LiveData: ${_todayMedicines.value?.size ?: 0} лекарств")
+                    
+                    _todayMedicines.value = medicinesForToday
+                    
+                    android.util.Log.d("MainViewModel", "Новое значение LiveData: ${_todayMedicines.value?.size ?: 0} лекарств")
+                    android.util.Log.d("MainViewModel", "UI обновлен: ${medicinesForToday.size} лекарств")
+                    
+                    // Дополнительная проверка
+                    medicinesForToday.forEach { medicine ->
+                        android.util.Log.d("MainViewModel", "ОТОБРАЖАЕТСЯ: ${medicine.name} (takenToday: ${medicine.takenToday})")
+                    }
+                }
+
+            } catch (e: Exception) {
+                android.util.Log.e("MainViewModel", "Ошибка при загрузке лекарств на сегодня", e)
+                withContext(Dispatchers.Main) {
+                    _todayMedicines.value = emptyList()
+                }
             }
         }
     }
@@ -158,21 +189,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     
+    /**
+     * ИСПРАВЛЕНО: Используем StatusManager для отметки лекарства как принятого
+     */
     fun markMedicineAsTaken(medicineId: Long) {
         viewModelScope.launch {
             android.util.Log.d("MainViewModel", "=== НАЧАЛО markMedicineAsTaken ===")
             android.util.Log.d("MainViewModel", "ID лекарства: $medicineId")
             
-            // Принудительно очищаем кэш перед обновлением
-            _todayMedicines.postValue(emptyList())
-            android.util.Log.d("MainViewModel", "Кэш очищен")
-            
-            // Обновляем данные
-            medicineRepository.markMedicineAsTaken(medicineId)
-            android.util.Log.d("MainViewModel", "Данные обновлены в repository")
+            // Получаем лекарство
+            val medicine = medicineRepository.getMedicineById(medicineId)
+            if (medicine != null) {
+                // Используем StatusManager для отметки
+                val updatedMedicine = StatusManager.markAsTaken(medicine)
+                medicineRepository.updateMedicine(updatedMedicine)
+                android.util.Log.d("MainViewModel", "Лекарство отмечено как принятое через StatusManager")
+            }
             
             // Принудительно перезагружаем лекарства на сегодня
-            loadTodayMedicines()
+            loadMedicinesForDate(LocalDate.now())
             android.util.Log.d("MainViewModel", "Лекарства на сегодня перезагружены")
         }
     }
@@ -180,7 +215,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun markMedicineAsSkipped(medicineId: Long) {
         viewModelScope.launch {
             medicineRepository.markMedicineAsSkipped(medicineId)
-            loadTodayMedicines()
+            loadMedicinesForDate(LocalDate.now())
         }
     }
     
@@ -190,7 +225,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             todayMedicines.forEach { medicine ->
                 medicineRepository.markMedicineAsTaken(medicine.id)
             }
-            loadTodayMedicines()
+            loadMedicinesForDate(LocalDate.now())
         }
     }
     
@@ -226,8 +261,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 
                 if (success) {
                     android.util.Log.d("MainViewModel", "Лекарство успешно удалено из файла, обновляем списки")
-                    android.util.Log.d("MainViewModel", "Вызываем loadTodayMedicines")
-                    loadTodayMedicines()
+                    android.util.Log.d("MainViewModel", "Вызываем loadMedicinesForDate")
+                    loadMedicinesForDate(LocalDate.now())
                     android.util.Log.d("MainViewModel", "Вызываем loadAllMedicines")
                     loadAllMedicines()
                     android.util.Log.d("MainViewModel", "Списки обновлены")
@@ -242,12 +277,49 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     
     fun updateMedicine(medicine: Medicine) {
         viewModelScope.launch {
-            android.util.Log.d("MainViewModel", "Обновление лекарства: ${medicine.name}")
-            android.util.Log.d("MainViewModel", "Статус принятия: lastTakenTime=${medicine.lastTakenTime}, takenToday=${medicine.takenToday}")
-            
-            medicineRepository.updateMedicine(medicine)
-            loadTodayMedicines()
-            loadAllMedicines()
+            try {
+                android.util.Log.d("MainViewModel", "=== ОБНОВЛЕНИЕ ЛЕКАРСТВА ===")
+                android.util.Log.d("MainViewModel", "Лекарство: ${medicine.name}")
+                android.util.Log.d("MainViewModel", "ID: ${medicine.id}")
+                android.util.Log.d("MainViewModel", "takenToday: ${medicine.takenToday}")
+                android.util.Log.d("MainViewModel", "lastTakenTime: ${medicine.lastTakenTime}")
+                
+                // Обновляем лекарство в репозитории
+                val success = medicineRepository.updateMedicine(medicine)
+                android.util.Log.d("MainViewModel", "Результат обновления в репозитории: $success")
+                
+                if (success) {
+                    android.util.Log.d("MainViewModel", "✓ Лекарство успешно обновлено в репозитории")
+                    
+                    // Перезагружаем списки
+                    android.util.Log.d("MainViewModel", "Перезагружаем список лекарств на сегодня...")
+                    loadMedicinesForDate(LocalDate.now())
+                    android.util.Log.d("MainViewModel", "✓ Список лекарств на сегодня перезагружен")
+                    
+                    android.util.Log.d("MainViewModel", "Перезагружаем полный список лекарств...")
+                    loadAllMedicines()
+                    android.util.Log.d("MainViewModel", "✓ Полный список лекарств перезагружен")
+                    
+                    // Проверяем, что лекарство действительно исчезло из списка на сегодня
+                    val currentTodayMedicines = _todayMedicines.value ?: emptyList()
+                    val medicineStillInList = currentTodayMedicines.any { it.id == medicine.id }
+                    
+                    if (medicineStillInList && medicine.takenToday) {
+                        android.util.Log.w("MainViewModel", "⚠️ Лекарство все еще в списке на сегодня, хотя takenToday = true")
+                        android.util.Log.w("MainViewModel", "Принудительно перезагружаем список...")
+                        loadMedicinesForDate(LocalDate.now())
+                    } else {
+                        android.util.Log.d("MainViewModel", "✓ Лекарство корректно обработано")
+                    }
+                } else {
+                    android.util.Log.e("MainViewModel", "❌ Ошибка обновления лекарства в репозитории")
+                }
+                
+                android.util.Log.d("MainViewModel", "=== ОБНОВЛЕНИЕ ЛЕКАРСТВА ЗАВЕРШЕНО ===")
+                
+            } catch (e: Exception) {
+                android.util.Log.e("MainViewModel", "❌ Исключение при обновлении лекарства", e)
+            }
         }
     }
 } 
