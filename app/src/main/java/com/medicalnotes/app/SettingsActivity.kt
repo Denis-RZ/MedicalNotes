@@ -89,9 +89,7 @@ class SettingsActivity : BaseActivity() {
             startActivity(Intent(this, LanguageActivity::class.java))
         }
         
-        binding.buttonLanguageTest.setOnClickListener {
-            startActivity(Intent(this, LanguageTestActivity::class.java))
-        }
+
         
         binding.buttonNotificationManager.setOnClickListener {
             startActivity(Intent(this, NotificationManagerActivity::class.java))
@@ -130,9 +128,7 @@ class SettingsActivity : BaseActivity() {
             CrashReportActivity.start(this)
         }
         
-        binding.buttonTestOverdueMedicine.setOnClickListener {
-            testOverdueMedicine()
-        }
+
         
         binding.buttonStopNotifications.setOnClickListener {
             stopAllNotifications()
@@ -150,7 +146,6 @@ class SettingsActivity : BaseActivity() {
     private fun observeData() {
         viewModel.settings.observe(this) { settings ->
             settings?.let {
-                binding.switchNotifications.isChecked = true // Уведомления всегда включены
                 binding.sliderAdvanceMinutes.value = it.notificationAdvanceMinutes.toFloat()
                 binding.textAdvanceMinutes.text = "${it.notificationAdvanceMinutes} ${getString(R.string.minutes)}"
                 binding.sliderLowStockThreshold.value = it.lowStockThreshold.toFloat()
@@ -159,7 +154,6 @@ class SettingsActivity : BaseActivity() {
                 binding.switchDataCompression.isChecked = it.dataCompression
                 binding.sliderMaxBackups.value = it.maxBackups.toFloat()
                 binding.textMaxBackups.text = "${it.maxBackups} ${getString(R.string.copies)}"
-                binding.switchHighContrast.isChecked = false // По умолчанию выключен
             }
         }
         
@@ -287,69 +281,7 @@ class SettingsActivity : BaseActivity() {
             .show()
     }
     
-    /**
-     * ДОБАВЛЕНО: Тестирование просроченного лекарства
-     */
-    private fun testOverdueMedicine() {
-        try {
-            android.util.Log.d("SettingsActivity", "=== ТЕСТИРОВАНИЕ ПРОСРОЧЕННОГО ЛЕКАРСТВА ===")
-            
-            // Показываем диалог подтверждения
-            AlertDialog.Builder(this)
-                .setTitle(getString(R.string.test_overdue_medicine))
-                .setMessage(getString(R.string.test_overdue_message))
-                .setPositiveButton(getString(R.string.create_and_close)) { _, _ ->
-                    createTestMedicineAndClose()
-                }
-                .setNegativeButton(getString(R.string.cancel), null)
-                .show()
-                
-        } catch (e: Exception) {
-            android.util.Log.e("SettingsActivity", "Ошибка тестирования просроченного лекарства", e)
-            Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-    
-    /**
-     * ДОБАВЛЕНО: Создание тестового лекарства и закрытие приложения
-     */
-    private fun createTestMedicineAndClose() {
-        try {
-            android.util.Log.d("SettingsActivity", "Создание тестового лекарства...")
-            
-            // Создаем тестовое лекарство
-            val notificationManager = com.medicalnotes.app.utils.NotificationManager(this)
-            val testMedicine = notificationManager.createTestOverdueMedicine(this)
-            
-            // Показываем подтверждение
-            Toast.makeText(this, 
-                getString(R.string.test_medicine_created, testMedicine.time), 
-                Toast.LENGTH_LONG
-            ).show()
-            
-            android.util.Log.d("SettingsActivity", "Тестовое лекарство создано: ${testMedicine.name} на ${testMedicine.time}")
-            
-            // Закрываем приложение через 3 секунды
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                try {
-                    android.util.Log.d("SettingsActivity", "Закрытие приложения...")
-                    
-                    // Закрываем все Activity
-                    finishAffinity()
-                    
-                    // Принудительно завершаем процесс (опционально)
-                    android.os.Process.killProcess(android.os.Process.myPid())
-                    
-                } catch (e: Exception) {
-                    android.util.Log.e("SettingsActivity", "Ошибка закрытия приложения", e)
-                }
-            }, 3000) // 3 секунды
-            
-        } catch (e: Exception) {
-            android.util.Log.e("SettingsActivity", "Ошибка создания тестового лекарства", e)
-            Toast.makeText(this, "Ошибка создания тестового лекарства: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
+
     
     /**
      * ДОБАВЛЕНО: Принудительная остановка всех уведомлений
@@ -496,11 +428,7 @@ class SettingsActivity : BaseActivity() {
                 android.util.Log.w("SettingsActivity", "buttonLanguageSettings not found")
             }
             
-            try {
-                binding.buttonLanguageTest?.text = getString(R.string.language_test)
-            } catch (e: Exception) {
-                android.util.Log.w("SettingsActivity", "buttonLanguageTest not found")
-            }
+
             
             try {
                 binding.buttonNotificationManager?.text = getString(R.string.notification_manager)

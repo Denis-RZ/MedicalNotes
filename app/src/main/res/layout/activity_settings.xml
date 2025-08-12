@@ -74,12 +74,7 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="@dimen/margin_medium" />
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchNotifications"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/enable_notifications"
-                    android:layout_marginBottom="@dimen/margin_small" />
+
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchVibration"
@@ -309,15 +304,7 @@
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_marginBottom="@dimen/margin_small" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonLanguageTest"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/language_test_button"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_marginBottom="@dimen/margin_small" />
+
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonNotificationManager"
@@ -340,12 +327,7 @@
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_marginBottom="@dimen/margin_small" />
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchHighContrast"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/high_contrast_button"
-                    android:layout_marginBottom="@dimen/margin_small" />
+
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -436,23 +418,7 @@
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginBottom="@dimen/margin_medium" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonTestOverdueMedicine"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/test_overdue_medicine"
-                    android:textSize="@dimen/text_size_mobile_medium"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    app:icon="@drawable/ic_medicine"
-                    app:iconGravity="textStart"
-                    app:iconPadding="@dimen/margin_small"
-                    app:iconTint="?attr/colorOnSurface"
-                    app:strokeColor="?attr/colorOutline"
-                    app:strokeWidth="1dp"
-                    android:backgroundTint="@android:color/holo_orange_light"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_marginBottom="@dimen/margin_small" />
+
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonStopNotifications"

@@ -445,21 +445,26 @@ class OverdueCheckService : Service() {
                 mostRelevant?.let { medicine ->
                     val nm = this.notificationManager
                     try {
-                        // Показываем карточку-диалог И always-on-top уведомление
-                        if (!com.medicalnotes.app.utils.NotificationManager.isNotificationActive(medicine.id)) {
-                            // 1. Показываем карточку-диалог
+                        // ИСПРАВЛЕНО: Показываем ВСЕ виды уведомлений одновременно для критических просроченных лекарств
+                        try {
+                            // 1. Обычное уведомление (всегда показываем)
                             nm.showMedicineCardNotification(medicine, true)
-                            android.util.Log.d("OverdueCheckService", "Показана карточка-диалог для просроченного: ${medicine.name}")
+                            android.util.Log.d("OverdueCheckService", "✅ Показана карточка-диалог для просроченного: ${medicine.name}")
                             
-                            // 2. ДОБАВЛЕНО: Показываем также always-on-top окно для максимальной видимости
+                            // 2. Always-on-top окно (всегда показываем)
+                            nm.showOverdueMedicineNotification(medicine)
+                            android.util.Log.d("OverdueCheckService", "✅ Показано always-on-top окно для: ${medicine.name}")
+                            
+                            // 3. ДОБАВЛЕНО: Системное overlay-окно для критических случаев
                             try {
-                                nm.showOverdueMedicineNotification(medicine)
-                                android.util.Log.d("OverdueCheckService", "Показано always-on-top окно для: ${medicine.name}")
+                                val systemAlert = com.medicalnotes.app.utils.SystemAlertHelper(this)
+                                systemAlert.showOverdueAlert(overdueMedicines)
+                                android.util.Log.d("OverdueCheckService", "✅ Показано системное overlay для ${overdueMedicines.size} просроченных лекарств")
                             } catch (e: Exception) {
-                                android.util.Log.e("OverdueCheckService", "Ошибка показа always-on-top окна", e)
+                                android.util.Log.e("OverdueCheckService", "❌ Ошибка показа системного overlay", e)
                             }
-                        } else {
-                            android.util.Log.d("OverdueCheckService", "Карточка уже активна для: ${medicine.name}")
+                        } catch (e: Exception) {
+                            android.util.Log.e("OverdueCheckService", "❌ Ошибка показа уведомлений", e)
                         }
                     } catch (e: Exception) {
                         android.util.Log.e("OverdueCheckService", "Ошибка показа карточки-диалога", e)

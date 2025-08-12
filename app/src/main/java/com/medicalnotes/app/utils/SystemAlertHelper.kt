@@ -37,18 +37,27 @@ class SystemAlertHelper(private val context: Context) {
                 return
             }
             
-            // ДОБАВЛЕНО: Проверяем, есть ли уже активное уведомление
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-            val activeNotifications = notificationManager.activeNotifications
-            val hasOverdueNotification = activeNotifications.any { it.id == 2001 } // NOTIFICATION_ID_OVERDUE
-            
-            if (hasOverdueNotification) {
-                LogCollector.d(TAG, "Regular notification already active - skipping system alert")
-                return
-            }
+            // ИСПРАВЛЕНО: Убираем блокирующую проверку - overlay должен показываться ВСЕГДА при просроченных лекарствах
+            // Overlay-окно критически важно для просроченных лекарств и должно показываться независимо от других уведомлений
+            LogCollector.d(TAG, "Forcing system alert for critical overdue medicines")
             
             if (!hasSystemAlertPermission()) {
-                LogCollector.w(TAG, "No SYSTEM_ALERT_WINDOW permission")
+                LogCollector.w(TAG, "No SYSTEM_ALERT_WINDOW permission - trying fallback methods")
+                
+                // ДОБАВЛЕНО: Fallback через полноэкранное уведомление при отсутствии overlay разрешения
+                try {
+                    val notificationManager = com.medicalnotes.app.utils.NotificationManager(context)
+                    val firstMedicine = overdueMedicines.firstOrNull()
+                    if (firstMedicine != null) {
+                        notificationManager.showMedicineCardNotification(firstMedicine, true)
+                        LogCollector.d(TAG, "Fallback: показано полноэкранное уведомление")
+                    }
+                } catch (e: Exception) {
+                    LogCollector.e(TAG, "Fallback failed", e)
+                }
+                
+                // Все же пытаемся запросить разрешение для будущего использования
+                requestPermission()
                 return
             }
             
@@ -74,7 +83,11 @@ class SystemAlertHelper(private val context: Context) {
                 flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                         WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
-                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                        WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 format = PixelFormat.TRANSLUCENT
                 gravity = Gravity.TOP
                 y = 100 // Offset from top

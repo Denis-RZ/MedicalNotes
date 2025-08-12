@@ -311,6 +311,9 @@ class MainActivity : BaseActivity() {
                         //  ДОБАВЛЕНО: Проверка разрешений для надежной работы уведомлений
                         checkNotificationPermissions()
                         
+                        //  ДОБАВЛЕНО: Критически важная проверка исключения из оптимизации батареи
+                        checkBatteryOptimizationExclusion()
+                        
                         //  ИСПРАВЛЕНО: Проверка разрешений для показа окон поверх других приложений на главном потоке
                         lifecycleScope.launch(Dispatchers.Main) {
                             checkOverlayPermissions()
@@ -1505,6 +1508,44 @@ class MainActivity : BaseActivity() {
         }
     }
     
+    //  ДОБАВЛЕНО: Критически важная проверка исключения из оптимизации батареи
+    private fun checkBatteryOptimizationExclusion() {
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                val packageName = packageName
+                
+                if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+                    android.util.Log.w("MainActivity", "⚠️ КРИТИЧНО: Приложение НЕ исключено из оптимизации батареи!")
+                    android.util.Log.w("MainActivity", "Это может приводить к блокировке фоновых уведомлений о просроченных лекарствах")
+                    
+                    // Показываем пользователю критически важное сообщение
+                    runOnUiThread {
+                        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+                        builder.setTitle("⚠️ Критично для безопасности")
+                        builder.setMessage("Для надежного напоминания о просроченных лекарствах необходимо отключить оптимизацию батареи для этого приложения.\n\nБез этого уведомления могут не работать в фоновом режиме!")
+                        builder.setPositiveButton("Исправить") { _, _ ->
+                            try {
+                                val intent = android.content.Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                                intent.data = android.net.Uri.parse("package:$packageName")
+                                startActivity(intent)
+                            } catch (e: Exception) {
+                                android.util.Log.e("MainActivity", "Не удалось открыть настройки оптимизации батареи", e)
+                            }
+                        }
+                        builder.setNegativeButton("Пропустить", null)
+                        builder.setCancelable(false)
+                        builder.show()
+                    }
+                } else {
+                    android.util.Log.d("MainActivity", "✅ Приложение правильно исключено из оптимизации батареи")
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка проверки оптимизации батареи", e)
+        }
+    }
+
     //  ДОБАВЛЕНО: Проверка, запущен ли сервис
     private fun isServiceRunning(serviceClass: Class<*>): Boolean {
         return try {

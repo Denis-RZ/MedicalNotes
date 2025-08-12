@@ -64,8 +64,9 @@ object PermissionManager {
         // Проверяем специальные разрешения
         android.util.Log.d("PermissionManager", "🔧 Проверяем специальные разрешения")
         
-        // Убрали проверку overlay, т.к. системные оверлеи больше не используются
-        status.systemAlertWindowGranted = true
+        // ИСПРАВЛЕНО: Восстанавливаем проверку overlay - она КРИТИЧЕСКИ важна для просроченных лекарств
+        status.systemAlertWindowGranted = isSystemAlertWindowGranted(context)
+        android.util.Log.d("PermissionManager", "  ${if (status.systemAlertWindowGranted) "✅" else "❌"} Показ поверх приложений: ${if (status.systemAlertWindowGranted) "РАЗРЕШЕНО" else "ЗАБЛОКИРОВАНО"}")
         
         status.notificationsEnabled = areNotificationsEnabled(context)
         android.util.Log.d("PermissionManager", "  ${if (status.notificationsEnabled) "✅" else "❌"} Уведомления: ${if (status.notificationsEnabled) "ВКЛЮЧЕНЫ" else "ОТКЛЮЧЕНЫ"}")
@@ -301,6 +302,22 @@ object PermissionManager {
         } catch (e: Exception) {
             android.util.Log.e("PermissionManager", "Ошибка проверки оптимизации батареи", e)
             true
+        }
+    }
+    
+    /**
+     * ДОБАВЛЕНО: Проверяет разрешение на отображение поверх других приложений
+     */
+    private fun isSystemAlertWindowGranted(context: Context): Boolean {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Settings.canDrawOverlays(context)
+            } else {
+                true // Для старых версий Android считаем, что разрешено
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("PermissionManager", "Ошибка проверки разрешения System Alert Window", e)
+            false // При ошибке считаем, что разрешения нет для безопасности
         }
     }
     
