@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    
+    <!-- Gradient background for attention -->
+    <gradient
+        android:type="linear"
+        android:angle="45"
+        android:startColor="@color/overdue_red"
+        android:centerColor="@color/notification_accent_error"
+        android:endColor="@color/overdue_red" />
+    
+    <!-- Rounded corners -->
+    <corners android:radius="12dp" />
+    
+    <!-- Enhanced border -->
+    <stroke
+        android:width="2dp"
+        android:color="@color/white" />
+    
+    <!-- Shadow effect -->
+    <padding
+        android:left="2dp"
+        android:top="2dp"
+        android:right="2dp"
+        android:bottom="2dp" />
+        
+</shape>

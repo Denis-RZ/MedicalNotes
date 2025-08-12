@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Normal state -->
+    <item android:id="@+id/normal" android:drawable="@drawable/card_overdue_background" />
+    
+    <!-- Pulsing state -->
+    <item android:id="@+id/pulsing" android:drawable="@drawable/card_overdue_pulsing_background" />
+    
+    <!-- Animation transitions -->
+    <transition
+        android:fromId="@+id/normal"
+        android:toId="@+id/pulsing"
+        android:drawable="@drawable/card_overdue_pulse_animation"
+        android:duration="1000" />
+    
+    <transition
+        android:fromId="@+id/pulsing"
+        android:toId="@+id/normal"
+        android:drawable="@drawable/card_overdue_pulse_animation"
+        android:duration="1000" />
+        
+</animated-selector>

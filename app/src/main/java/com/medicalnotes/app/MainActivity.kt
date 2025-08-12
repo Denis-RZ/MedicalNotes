@@ -25,6 +25,9 @@ import java.time.LocalDateTime
 import com.medicalnotes.app.utils.DosageCalculator
 import com.medicalnotes.app.service.OverdueCheckService
 import com.medicalnotes.app.utils.UnifiedNotificationManager
+import com.medicalnotes.app.service.OptimizedNotificationService
+import com.medicalnotes.app.utils.EnhancedStatusManager
+import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : BaseActivity() {
 
@@ -36,6 +39,10 @@ class MainActivity : BaseActivity() {
     
     //  ДОБАВЛЕНО: Список для хранения логов
     private val logs = mutableListOf<String>()
+    
+    // ДОБАВЛЕНО: Переменные для улучшенной системы уведомлений
+    private var overdueMedicinesCount = 0
+    private var isOverdueCounterVisible = false
     
     //  ДОБАВЛЕНО: Переменная для тестовой даты
     private var selectedTestDate: LocalDate = LocalDate.now()
@@ -291,25 +298,28 @@ class MainActivity : BaseActivity() {
                 showErrorDialog("Ошибка загрузки данных", "Детали ошибки:\n${e.message}")
             }
             
-            //  ИСПРАВЛЕНО: Запуск сервисов в фоновом потоке для предотвращения ANR
-            try {
-                // Запускаем сервисы в фоновом потоке, чтобы не блокировать UI
-                lifecycleScope.launch(Dispatchers.IO) {
-                    try {
-                        //  ДОБАВЛЕНО: Автоматическая проверка просроченных лекарств
-                        checkOverdueMedicines()
-                        
-                        //  ДОБАВЛЕНО: Запуск сервиса уведомлений для обеспечения работы в фоне
-                        startNotificationService()
-                        
-                        //  ДОБАВЛЕНО: Запуск сервиса проверки просроченных лекарств
-                        startOverdueCheckService()
-                        
-                        //  ДОБАВЛЕНО: Проверка и восстановление уведомлений при запуске
-                        checkAndRestoreNotifications()
-                        
-                        //  ДОБАВЛЕНО: Проверка разрешений для надежной работы уведомлений
-                        checkNotificationPermissions()
+                    //  ИСПРАВЛЕНО: Запуск сервисов в фоновом потоке для предотвращения ANR
+        try {
+            // Запускаем сервисы в фоновом потоке, чтобы не блокировать UI
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    //  ДОБАВЛЕНО: Автоматическая проверка просроченных лекарств
+                    checkOverdueMedicines()
+                    
+                    //  ДОБАВЛЕНО: Запуск сервиса уведомлений для обеспечения работы в фоне
+                    startNotificationService()
+                    
+                    //  ДОБАВЛЕНО: Запуск сервиса проверки просроченных лекарств
+                    startOverdueCheckService()
+                    
+                    //  ДОБАВЛЕНО: Проверка и восстановление уведомлений при запуске
+                    checkAndRestoreNotifications()
+                    
+                    //  ДОБАВЛЕНО: Проверка разрешений для надежной работы уведомлений
+                    checkNotificationPermissions()
+                    
+                    // ДОБАВЛЕНО: Инициализация оптимизированной системы уведомлений
+                    initializeOptimizedNotificationSystem()
                         
                         //  ДОБАВЛЕНО: Критически важная проверка исключения из оптимизации батареи
                         checkBatteryOptimizationExclusion()
@@ -2231,6 +2241,118 @@ class MainActivity : BaseActivity() {
                     ).show()
                 }
             }
+        }
+    }
+    
+    /**
+     * Инициализирует оптимизированную систему уведомлений
+     */
+    private fun initializeOptimizedNotificationSystem() {
+        try {
+            android.util.Log.d("MainActivity", "Инициализация оптимизированной системы уведомлений")
+            
+            // Инициализируем OptimizedNotificationService
+            OptimizedNotificationService.initialize(this@MainActivity)
+            
+            // Настраиваем EnhancedStatusManager
+            setupEnhancedStatusManager()
+            
+            android.util.Log.d("MainActivity", "Оптимизированная система уведомлений инициализирована")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка инициализации оптимизированной системы уведомлений", e)
+        }
+    }
+    
+    /**
+     * Настраивает EnhancedStatusManager
+     */
+    private fun setupEnhancedStatusManager() {
+        try {
+            // Подписываемся на изменения статусов
+            viewModel.todayMedicines.observe(this) { medicines ->
+                medicines.forEach { medicine ->
+                    // Обновляем статус в EnhancedStatusManager
+                    EnhancedStatusManager.updateMedicineStatus(medicine)
+                }
+                
+                // Обновляем счетчик просроченных лекарств
+                updateOverdueCounter()
+            }
+            
+            android.util.Log.d("MainActivity", "EnhancedStatusManager настроен")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка настройки EnhancedStatusManager", e)
+        }
+    }
+    
+    /**
+     * Обновляет счетчик просроченных лекарств
+     */
+    private fun updateOverdueCounter() {
+        try {
+            val statistics = EnhancedStatusManager.getStatusStatistics()
+            overdueMedicinesCount = statistics.overdueCount
+            
+            // Показываем/скрываем счетчик в зависимости от количества просроченных
+            if (overdueMedicinesCount > 0 && !isOverdueCounterVisible) {
+                showOverdueCounter()
+            } else if (overdueMedicinesCount == 0 && isOverdueCounterVisible) {
+                hideOverdueCounter()
+            }
+            
+            // Обновляем текст счетчика
+            updateOverdueCounterText()
+            
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка обновления счетчика просроченных", e)
+        }
+    }
+    
+    /**
+     * Показывает счетчик просроченных лекарств
+     */
+    private fun showOverdueCounter() {
+        try {
+            // Здесь нужно будет добавить логику для показа счетчика в UI
+            // Пока что просто логируем
+            android.util.Log.d("MainActivity", "Показываем счетчик просроченных: $overdueMedicinesCount")
+            isOverdueCounterVisible = true
+            
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка показа счетчика просроченных", e)
+        }
+    }
+    
+    /**
+     * Скрывает счетчик просроченных лекарств
+     */
+    private fun hideOverdueCounter() {
+        try {
+            android.util.Log.d("MainActivity", "Скрываем счетчик просроченных")
+            isOverdueCounterVisible = false
+            
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка скрытия счетчика просроченных", e)
+        }
+    }
+    
+    /**
+     * Обновляет текст счетчика просроченных
+     */
+    private fun updateOverdueCounterText() {
+        try {
+            val text = when {
+                overdueMedicinesCount == 1 -> "1 medication overdue"
+                overdueMedicinesCount > 1 -> "$overdueMedicinesCount medications overdue"
+                else -> "No medications overdue"
+            }
+            
+            android.util.Log.d("MainActivity", "Обновлен текст счетчика: $text")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Ошибка обновления текста счетчика", e)
         }
     }
 
